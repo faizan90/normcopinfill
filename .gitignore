@@ -2,6 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+*.html
+*.c
+*.cpp
+*.pydevproject
+*.project
 
 # C extensions
 *.so
