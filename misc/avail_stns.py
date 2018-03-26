@@ -5,8 +5,6 @@ Spyder Editor
 This is a temporary script file.
 """
 
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 

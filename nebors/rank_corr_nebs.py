@@ -16,8 +16,6 @@ from numpy import (full,
                    isnan,
                    where,
                    abs as np_abs)
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cmaps
 from adjustText import adjust_text

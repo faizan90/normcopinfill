@@ -9,8 +9,6 @@ from os import mkdir as os_mkdir
 from os.path import exists as os_exists, join as os_join
 
 from numpy import linspace, mgrid, round as np_round, where, nanmax, nan
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.cm as cmaps
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable

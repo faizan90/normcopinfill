@@ -14,8 +14,6 @@ from numpy import (logical_or,
                    logical_and,
                    divide)
 
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 

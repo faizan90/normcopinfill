@@ -1,0 +1,15 @@
+eclipse.preferences.version=1
+encoding//checks/bef_all.py=utf-8
+encoding//core/compare_infill.py=utf-8
+encoding//core/flag_susp.py=utf-8
+encoding//core/plot_cond_ftns.py=utf-8
+encoding//core/plot_infill.py=utf-8
+encoding//core/transform.py=utf-8
+encoding//ecops/plot_ecops.py=utf-8
+encoding//misc/avail_stns.py=utf-8
+encoding//misc/summary.py=utf-8
+encoding//nebors/_rank_corr_nebs.py=utf-8
+encoding//nebors/_rank_corr_nebs_time_lag.py=utf-8
+encoding//nebors/nrst_nebs.py=utf-8
+encoding//nebors/rank_corr_nebs.py=utf-8
+encoding//nebors/rank_corr_nebs_time_lag.py=utf-8

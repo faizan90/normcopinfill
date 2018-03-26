@@ -5,8 +5,6 @@ Created on %(date)s
 @author: %(username)s
 """
 
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.pyplot as plt
 
 

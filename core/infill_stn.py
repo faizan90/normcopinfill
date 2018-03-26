@@ -25,8 +25,6 @@ from numpy import (any as np_any,
                    where)
 from pathos.multiprocessing import ProcessPool as mp_pool
 
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.pyplot as plt
 
 from pandas import (date_range,

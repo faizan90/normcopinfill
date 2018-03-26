@@ -6,8 +6,6 @@ This is a temporary script file.
 
 from numpy import divide, repeat, tile
 from pandas import DataFrame, to_numeric
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.cm as cmaps
 import matplotlib.pyplot as plt
 

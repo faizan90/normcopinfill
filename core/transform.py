@@ -14,8 +14,6 @@ from numpy import (nan,
                    isfinite,
                    any as np_any,
                    isnan)
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 from scipy.interpolate import interp1d

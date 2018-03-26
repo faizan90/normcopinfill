@@ -7,8 +7,6 @@ Created on %(date)s
 from os.path import join as os_join
 
 from numpy import repeat, tile
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.cm as cmaps
 import matplotlib.pyplot as plt
 

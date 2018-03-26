@@ -7,8 +7,6 @@ Created on %(date)s
 
 from numpy import isnan, where
 
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.pyplot as plt
 
 

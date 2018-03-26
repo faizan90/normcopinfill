@@ -6,8 +6,6 @@ This is a temporary script file.
 """
 
 from numpy import ceil, divide, unique, linspace, array, isnan, fabs, where
-from matplotlib import use as plt_use
-plt_use('AGG')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.colors import LinearSegmentedColormap
