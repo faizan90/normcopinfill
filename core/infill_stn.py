@@ -60,8 +60,9 @@ seterr(all='ignore')
 
 __all__ = ['NormCopulaInfill']
 
-#TODO: add some checks in _load_pickle while selecting neighbors
-#TODO: dropping duplicate columns
+# TODO: add some checks in _load_pickle while selecting neighbors
+# TODO: dropping duplicate columns
+
 
 class NormCopulaInfill:
     '''
@@ -576,9 +577,14 @@ class NormCopulaInfill:
                                                  format=self.time_fmt)
             assert self.infill_dates_list[1] > self.infill_dates_list[0], \
                 'Infill dates not in ascending order!'
-            self.infill_dates = date_range(start=self.infill_dates_list[0],
-                                           end=self.infill_dates_list[-1],
-                                           format=self.time_fmt,
+
+            _strt_date, _end_date = (
+                to_datetime([self.infill_dates_list[0],
+                             self.infill_dates_list[-1]],
+                            format=self.time_fmt))
+
+            self.infill_dates = date_range(start=_strt_date,
+                                           end=_end_date,
                                            freq=self.freq)
         elif self.infill_interval_type == 'all':
             self.infill_dates_list = None
@@ -603,7 +609,8 @@ class NormCopulaInfill:
                        'are with insufficient values:\n') %
                       insuff_val_cols.shape[0], insuff_val_cols.tolist())
 
-        self.in_var_df.dropna(axis=(0, 1), how='all', inplace=True)
+        self.in_var_df.dropna(axis=0, how='all', inplace=True)
+        self.in_var_df.dropna(axis=1, how='all', inplace=True)
 
         if self.verbose:
             print(('INFO: \'in_var_df\' shape after dropping values less than '
@@ -672,7 +679,6 @@ class NormCopulaInfill:
             ('No infill dates exist in \'in_var_df\' after dropping '
              'stations and records with insufficient information!')
 
-
         # TODO: Fix this situation
 #        if self.max_time_lag_corr:
         self.full_date_index = date_range(self.in_var_df.index[+0],
@@ -682,13 +688,12 @@ class NormCopulaInfill:
 #        else:
 #            self.full_date_index = None
 
-
 ## =============================================================================
-## setting some values to nan to reproduce an error
+# # setting some values to nan to reproduce an error
 #        self.in_var_df.loc[self.infill_dates, self.infill_stns] = nan
 ## =============================================================================
 
-        ### Initiating additional required variables
+        # ## Initiating additional required variables
         self.nrst_stns_list = []
         self.nrst_stns_dict = {}
 
@@ -853,7 +858,7 @@ class NormCopulaInfill:
         out_add_info_file = os_join(self.stn_out_dir,
                                     'add_info_df_stn_%s.csv' % infill_stn)
 
-        ### load infill
+        # ## load infill
         no_out = True
         n_infilled_vals = 0
         if ((not self.overwrite_flag) and
@@ -947,7 +952,7 @@ class NormCopulaInfill:
             if (n_nan_idxs == 0) and (not self.compare_infill_flag):
                 return
 
-            ### mkdirs
+            # ## mkdirs
             dir_list = [self.stn_out_dir]
 
             self.stn_infill_cdfs_dir = os_join(self.stn_out_dir,
@@ -988,7 +993,7 @@ class NormCopulaInfill:
                 pprt(['Neighbors are:'], nbh=8)
                 for i_msg in range(0, len(self.curr_nrst_stns), 3):
                     pprt(self.curr_nrst_stns[i_msg:(i_msg + 3)], nbh=12)
-            ### initiate infill
+            # ## initiate infill
             out_conf_df = DataFrame(index=self.infill_dates,
                                     columns=self.conf_ser.index,
                                     dtype=float)
@@ -1079,7 +1084,7 @@ class NormCopulaInfill:
                         'step') % (fin_secs, _))],
                      nbh=8)
 
-            ### prepare output
+            # ## prepare output
             out_conf_df = out_conf_df.apply(lambda x: to_numeric(x))
             out_conf_df.to_csv(out_conf_df_file,
                                sep=str(self.sep),
@@ -1099,7 +1104,7 @@ class NormCopulaInfill:
         self.summary_df.loc[self.curr_infill_stn,
                             self._avg_avail_nebs_lab] = _
 
-        ### make plots
+        # ## make plots
         # plot number of gauges available and used
         if self.verbose:
             infill_start = timeit.default_timer()
@@ -1121,7 +1126,7 @@ class NormCopulaInfill:
                            label='n_neighbors_raw',
                            c='r',
                            alpha=alpha,
-                           lw=lw+0.5,
+                           lw=lw + 0.5,
                            ls='-')
             infill_ax.plot(self.infill_dates,
                            out_add_info_df['n_neighbors_fin'].values,
@@ -1168,7 +1173,7 @@ class NormCopulaInfill:
 
             args_tup = (self, act_var, out_conf_df, out_infill_plot_loc)
             if use_mp:
-                self._norm_cop_pool.uimap(PlotInfill, (args_tup, ))
+                self._norm_cop_pool.uimap(PlotInfill, (args_tup,))
             else:
                 PlotInfill(args_tup)
 
@@ -1194,7 +1199,7 @@ class NormCopulaInfill:
             compare_obj = CompareInfill(self)
             if use_mp and (not update_summary_df_only):
                 compare_iter = self._norm_cop_pool.uimap(compare_obj.plot_all,
-                                                         (args_tup, ))
+                                                         (args_tup,))
             else:
                 self.summary_df.update(compare_obj.plot_all(args_tup))
         else:
@@ -1221,7 +1226,7 @@ class NormCopulaInfill:
                         update_summary_df_only)
             if use_mp and (not update_summary_df_only):
                 flag_susp_iter = self._norm_cop_pool.uimap(flag_susp_obj.plot,
-                                                           (args_tup, ))
+                                                           (args_tup,))
             else:
                 _ = flag_susp_obj.plot(args_tup)
                 self.summary_df.update(_[0])
@@ -1487,7 +1492,7 @@ class NormCopulaInfill:
             assert self.ge_le_trs_n > 0, \
                 '\'self.ge_le_trs_n\' less than 1!'
         else:
-            self.var_le_trs, self.var_ge_trs, self.ge_le_trs_n = 3*[None]
+            self.var_le_trs, self.var_ge_trs, self.ge_le_trs_n = 3 * [None]
 
         if self.flag_susp_flag:
             self.flag_df = DataFrame(columns=self.infill_stns,

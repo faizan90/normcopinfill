@@ -32,6 +32,7 @@ plt.ioff()
 
 
 class RankCorrStns:
+
     def __init__(self, norm_cop_obj):
         self.norm_cop_obj = norm_cop_obj
 
@@ -461,8 +462,8 @@ class RankCorrStns:
 
         self._get_rank_corrs()
 
-        self.rank_corrs_df.dropna(axis=(0, 1), how='all', inplace=True)
-        self.rank_corr_vals_ctr_df.dropna(axis=(0, 1), how='all', inplace=True)
+        self.rank_corr_vals_ctr_df.dropna(axis=0, how='all', inplace=True)
+        self.rank_corr_vals_ctr_df.dropna(axis=1, how='all', inplace=True)
 
         for infill_stn in self.infill_stns:
             if infill_stn in self.rank_corrs_df.index:
@@ -538,7 +539,7 @@ class RankCorrStns:
             print(('INFO: \'in_var_df\' shape after calling '
                    '\'cmpt_plot_rank_corr_stns\':'), self.in_var_df.shape)
 
-        ### save pickle
+        # ## save pickle
         rank_corr_stns_pkl_dict = {}
         rank_corr_stns_pkl_cur = open(self._out_rank_corr_stns_pkl_file, 'wb')
 
