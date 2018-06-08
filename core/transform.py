@@ -26,6 +26,7 @@ from normcop_cyftns import norm_ppf_py_arr
 
 
 class StepTrans:
+
     def __init__(self,
                  infill_steps_obj,
                  curr_var_df,
@@ -90,8 +91,8 @@ class StepTrans:
                                       var_ser.shape[0]))
                 thresh_prob_orig = thresh_prob
                 thresh_prob = zero_prob + (0.5 * (thresh_prob - zero_prob))
-                assert zero_prob <= thresh_prob, \
-                    as_err('\'zero_prob\' > \'thresh_prob\'!')
+                assert zero_prob <= thresh_prob, as_err(
+                    '\'zero_prob\' > \'thresh_prob\'!')
 
                 self.curr_py_zeros_dict[col] = zero_prob * 0.5
                 self.curr_py_dels_dict[col] = thresh_prob
@@ -107,28 +108,28 @@ class StepTrans:
                 probs_ser.iloc[zero_idxs] = (0.5 * zero_prob)
                 probs_ser.iloc[thresh_idxs] = thresh_prob
 
-                assert thresh_prob <= probs_ser.max(), \
-                    as_err('\'thresh_prob\' > \'probs_ser.max()\'!')
+                assert thresh_prob <= probs_ser.max(), as_err(
+                    '\'thresh_prob\' > \'probs_ser.max()\'!')
 
             else:
                 _ = var_ser.rank(method=self._rank_method)
                 probs_ser = _.div(var_ser.count() + 1.)
 
                 if self.infill_type == 'discharge-censored':
-                    _idxs  = probs_ser.values <= self.cut_cdf_thresh
+                    _idxs = probs_ser.values <= self.cut_cdf_thresh
                     mean_prob = probs_ser.loc[_idxs].mean()
                     probs_ser.loc[_idxs] = mean_prob
 
-            assert np_all(isfinite(probs_ser.values)), \
-                as_err('NaNs in \'probs_ser\'!')
+            assert np_all(isfinite(probs_ser.values)), as_err(
+                'NaNs in \'probs_ser\'!')
 
             self.probs_df[col] = probs_ser
-            assert not np_any(isnan(probs_ser)), \
-                as_err('NaNs in \'probs_ser\' on %s' % self.date_pref)
+            assert not np_any(isnan(probs_ser)), as_err(
+                'NaNs in \'probs_ser\' on %s' % self.date_pref)
             self.norms_df[col] = norm_ppf_py_arr(probs_ser.values)
 
-            assert np_all(isfinite(self.norms_df[col].values)), \
-                as_err('NaNs in \'norms_df[%s]\'!' % col)
+            assert np_all(isfinite(self.norms_df[col].values)), as_err(
+                'NaNs in \'norms_df[%s]\'!' % col)
 
             if ((col == self.curr_infill_stn) and
                 (self.infill_type == 'precipitation')):
@@ -151,11 +152,11 @@ class StepTrans:
 
             # TODO: have parameters for approximate minima and maxima.
             #       this is becoming a problem.
-            curr_val_cdf_ftn = \
+            curr_val_cdf_ftn = (
                 interp1d(curr_val_cdf_df[self._vals_str].values,
                          curr_val_cdf_df[self._probs_str].values,
                          fill_value=(curr_min_prob, curr_max_prob),
-                         bounds_error=False)
+                         bounds_error=False))
 
             self.curr_val_cdf_ftns_dict[col] = curr_val_cdf_ftn
 

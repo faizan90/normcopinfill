@@ -9,7 +9,9 @@ from pandas import DataFrame, to_numeric
 import matplotlib.cm as cmaps
 import matplotlib.pyplot as plt
 
+
 class PlotStats:
+
     def __init__(self, norm_cop_obj):
         vars_list = ['in_var_df',
                      'out_var_stats_file',
@@ -29,8 +31,14 @@ class PlotStats:
         if self.verbose:
             print('INFO: Plotting statistics of each infill station...')
 
-        stats_cols = ['min', 'max', 'mean', 'stdev',
-                      'CoV', 'skew', 'count']
+        stats_cols = ['min',
+                      'max',
+                      'mean',
+                      'stdev',
+                      'CoV',
+                      'skew',
+                      'count']
+
         self.stats_df = DataFrame(index=self.in_var_df.columns,
                                   columns=stats_cols,
                                   dtype=float)
@@ -59,11 +67,11 @@ class PlotStats:
         n_stns = stats_arr.shape[0]
         n_cols = stats_arr.shape[1]
 
-        fig, stats_ax = plt.subplots(1,
+        _, stats_ax = plt.subplots(1,
                                      1,
                                      figsize=(0.45 * n_stns, 0.8 * n_cols))
         stats_ax.matshow(stats_arr.T,
-                         cmap=cmaps.Blues,
+                         cmap=plt.get_cmap('Blues'),
                          vmin=0,
                          vmax=0,
                          origin='upper')

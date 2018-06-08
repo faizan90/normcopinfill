@@ -23,6 +23,7 @@ from normcop_cyftns import norm_ppf_py, norm_cdf_py, norm_pdf_py
 
 
 class DiscContVars:
+
     def __init__(self, infill_steps_obj):
         vars_list = ['in_var_df',
                      'var_le_trs',
@@ -68,15 +69,15 @@ class DiscContVars:
         for i, val in enumerate(val_arr):
             if val > self.var_ge_trs:
                 _ = norm_ppf_py(val_cdf_ftn(val)) - mu_t
-                gy_arr[i] = norm_cdf_py(divide(_, sig_sq_t**0.5))
+                gy_arr[i] = norm_cdf_py(divide(_, sig_sq_t ** 0.5))
             elif (val > self.var_le_trs) and (val <= self.var_ge_trs):
                 _ = norm_ppf_py(py_del) - mu_t
-                gy_arr[i] = norm_cdf_py(divide(_, sig_sq_t**0.5))
+                gy_arr[i] = norm_cdf_py(divide(_, sig_sq_t ** 0.5))
             else:
-                values_arr = \
+                values_arr = (
                     self.in_var_df.loc[infill_date,
                                        curr_var_df.columns[1:]
-                                       ].dropna().values
+                                       ].dropna().values)
 
                 if len(values_arr) > 0:
                     n_wet = (values_arr > self.var_le_trs).sum()
@@ -86,12 +87,12 @@ class DiscContVars:
 
                 if py_zero:
                     _ = norm_ppf_py(py_zero * (1.0 + wt)) - mu_t
-                    gy_arr[i] = norm_cdf_py(divide(_, sig_sq_t**0.5))
+                    gy_arr[i] = norm_cdf_py(divide(_, sig_sq_t ** 0.5))
                 else:
                     gy_arr[i] = 0.0
 
-            assert not isnan(gy_arr[i]), \
-                as_err('\'gy\' is nan (val: %0.2e)!' % val)
+            assert not isnan(gy_arr[i]), as_err(
+                '\'gy\' is nan (val: %0.2e)!' % val)
 
         if self.save_step_vars_flag:
             step_vars_dict['gy_arr_raw'] = gy_arr
@@ -108,10 +109,10 @@ class DiscContVars:
              'min_prob: %f, max_prob: %f, val_arr: %s, date: %s') %
             (gy_arr.min(), gy_arr.max(), str(val_arr), str(infill_date)))
 
-        assert gy_arr.shape[0] > 0, \
-            as_err('Increase discretization!')
-        assert gy_arr.shape[0] == val_arr.shape[0], \
-            as_err('Unequal shapes of probs and vals!')
+        assert gy_arr.shape[0] > 0, as_err(
+            'Increase discretization!')
+        assert gy_arr.shape[0] == val_arr.shape[0], as_err(
+            'Unequal shapes of probs and vals!')
 
         if self.save_step_vars_flag:
             step_vars_dict['gy_arr_fin'] = gy_arr
@@ -129,7 +130,7 @@ class DiscContVars:
                 gy_val = gy_arr[0]
 
             fin_val_ppf_ftn_adj = interp1d(linspace(0, 1.0, 10),
-                                           [interp_val]*10,
+                                           [interp_val] * 10,
                                            bounds_error=False,
                                            fill_value=(interp_val,
                                                        interp_val))
@@ -158,9 +159,9 @@ class DiscContVars:
                                        fill_value=(self.var_le_trs,
                                                    curr_max_var_val))
 
-            curr_min_var_val_adj, curr_max_var_val_adj = \
+            curr_min_var_val_adj, curr_max_var_val_adj = (
                 fin_val_ppf_ftn([self.adj_prob_bounds[0],
-                                 self.adj_prob_bounds[1]])
+                                 self.adj_prob_bounds[1]]))
 
             # do the interpolation again with adjusted bounds
             if curr_max_var_val_adj > self.var_ge_trs:
@@ -193,32 +194,32 @@ class DiscContVars:
             for i, val_adj in enumerate(val_arr_adj):
                 if val_adj > self.var_ge_trs:
                     _ = (norm_ppf_py(val_cdf_ftn(val_adj)) - mu_t)
-                    z_scor = divide(_, sig_sq_t**0.5)
+                    z_scor = divide(_, sig_sq_t ** 0.5)
                     gy_arr_adj[i] = norm_cdf_py(z_scor)
                     pdf_arr_adj[i] = norm_pdf_py(z_scor)
-                elif (val_adj > self.var_le_trs) and \
-                     (val_adj <= self.var_ge_trs):
+                elif ((val_adj > self.var_le_trs) and
+                      (val_adj <= self.var_ge_trs)):
                     _ = norm_ppf_py(py_del) - mu_t
-                    z_scor = divide(_, sig_sq_t**0.5)
+                    z_scor = divide(_, sig_sq_t ** 0.5)
                     gy_arr_adj[i] = norm_cdf_py(z_scor)
                     pdf_arr_adj[i] = norm_pdf_py(z_scor)
                 else:
-                    values_arr = \
+                    values_arr = (
                         self.in_var_df.loc[infill_date,
                                            curr_var_df.columns[1:]
-                                           ].dropna().values
+                                           ].dropna().values)
                     if py_zero:
                         _ = norm_ppf_py(py_zero) - mu_t
-                        z_scor = divide(_, sig_sq_t**0.5)
+                        z_scor = divide(_, sig_sq_t ** 0.5)
                         gy_arr_adj[i] = norm_cdf_py(z_scor)
                         pdf_arr_adj[i] = norm_pdf_py(z_scor)
                     else:
                         gy_arr_adj[i] = pdf_arr_adj[i] = 0.0
 
-                assert not isnan(gy_arr_adj[i]), \
-                    as_err('\'gy\' is nan (val: %0.2e)!')
-                assert not isnan(pdf_arr_adj[i]), \
-                    as_err('\'pdf\' is nan (val: %0.2e)!' % val_adj)
+                assert not isnan(gy_arr_adj[i]), as_err(
+                    '\'gy\' is nan (val: %0.2e)!')
+                assert not isnan(pdf_arr_adj[i]), as_err(
+                    '\'pdf\' is nan (val: %0.2e)!' % val_adj)
 
             if self.save_step_vars_flag:
                 step_vars_dict['gy_arr_adj_raw'] = gy_arr_adj
@@ -234,12 +235,12 @@ class DiscContVars:
             pdf_arr_adj = pdf_arr_adj[adj_probs_idxs]
             val_arr_adj = val_arr_adj[adj_probs_idxs]
 
-            assert gy_arr_adj.shape[0] > 0, \
-                as_err('Increase discretization!')
-            assert gy_arr_adj.shape[0] == val_arr_adj.shape[0], \
-                as_err('unequal shapes of probs and vals!')
-            assert pdf_arr_adj.shape[0] == val_arr_adj.shape[0], \
-                as_err('unequal shapes of densities and vals!')
+            assert gy_arr_adj.shape[0] > 0, as_err(
+                'Increase discretization!')
+            assert gy_arr_adj.shape[0] == val_arr_adj.shape[0], as_err(
+                'unequal shapes of probs and vals!')
+            assert pdf_arr_adj.shape[0] == val_arr_adj.shape[0], as_err(
+                'unequal shapes of densities and vals!')
 
             if self.save_step_vars_flag:
                 step_vars_dict['gy_arr_adj_fin'] = gy_arr_adj
@@ -272,12 +273,11 @@ class DiscContVars:
         probs_arr = val_cdf_ftn.y
         gy_arr = full(probs_arr.shape, nan)
         for i, prob in enumerate(probs_arr):
-            assert not isnan(prob), \
-                as_err('\'prob\' is NaN!')
+            assert not isnan(prob), as_err('\'prob\' is NaN!')
             _ = norm_ppf_py(prob) - mu_t
-            gy_arr[i] = norm_cdf_py(divide(_, sig_sq_t**0.5))
-            assert not isnan(gy_arr[i]), \
-                as_err('\'gy\' is NaN (prob:%0.2e)!' % prob)
+            gy_arr[i] = norm_cdf_py(divide(_, sig_sq_t ** 0.5))
+            assert not isnan(gy_arr[i]), as_err(
+                '\'gy\' is NaN (prob:%0.2e)!' % prob)
 
         if self.save_step_vars_flag:
             step_vars_dict['gy_arr_raw'] = gy_arr
@@ -299,7 +299,7 @@ class DiscContVars:
                 gy_val = gy_arr[0]
 
             fin_val_ppf_ftn_adj = interp1d(linspace(0, 1.0, 10),
-                                           [interp_val]*10,
+                                           [interp_val] * 10,
                                            bounds_error=False,
                                            fill_value=(interp_val,
                                                        interp_val))
@@ -347,7 +347,7 @@ class DiscContVars:
             pdf_arr_adj = gy_arr_adj.copy()
 
             for i, adj_prob in enumerate(probs_arr_adj):
-                z_scor = divide((norm_ppf_py(adj_prob) - mu_t), sig_sq_t**0.5)
+                z_scor = divide((norm_ppf_py(adj_prob) - mu_t), sig_sq_t ** 0.5)
                 gy_arr_adj[i] = norm_cdf_py(z_scor)
                 pdf_arr_adj[i] = norm_pdf_py(z_scor)
 

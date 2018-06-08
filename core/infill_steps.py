@@ -33,6 +33,7 @@ from .best_lag_corrs import BestLagCorrs
 
 
 class InfillSteps:
+
     def __init__(self, norm_cop_obj):
         vars_list = list(vars(norm_cop_obj).keys())
 
@@ -64,8 +65,8 @@ class InfillSteps:
 
         if self.use_best_stns_flag:
             neb_sel_obj = NebSel(self)
-            avail_stns_per_step_dict = \
-                neb_sel_obj.get_unique_stns_seqs(infill_dates)
+            avail_stns_per_step_dict = (
+                neb_sel_obj.get_unique_stns_seqs(infill_dates))
 
         abj_nebs_obj = AdjustNebs(self)
         step_var_obj = StepVars(self)
@@ -160,13 +161,13 @@ class InfillSteps:
                 best_stns = avail_cols_raw
 
                 if self.use_best_stns_flag:
-                    best_stns = \
-                        neb_sel_obj.get_best_stns(best_stns,
-                                                  infill_date,
-                                                  curr_var_df,
-                                                  avail_cols_raw,
-                                                  comb_idxs_dict,
-                                                  avail_stns_per_step_dict)
+                    best_stns = neb_sel_obj.get_best_stns(
+                        best_stns,
+                        infill_date,
+                        curr_var_df,
+                        avail_cols_raw,
+                        comb_idxs_dict,
+                        avail_stns_per_step_dict)
 
                     _ = [self.curr_infill_stn] + list(best_stns)
                     curr_var_df = self.in_var_df[_].copy()
@@ -175,8 +176,8 @@ class InfillSteps:
                     step_vars_dict['best_stns'] = list(best_stns)
 
                 if self.take_min_stns_flag:
-                    curr_var_df = \
-                        curr_var_df.iloc[:, :self.n_min_nebs + 1]
+                    curr_var_df = (
+                        curr_var_df.iloc[:, :self.n_min_nebs + 1])
 
                 curr_var_df.dropna(axis=0, inplace=True)
 
@@ -201,8 +202,8 @@ class InfillSteps:
                 try:
                     _ = curr_var_df.columns
                     avail_cols_fin = _.drop(self.curr_infill_stn).tolist()
-                    out_add_info_df.loc[infill_date, 'n_neighbors_fin'] = \
-                        len(avail_cols_fin)
+                    out_add_info_df.loc[infill_date, 'n_neighbors_fin'] = (
+                        len(avail_cols_fin))
                 except Exception as msg:
                     bad_comb = True
                     out_add_info_df.loc[infill_date, 'n_neighbors_fin'] = 0
@@ -213,8 +214,8 @@ class InfillSteps:
                     raise Exception('Multiple occurence of infill_stn!')
 
                 if (curr_var_df.shape[1] - 1) < self.n_min_nebs:
-                    if (not self.force_infill_flag) or \
-                       ((curr_var_df.shape[1] - 1) == 0):
+                    if ((not self.force_infill_flag) or
+                        ((curr_var_df.shape[1] - 1) == 0)):
                         bad_comb = True
 
                         if self.save_step_vars_flag:
@@ -229,13 +230,13 @@ class InfillSteps:
                     else:
                         raise Exception('Min nebs fail 2!')
 
-                assert curr_var_df.shape[1] > self.n_min_nebs, \
-                    as_err(('\'curr_var_df\' has too few neighboring '
-                            'stations (%d) in it!' %
-                            curr_var_df.shape[1]))
-                assert curr_var_df.shape[0] >= self.min_valid_vals, \
-                    as_err('\'curr_var_df\' has too few records (%d)!' %
-                           curr_var_df.shape[0])
+                assert curr_var_df.shape[1] > self.n_min_nebs, as_err(
+                    ('\'curr_var_df\' has too few neighboring '
+                     'stations (%d) in it!' %
+                    curr_var_df.shape[1]))
+                assert curr_var_df.shape[0] >= self.min_valid_vals, as_err(
+                    '\'curr_var_df\' has too few records (%d)!' %
+                    curr_var_df.shape[0])
 
                 trans_obj = StepTrans(self,
                                       curr_var_df,
@@ -248,8 +249,8 @@ class InfillSteps:
                 if self.plot_diag_flag:
                     trans_obj.plot_cdfs()
 
-                assert not np_any(isnan(norms_df.values)), \
-                    as_err(('NaNs in \'norms_df\' on %s!') % date_pref)
+                assert not np_any(isnan(norms_df.values)), as_err(
+                    'NaNs in \'norms_df\' on %s!' % date_pref)
 
                 best_lag_corrs_obj = BestLagCorrs(norms_df,
                                                   self.max_time_lag_corr)
@@ -270,15 +271,15 @@ class InfillSteps:
                     else:
                         raise Exception('NaNs in full_corrs_arr!')
 
-                full_corrs_arr = \
-                    abj_nebs_obj.adj_corrs(infill_date,
-                                           full_corrs_arr,
-                                           norms_df,
-                                           too_hi_corr_stns_list,
-                                           curr_val_cdf_ftns_dict,
-                                           avail_cols_raw,
-                                           avail_cols_fin,
-                                           curr_var_df)
+                full_corrs_arr = abj_nebs_obj.adj_corrs(
+                    infill_date,
+                    full_corrs_arr,
+                    norms_df,
+                    too_hi_corr_stns_list,
+                    curr_val_cdf_ftns_dict,
+                    avail_cols_raw,
+                    avail_cols_fin,
+                    curr_var_df)
 
                 norm_cov_mat = full_corrs_arr[1:, 1:]
                 cov_vec = full_corrs_arr[1:, 0]
@@ -308,17 +309,17 @@ class InfillSteps:
                     else:
                         raise Exception('cov_vec is empty!')
 
-                assert cov_vec.shape[0] > 0, \
-                    as_err('\'cov_vec\' is empty!')
-                assert norm_cov_mat.shape[0] > 0, \
-                    as_err('\'norm_cov_mat\' is empty!')
+                assert cov_vec.shape[0] > 0, as_err(
+                    '\'cov_vec\' is empty!')
+                assert norm_cov_mat.shape[0] > 0, as_err(
+                    '\'norm_cov_mat\' is empty!')
 
                 inv_norm_cov_mat = linalg.inv(norm_cov_mat)
 
-                assert cov_vec.shape[0] == inv_norm_cov_mat.shape[0], \
-                    as_err('Incorrect deletion of vectors!')
-                assert cov_vec.shape[0] == inv_norm_cov_mat.shape[1], \
-                    as_err('Incorrect deletion of vectors!')
+                assert cov_vec.shape[0] == inv_norm_cov_mat.shape[0], (
+                    as_err('Incorrect deletion of vectors!'))
+                assert cov_vec.shape[0] == inv_norm_cov_mat.shape[1], (
+                    as_err('Incorrect deletion of vectors!'))
 
                 sig_sq_t = 1.0 - matmul(cov_vec.T,
                                         matmul(inv_norm_cov_mat, cov_vec))
@@ -363,8 +364,8 @@ class InfillSteps:
 
             elif not bad_comb:
                 out_add_info_df.loc[infill_date,
-                                    ['n_neighbors_fin', 'n_recs']] = \
-                    [len(avail_cols_fin), curr_var_df.shape[0]]
+                                    ['n_neighbors_fin', 'n_recs']] = (
+                    [len(avail_cols_fin), curr_var_df.shape[0]])
 
             if bad_comb:
                 if self.save_step_vars_flag:
@@ -382,12 +383,12 @@ class InfillSteps:
                 if self.debug_mode_flag:
                     print('bad_comb is False!')
 
-            assert curr_var_df.shape[1] > self.n_min_nebs, \
-                as_err(('\'curr_var_df\' has too few neighboring '
-                        'stations (%d) in it!') % curr_var_df.shape[1])
-            assert curr_var_df.shape[0] >= self.min_valid_vals, \
-                as_err('\'curr_var_df\' has too few records (%d)!' %
-                       curr_var_df.shape[0])
+            assert curr_var_df.shape[1] > self.n_min_nebs, as_err(
+                ('\'curr_var_df\' has too few neighboring '
+                 'stations (%d) in it!') % curr_var_df.shape[1])
+            assert curr_var_df.shape[0] >= self.min_valid_vals, as_err(
+                '\'curr_var_df\' has too few records (%d)!' %
+                curr_var_df.shape[0])
 
             if self.infill_type == 'precipitation':
                 assert not isnan(py_zero), as_err('\'py_zero\' is nan!')
@@ -397,11 +398,11 @@ class InfillSteps:
 
             # another check to insure neighbors are selected correctly
             _ = list(curr_val_cdf_ftns_dict.keys())
-            assert len(_) == len(avail_cols_fin) + 1, \
-                as_err(('\'curr_val_cdf_ftns_dict\' has incorrect '
-                        'number of keys!' +
-                        str(list(curr_val_cdf_ftns_dict.keys())) +
-                        str(list(avail_cols_fin))))
+            assert len(_) == len(avail_cols_fin) + 1, as_err(
+                ('\'curr_val_cdf_ftns_dict\' has incorrect '
+                 'number of keys!' +
+                 str(list(curr_val_cdf_ftns_dict.keys())) +
+                 str(list(avail_cols_fin))))
 
             (cur_vals,
              u_t,
@@ -419,8 +420,8 @@ class InfillSteps:
                 step_vars_dict['best_stns'] = list(best_stns)
                 step_vars_dict['u_t'] = u_t
                 step_vars_dict['cur_vals'] = cur_vals
-                step_vars_dict['act_val'] = \
-                    self.in_var_df.loc[infill_date, self.curr_infill_stn]
+                step_vars_dict['act_val'] = (
+                    self.in_var_df.loc[infill_date, self.curr_infill_stn])
                 step_vars_dict['mu_t'] = mu_t
                 step_vars_dict['sig_sq_t'] = sig_sq_t
                 step_vars_dict['val_cdf_ftn'] = val_cdf_ftn
@@ -469,10 +470,10 @@ class InfillSteps:
             if self.n_rand_infill_values:
                 for rand_idx in range(self.conf_heads.shape[0],
                                       conf_probs.shape[0]):
-                    conf_probs[rand_idx] = \
+                    conf_probs[rand_idx] = (
                         (self.adj_prob_bounds[0] +
                          ((self.adj_prob_bounds[1] -
-                           self.adj_prob_bounds[0]) * random()))
+                           self.adj_prob_bounds[0]) * random())))
 
             conf_vals = fin_val_ppf_ftn_adj(conf_probs)
             conf_grads = fin_val_grad_ftn(conf_vals)
@@ -519,10 +520,10 @@ class InfillSteps:
                                                 self.adj_prob_bounds[+0],
                                                 self.adj_prob_bounds[-1]))
 
-                out_add_info_df.loc[infill_date, 'act_val_prob'] = \
+                out_add_info_df.loc[infill_date, 'act_val_prob'] = (
                     fin_val_cdf_ftn_adj(
                             self.in_var_df.loc[infill_date,
-                                               self.curr_infill_stn])
+                                               self.curr_infill_stn]))
 
             if self.plot_step_cdf_pdf_flag:
                 plot_cond_ftns_obj.plot_cond_cdf_pdf(val_arr_adj,

@@ -3,9 +3,6 @@ The Normal copula infilling
 
 Faizan Anwar, IWS
 
-discharge-censored infill_type - 20-09-2017
-rank corr stns plotted with best lag - 28-09-2017
-infilling with time lags - 29-09-2017
 '''
 
 import timeit
@@ -24,7 +21,6 @@ from numpy import (any as np_any,
                    set_printoptions,
                    where)
 from pathos.multiprocessing import ProcessPool as mp_pool
-
 import matplotlib.pyplot as plt
 
 from pandas import (date_range,
@@ -59,9 +55,6 @@ set_printoptions(precision=6,
 seterr(all='ignore')
 
 __all__ = ['NormCopulaInfill']
-
-# TODO: add some checks in _load_pickle while selecting neighbors
-# TODO: dropping duplicate columns
 
 
 class NormCopulaInfill:
@@ -441,7 +434,7 @@ class NormCopulaInfill:
                  freq='D',
                  verbose=True):
 
-        # save all variables to a file with a timestamp
+        # TODO: save all variables to a file with a timestamp
         self.verbose = bool(verbose)
         self.in_var_file = str(in_var_file)
         self.out_dir = str(out_dir)
@@ -496,10 +489,10 @@ class NormCopulaInfill:
 
         self.in_coords_df = read_csv(self.in_coords_file, sep=sep, index_col=0,
                                      encoding='utf-8')
-        assert self.in_coords_df.shape[0] > 0, \
-            '\'in_coords_df\' has no records!'
-        assert self.in_coords_df.shape[1] >= 2, \
-            '\'in_coords_df\' has < 2 fields!'
+        assert self.in_coords_df.shape[0] > 0, (
+            '\'in_coords_df\' has no records!')
+        assert self.in_coords_df.shape[1] >= 2, (
+            '\'in_coords_df\' has < 2 fields!')
 
         self.in_coords_df.index = list(map(str, self.in_coords_df.index))
         self.in_coords_df.index = [stn.strip()
@@ -507,10 +500,10 @@ class NormCopulaInfill:
         _ = ~self.in_coords_df.index.duplicated(keep='last')
         self.in_coords_df = self.in_coords_df[_]
 
-        assert 'X' in self.in_coords_df.columns, \
-            'Column \'X\' not in \'in_coords_df\'!'
-        assert 'Y' in self.in_coords_df.columns, \
-            'Column \'Y\' not in \'in_coords_df\'!'
+        assert 'X' in self.in_coords_df.columns, (
+            'Column \'X\' not in \'in_coords_df\'!')
+        assert 'Y' in self.in_coords_df.columns, (
+            'Column \'Y\' not in \'in_coords_df\'!')
 
         self.in_coords_df = self.in_coords_df[['X', 'Y']]
         self.in_coords_df.dropna(inplace=True)
@@ -520,8 +513,8 @@ class NormCopulaInfill:
             print(self.in_coords_df.shape)
 
         if skip_stns is not None:
-            assert hasattr(skip_stns, '__iter__'), \
-               '\'skip_stns\' not an iterable!'
+            assert hasattr(skip_stns, '__iter__'), (
+               '\'skip_stns\' not an iterable!')
             self.skip_stns = list(map(str, list(skip_stns)))
             self.skip_stns = [stn.strip() for stn in self.skip_stns]
 
@@ -540,43 +533,43 @@ class NormCopulaInfill:
                 print(('INFO: \'in_var_df\' shape after dropping '
                        '\'skip_stns\':'), self.in_var_df.shape)
 
-        assert self.min_valid_vals >= 1, \
-            '\'min_valid_vals\' cannot be less than one!'
+        assert self.min_valid_vals >= 1, (
+            '\'min_valid_vals\' cannot be less than one!')
 
-        assert self.n_min_nebs >= 1, \
-            '\'n_min_nebs\' cannot be < one!'
+        assert self.n_min_nebs >= 1, (
+            '\'n_min_nebs\' cannot be < one!')
 
         if self.n_max_nebs + 1 > self.in_var_df.shape[1]:
             self.n_max_nebs = self.in_var_df.shape[1] - 1
             print(('WARNING: \'n_max_nebs\' reduced to %d' %
                    self.n_max_nebs))
 
-        assert self.n_min_nebs <= self.n_max_nebs, \
-            '\'n_min_nebs\' > \'n_max_nebs\'!'
+        assert self.n_min_nebs <= self.n_max_nebs, (
+            '\'n_min_nebs\' > \'n_max_nebs\'!')
 
         assert ((self.infill_type == 'discharge') or
                 (self.infill_type == 'precipitation') or
-                (self.infill_type == 'discharge-censored')), \
-            ('\'infill_type\' can either be \'discharge\' or \'precipitation\''
-             'or \'discharge-censored\'!')
+                (self.infill_type == 'discharge-censored')), (
+            '\'infill_type\' can either be \'discharge\' or \'precipitation\''
+            'or \'discharge-censored\'!')
 
         assert isinstance(self.ncpus, int), '\'ncpus\' not an integer!'
         assert self.ncpus >= 1, '\'ncpus\' cannot be less than one!'
 
         if ((self.infill_interval_type == 'slice') or
             (self.infill_interval_type == 'indiv')):
-            assert hasattr(self.infill_dates_list, '__iter__'), \
-               '\'infill_dates_list\' not an iterable!'
+            assert hasattr(self.infill_dates_list, '__iter__'), (
+               '\'infill_dates_list\' not an iterable!')
 
         if self.infill_interval_type == 'slice':
-            assert len(self.infill_dates_list) == 2, \
-                ('For infill_interval_type \'slice\' only '
-                 'two objects inside \'infill_dates_list\' are allowed!')
+            assert len(self.infill_dates_list) == 2, (
+                'For infill_interval_type \'slice\' only '
+                'two objects inside \'infill_dates_list\' are allowed!')
 
             self.infill_dates_list = to_datetime(self.infill_dates_list,
                                                  format=self.time_fmt)
-            assert self.infill_dates_list[1] > self.infill_dates_list[0], \
-                'Infill dates not in ascending order!'
+            assert self.infill_dates_list[1] > self.infill_dates_list[0], (
+                'Infill dates not in ascending order!')
 
             _strt_date, _end_date = (
                 to_datetime([self.infill_dates_list[0],
@@ -590,14 +583,14 @@ class NormCopulaInfill:
             self.infill_dates_list = None
             self.infill_dates = self.in_var_df.index
         elif self.infill_interval_type == 'indiv':
-            assert len(self.infill_dates_list) > 0, \
-                   '\'infill_dates_list\' is empty!'
+            assert len(self.infill_dates_list) > 0, (
+                   '\'infill_dates_list\' is empty!')
             self.infill_dates = to_datetime(self.infill_dates_list,
                                             format=self.time_fmt)
         else:
-            assert False, \
-                ('\'infill_interval_type\' can only be \'slice\', \'all\', '
-                 'or \'indiv\'!')
+            assert False, (
+                '\'infill_interval_type\' can only be \'slice\', \'all\', '
+                'or \'indiv\'!')
 
         insuff_val_cols = self.in_var_df.columns[self.in_var_df.count() <
                                                  self.min_valid_vals]
@@ -616,10 +609,10 @@ class NormCopulaInfill:
             print(('INFO: \'in_var_df\' shape after dropping values less than '
                    '\'min_valid_vals\':'), self.in_var_df.shape)
 
-        assert self.min_valid_vals <= self.in_var_df.shape[0], \
-            ('Number of stations in \'in_var_df\' less than '
-             '\'min_valid_vals\' after dropping days with insufficient '
-             'records!')
+        assert self.min_valid_vals <= self.in_var_df.shape[0], (
+            'Number of stations in \'in_var_df\' less than '
+            '\'min_valid_vals\' after dropping days with insufficient '
+            'records!')
 
         commn_stns = intersect1d(self.in_var_df.columns,
                                  self.in_coords_df.index)
@@ -644,9 +637,9 @@ class NormCopulaInfill:
             print('INFO: \'in_coords_df\' shape after station name '
                   'intersection with \'in_var_df\':', self.in_coords_df.shape)
 
-        assert self.n_min_nebs < self.in_var_df.shape[1], \
-            ('Number of stations in \'in_var_df\' less than '
-             '\'n_min_nebs\' after intersecting station names!')
+        assert self.n_min_nebs < self.in_var_df.shape[1], (
+            'Number of stations in \'in_var_df\' less than '
+            '\'n_min_nebs\' after intersecting station names!')
         if self.n_max_nebs >= self.in_var_df.shape[1]:
             self.n_max_nebs = self.in_var_df.shape[1] - 1
             print(('WARNING: \'n_max_nebs\' set to %d after station '
@@ -658,15 +651,16 @@ class NormCopulaInfill:
         self.ncpus = min(self.ncpus, self.n_infill_stns)
 
         for infill_stn in self.infill_stns:
-            assert infill_stn in self.in_var_df.columns, \
-                (('Station %s not in input variable dataframe '
-                  'anymore!') % infill_stn)
+            assert infill_stn in self.in_var_df.columns, (
+                'Station %s not in input variable dataframe anymore!' %
+                infill_stn)
 
-        self.infill_dates = \
-            self.infill_dates.intersection(self.in_var_df.index)
+        self.infill_dates = (
+            self.infill_dates.intersection(self.in_var_df.index))
 
-        assert self.infill_dates.shape[0] > 0, \
-            ('After the above operations, no dates to work with!')
+        assert self.infill_dates.shape[0] > 0, (
+            'After the above operations, no dates to work with!')
+
         # check if atleast one infill date is in the in_var_df
         date_in_dates = False
         full_dates = self.in_var_df.index
@@ -675,18 +669,14 @@ class NormCopulaInfill:
                 date_in_dates = True
                 break
 
-        assert date_in_dates, \
-            ('No infill dates exist in \'in_var_df\' after dropping '
-             'stations and records with insufficient information!')
+        assert date_in_dates, (
+            'No infill dates exist in \'in_var_df\' after dropping '
+            'stations and records with insufficient information!')
 
-        # TODO: Fix this situation
-#        if self.max_time_lag_corr:
         self.full_date_index = date_range(self.in_var_df.index[+0],
                                           self.in_var_df.index[-1],
                                           freq=self.freq)
         self.in_var_df = self.in_var_df.reindex(self.full_date_index)
-#        else:
-#            self.full_date_index = None
 
 ## =============================================================================
 # # setting some values to nan to reproduce an error
@@ -773,10 +763,10 @@ class NormCopulaInfill:
         self.stn_based_mp_infill = True
 
         self.out_var_file = os_join(self.out_dir, 'infilled_var_df.csv')
-        self.out_var_infill_stns_file = \
-            os_join(self.out_dir, 'infilled_var_df_infill_stns.csv')
-        self.out_var_infill_stn_coords_file = \
-            os_join(self.out_dir, 'infilled_var_df_infill_stns_coords.csv')
+        self.out_var_infill_stns_file = (
+            os_join(self.out_dir, 'infilled_var_df_infill_stns.csv'))
+        self.out_var_infill_stn_coords_file = (
+            os_join(self.out_dir, 'infilled_var_df_infill_stns_coords.csv'))
         self.out_flag_file = os_join(self.out_dir, 'infilled_flag_var_df.csv')
         self.out_stns_avail_file = os_join(self.out_dir, 'n_avail_stns_df.csv')
         self.out_stns_avail_fig = os_join(self.out_dir, 'n_avail_stns_compare')
@@ -852,13 +842,13 @@ class NormCopulaInfill:
 
         self.curr_infill_stn = infill_stn
         self.stn_out_dir = os_join(self.out_dir, infill_stn)
-        out_conf_df_file = \
+        out_conf_df_file = (
             os_join(self.stn_out_dir,
-                    'stn_%s_infill_conf_vals_df.csv' % infill_stn)
+                    'stn_%s_infill_conf_vals_df.csv' % infill_stn))
         out_add_info_file = os_join(self.stn_out_dir,
                                     'add_info_df_stn_%s.csv' % infill_stn)
 
-        # ## load infill
+        # load infill
         no_out = True
         n_infilled_vals = 0
         if ((not self.overwrite_flag) and
@@ -885,9 +875,9 @@ class NormCopulaInfill:
                 n_infilled_vals = out_conf_df.dropna().shape[0]
 
                 if not self.n_rand_infill_values:
-                    _idxs = \
+                    _idxs = (
                         isnan(self.in_var_df_orig.loc[self.infill_dates,
-                                                      self.curr_infill_stn])
+                                                      self.curr_infill_stn]))
                     _ser = self.in_var_df_orig.loc[self.infill_dates,
                                                    self.curr_infill_stn]
                     out_stn_ser = _ser.where(
@@ -917,8 +907,8 @@ class NormCopulaInfill:
                                  'update values from the existing '
                                  'dataframe:\n' + msg))
 
-        self.summary_df.loc[self.curr_infill_stn, self._av_vals_lab] = \
-            self.in_var_df[self.curr_infill_stn].dropna().shape[0]
+        self.summary_df.loc[self.curr_infill_stn, self._av_vals_lab] = (
+            self.in_var_df[self.curr_infill_stn].dropna().shape[0])
 
         if self.compare_infill_flag:
             nan_idxs = list(range(self.infill_dates.shape[0]))
@@ -952,7 +942,7 @@ class NormCopulaInfill:
             if (n_nan_idxs == 0) and (not self.compare_infill_flag):
                 return
 
-            # ## mkdirs
+            # mkdirs
             dir_list = [self.stn_out_dir]
 
             self.stn_infill_cdfs_dir = os_join(self.stn_out_dir,
@@ -993,7 +983,8 @@ class NormCopulaInfill:
                 pprt(['Neighbors are:'], nbh=8)
                 for i_msg in range(0, len(self.curr_nrst_stns), 3):
                     pprt(self.curr_nrst_stns[i_msg:(i_msg + 3)], nbh=12)
-            # ## initiate infill
+
+            # initiate infill
             out_conf_df = DataFrame(index=self.infill_dates,
                                     columns=self.conf_ser.index,
                                     dtype=float)
@@ -1026,20 +1017,20 @@ class NormCopulaInfill:
                     sub_infill_dates_list.append(sub_dates)
                     n_sub_dates += sub_dates.shape[0]
 
-                assert n_sub_dates == n_nan_idxs, \
+                assert n_sub_dates == n_nan_idxs, (
                     as_err(('\'n_sub_dates\' (%d) and '
                             '\'self.infill_dates\' '
                             '(%d) of unequal length!') %
-                           (n_sub_dates, self.infill_dates.shape[0]))
+                           (n_sub_dates, self.infill_dates.shape[0])))
 
                 try:
                     sub_dfs = list(self._norm_cop_pool.uimap(
                             self._infill, sub_infill_dates_list))
                     self._norm_cop_pool.clear()
-                except:
+                except Exception as msg:
                     self._norm_cop_pool.close()
                     self._norm_cop_pool.join()
-                    raise Exception('MP failed 1!')
+                    raise Exception('MP failed 1: %s!' % msg)
 
             for sub_df in sub_dfs:
                 sub_conf_df = sub_df[0]
@@ -1104,7 +1095,7 @@ class NormCopulaInfill:
         self.summary_df.loc[self.curr_infill_stn,
                             self._avg_avail_nebs_lab] = _
 
-        # ## make plots
+        # make plots
         # plot number of gauges available and used
         if self.verbose:
             infill_start = timeit.default_timer()
@@ -1267,8 +1258,8 @@ class NormCopulaInfill:
         '''
         if not self._bef_infill_chked:
             self._before_infill_checks()
-        assert self._bef_infill_chked, \
-            as_err('Call \'_before_infill_checks\' first!')
+        assert self._bef_infill_chked, (
+            as_err('Call \'_before_infill_checks\' first!'))
 
         if self.debug_mode_flag and self.dont_stop_flag:
             self.dont_stop_flag = False
@@ -1453,8 +1444,8 @@ class NormCopulaInfill:
                     BestLagRankCorrStns(self)
                 else:
                     RankCorrStns(self)
-                assert self._rank_corr_cmptd, \
-                    'Call \'cmpt_plot_rank_corr_stns\' first!'
+                assert self._rank_corr_cmptd, (
+                    'Call \'cmpt_plot_rank_corr_stns\' first!')
 
         elif self.nrst_stns_type == 'dist':
             if self.verbose:
@@ -1480,17 +1471,17 @@ class NormCopulaInfill:
         assert self._conf_ser_cmptd, 'Call \'_cmpt_conf_ser\' first!'
 
         if self.infill_type == 'precipitation':
-            assert isinstance(self.var_le_trs, float), \
-                '\'var_le_trs\' is non-float!'
-            assert isinstance(self.var_ge_trs, float), \
-                '\'var_ge_trs\' is non-float!'
-            assert isinstance(self.ge_le_trs_n, int), \
-                '\'ge_le_trs_n\' is non-integer!'
+            assert isinstance(self.var_le_trs, float), (
+                '\'var_le_trs\' is non-float!')
+            assert isinstance(self.var_ge_trs, float), (
+                '\'var_ge_trs\' is non-float!')
+            assert isinstance(self.ge_le_trs_n, int), (
+                '\'ge_le_trs_n\' is non-integer!')
 
-            assert self.var_le_trs <= self.var_ge_trs, \
-                '\'var_le_trs\' > \'var_ge_trs\'!'
-            assert self.ge_le_trs_n > 0, \
-                '\'self.ge_le_trs_n\' less than 1!'
+            assert self.var_le_trs <= self.var_ge_trs, (
+                '\'var_le_trs\' > \'var_ge_trs\'!')
+            assert self.ge_le_trs_n > 0, (
+                '\'self.ge_le_trs_n\' less than 1!')
         else:
             self.var_le_trs, self.var_ge_trs, self.ge_le_trs_n = 3 * [None]
 
@@ -1508,8 +1499,8 @@ class NormCopulaInfill:
             self.out_var_df = self.in_var_df_orig.copy()
             self.out_var_dfs_list = None
         else:
-            self.out_var_dfs_list = [self.in_var_df_orig.copy()] * \
-                                    self.n_rand_infill_values
+            self.out_var_dfs_list = (
+                [self.in_var_df_orig.copy()] * self.n_rand_infill_values)
             self.out_var_df = None
 
         self._av_vals_lab = 'Available values'
@@ -1565,8 +1556,8 @@ class NormCopulaInfill:
     def _infill(self, infill_dates):
         try:
             (out_conf_df,
-             out_add_info_df) = \
-                 self.infill_steps_obj.infill_steps(infill_dates)
+             out_add_info_df) = (
+                 self.infill_steps_obj.infill_steps(infill_dates))
             return out_conf_df, out_add_info_df
         except:
             plt.close('all')

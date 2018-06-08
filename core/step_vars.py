@@ -10,13 +10,13 @@ from pandas import Timedelta
 
 from ..misc.misc_ftns import as_err
 
-
 import pyximport
 pyximport.install()
 from normcop_cyftns import norm_ppf_py
 
 
 class StepVars:
+
     def __init__(self, infill_steps_obj):
         vars_list = ['in_var_df',
                      'infill_type',
@@ -61,15 +61,14 @@ class StepVars:
             else:
                 _curr_var_val = self.in_var_df.loc[infill_date, col]
 
-            assert not isnan(_curr_var_val), \
-                as_err('_curr_var_val is NaN!')
+            assert not isnan(_curr_var_val), as_err('_curr_var_val is NaN!')
 
             if self.infill_type == 'precipitation':
                 if _curr_var_val == self.var_le_trs:
-                    values_arr = \
+                    values_arr = (
                         self.in_var_df.loc[infill_date,
                                            curr_var_df.columns[1:]
-                                           ].dropna().values
+                                           ].dropna().values)
 
                     if len(values_arr) > 0:
                         n_wet = (values_arr > self.var_le_trs).sum()
@@ -80,17 +79,15 @@ class StepVars:
                     _ = curr_py_zeros_dict[col]
                     u_t[i - 1] = norm_ppf_py(_ * (1.0 + wt))
 
-                elif (_curr_var_val > self.var_le_trs) and \
-                     (_curr_var_val <= self.var_ge_trs):
+                elif ((_curr_var_val > self.var_le_trs) and
+                      (_curr_var_val <= self.var_ge_trs)):
                     u_t[i - 1] = norm_ppf_py(curr_py_dels_dict[col])
                 else:
-                    u_t[i - 1] = \
-                        norm_ppf_py(
-                                curr_val_cdf_ftns_dict[col](_curr_var_val))
+                    u_t[i - 1] = norm_ppf_py(
+                        curr_val_cdf_ftns_dict[col](_curr_var_val))
             else:
-                u_t[i - 1] = \
-                    norm_ppf_py(
-                            curr_val_cdf_ftns_dict[col](_curr_var_val))
+                u_t[i - 1] = norm_ppf_py(
+                    curr_val_cdf_ftns_dict[col](_curr_var_val))
 
                 cur_vals[i - 1] = _curr_var_val
 

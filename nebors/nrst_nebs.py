@@ -86,8 +86,8 @@ class NrstStns:
         curr_nebs_list = []
 
         # get the x and y coordinates of the infill_stn
-        infill_x, infill_y = \
-            self.in_coords_df[['X', 'Y']].loc[infill_stn].values
+        (infill_x,
+         infill_y) = self.in_coords_df[['X', 'Y']].loc[infill_stn].values
 
         # calculate distances of all stations from the infill_stn
         dists = vectorize(get_dist)(infill_x, infill_y, self.xs, self.ys)
@@ -136,6 +136,7 @@ class NrstStns:
             as_err(('Neighboring stations less than '
                     '\'n_min_nebs\' '
                     'for station: %s') % infill_stn)
+
             if self.dont_stop_flag:
                 self.bad_stns_list.append(infill_stn)
                 self.bad_stns_neighbors_count.append(len(_))
@@ -172,7 +173,7 @@ class NrstStns:
         if self.verbose:
             print('INFO: Computing nearest stations...')
 
-        ### cmpt nrst stns
+        # ## cmpt nrst stns
         for infill_stn in self.infill_stns:
             self._get_nrst_stn(infill_stn)
 
@@ -193,9 +194,9 @@ class NrstStns:
         self.in_var_df.dropna(axis=0, how='all', inplace=True)
 
         for infill_stn in self.infill_stns:
-            assert infill_stn in self.in_var_df.columns, \
-                as_err(('Station %s not in input variable dataframe '
-                        'anymore!') % infill_stn)
+            assert infill_stn in self.in_var_df.columns, as_err(
+                ('Station %s not in input variable dataframe '
+                 'anymore!') % infill_stn)
 
         # check if at least one infill date is in the in_var_df
         date_in_dates = False
@@ -205,10 +206,10 @@ class NrstStns:
                 date_in_dates = True
                 break
 
-        assert date_in_dates, \
-            as_err('None of the infill dates exist in \'in_var_df\' '
-                   'after dropping stations and records with '
-                   'insufficient information!')
+        assert date_in_dates, as_err(
+            'None of the infill dates exist in \'in_var_df\' '
+            'after dropping stations and records with '
+            'insufficient information!')
 
         if self.verbose:
             print(('INFO: \'in_var_df\' shape after calling '
@@ -217,7 +218,7 @@ class NrstStns:
         if self.max_time_lag_corr:
             self.in_var_df = self.in_var_df.reindex(self.full_date_index)
 
-        ### save pickle
+        # ## save pickle
         nrst_stns_pickle_dict = {}
         nrst_stns_pickle_cur = open(self._out_nrst_stns_pkl_file, 'wb')
 
@@ -252,6 +253,7 @@ class NrstStns:
             _nebs = self.nrst_stns_dict[infill_stn]
             _lab = ('neibor_stn (%d)' %
                     len(self.nrst_stns_dict[infill_stn]))
+
             nrst_stns_ax = plt.subplot(111)
             nrst_stns_ax.scatter(infill_x,
                                  infill_y,
@@ -292,6 +294,7 @@ class NrstStns:
                         dpi=self.out_fig_dpi,
                         bbox_inches='tight')
             plt.clf()
+
         plt.close('all')
         self._plotted_nrst_stns_flag = True
         return

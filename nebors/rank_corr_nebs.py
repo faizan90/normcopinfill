@@ -17,7 +17,6 @@ from numpy import (full,
                    where,
                    abs as np_abs)
 import matplotlib.pyplot as plt
-import matplotlib.cm as cmaps
 from adjustText import adjust_text
 from pandas import DataFrame
 
@@ -128,14 +127,14 @@ class RankCorrStns:
 
         self.in_var_df = rank_corr_stns_pkl_dict['in_var_df']
         self.infill_stns = rank_corr_stns_pkl_dict['infill_stns']
-        self.rank_corr_stns_dict = \
-            rank_corr_stns_pkl_dict['rank_corr_stns_dict']
-        self.rank_corr_stns_list = \
-            rank_corr_stns_pkl_dict['rank_corr_stns_list']
+        self.rank_corr_stns_dict = (
+            rank_corr_stns_pkl_dict['rank_corr_stns_dict'])
+        self.rank_corr_stns_list = (
+            rank_corr_stns_pkl_dict['rank_corr_stns_list'])
         self.n_infill_stns = rank_corr_stns_pkl_dict['n_infill_stns']
         self.rank_corrs_df = rank_corr_stns_pkl_dict['rank_corrs_df']
-        self.rank_corr_vals_ctr_df = \
-            rank_corr_stns_pkl_dict['rank_corr_vals_ctr_df']
+        self.rank_corr_vals_ctr_df = (
+            rank_corr_stns_pkl_dict['rank_corr_vals_ctr_df'])
 
         rank_corr_stns_pkl_cur.close()
 
@@ -148,11 +147,11 @@ class RankCorrStns:
             self.debug_mode_flag):
             asymms_arr = full((self.n_norm_symm_flds, 2), nan)
             for asymm_idx in range(self.n_norm_symm_flds):
-                as_1, as_2 = \
+                as_1, as_2 = (
                     get_norm_rand_symms(
                             correl,
                             min(self._max_symm_rands,
-                                prob_ser_i.shape[0]))
+                                prob_ser_i.shape[0])))
                 asymms_arr[asymm_idx, 0] = as_1
                 asymms_arr[asymm_idx, 1] = as_2
 
@@ -162,19 +161,19 @@ class RankCorrStns:
                              min(self._max_symm_rands,
                                  prob_ser_i.shape[0]))
             try:
-                asymms_arr = \
+                asymms_arr = (
                     array(list(self._norm_cop_pool.uimap(
                             get_norm_rand_symms,
                             correls_arr,
-                            nvals_arr)))
+                            nvals_arr))))
             except:
                 self._norm_cop_pool.close()
                 self._norm_cop_pool.join()
                 raise Exception(('Failed to calculate '
                                     'asymmetries!'))
 
-        assert np_all(isfinite(asymms_arr)), \
-            as_err('Invalid values of asymmetries!')
+        assert np_all(isfinite(asymms_arr)), as_err(
+            'Invalid values of asymmetries!')
 
         min_as_1, max_as_1 = (asymms_arr[:, 0].min(),
                               asymms_arr[:, 0].max())
@@ -200,8 +199,8 @@ class RankCorrStns:
     def _get_rank_corr(self, i_stn, tot_corrs_written):
         ser_i = self.in_var_df[i_stn].dropna().copy()
         ser_i_index = ser_i.index
-        assert len(ser_i.shape) == 1, \
-            as_err('ser_i has more than one column!')
+        assert len(ser_i.shape) == 1, as_err(
+            'ser_i has more than one column!')
 
         if i_stn in self.drop_infill_stns:
             return tot_corrs_written
@@ -215,25 +214,23 @@ class RankCorrStns:
 
             try:
                 if self.loop_stns_df.loc[j_stn, i_stn]:
-                    self.rank_corrs_df.loc[i_stn, j_stn] = \
-                        self.rank_corrs_df.loc[j_stn, i_stn]
-                    self.rank_corr_vals_ctr_df.loc[i_stn, j_stn] = \
-                        self.rank_corr_vals_ctr_df.loc[j_stn, i_stn]
+                    self.rank_corrs_df.loc[i_stn, j_stn] = (
+                        self.rank_corrs_df.loc[j_stn, i_stn])
+                    self.rank_corr_vals_ctr_df.loc[i_stn, j_stn] = (
+                        self.rank_corr_vals_ctr_df.loc[j_stn, i_stn])
                     if not isnan(self.rank_corrs_df.loc[i_stn, j_stn]):
                         tot_corrs_written += 1
                     self.loop_stns_df.loc[i_stn, j_stn] = True
                     continue
             except KeyError:
                 pass
-            except:
-                tre = 1
 
             ser_j = self.in_var_df[j_stn].dropna().copy()
 
             index_ij = ser_i_index.intersection(ser_j.index)
 
-            assert len(ser_j.shape) == 1, \
-                as_err('ser_j has more than one column!')
+            assert len(ser_j.shape) == 1, as_err(
+                'ser_j has more than one column!')
 
             if index_ij.shape[0] <= self.min_valid_vals:
                 self.loop_stns_df.loc[i_stn, j_stn] = True
@@ -241,16 +238,16 @@ class RankCorrStns:
 
             new_ser_i = ser_i.loc[index_ij].copy()
             new_ser_j = ser_j.loc[index_ij].copy()
-            prob_ser_i = \
-                new_ser_i.rank().div(new_ser_i.shape[0] + 1.).values
-            prob_ser_j = \
-                new_ser_j.rank().div(new_ser_j.shape[0] + 1.).values
+            prob_ser_i = (
+                new_ser_i.rank().div(new_ser_i.shape[0] + 1.).values)
+            prob_ser_j = (
+                new_ser_j.rank().div(new_ser_j.shape[0] + 1.).values)
 
             if self.infill_type == 'discharge-censored':
-                prob_ser_i[prob_ser_i < self.cut_cdf_thresh] = \
-                    self.cut_cdf_thresh
-                prob_ser_j[prob_ser_j < self.cut_cdf_thresh] = \
-                    self.cut_cdf_thresh
+                prob_ser_i[prob_ser_i < self.cut_cdf_thresh] = (
+                    self.cut_cdf_thresh)
+                prob_ser_j[prob_ser_j < self.cut_cdf_thresh] = (
+                    self.cut_cdf_thresh)
 
             correl = get_corrcoeff(prob_ser_i, prob_ser_j)
 
@@ -324,28 +321,28 @@ class RankCorrStns:
                 self.rank_corr_stns_list.append(rank_corr_stn)
 
         # put the neighboring stations in a dictionary for each infill_stn
-        self.rank_corr_stns_dict[infill_stn] = \
-            stn_correl_ser.iloc[:self.n_max_nebs].index.tolist()
+        self.rank_corr_stns_dict[infill_stn] = (
+            stn_correl_ser.iloc[:self.n_max_nebs].index.tolist())
 
         curr_n_neighbors = len(self.rank_corr_stns_dict[infill_stn])
-        if (curr_n_neighbors < self.n_min_nebs) and \
-           (not self.force_infill_flag):
+        if (curr_n_neighbors < self.n_min_nebs) and (
+           (not self.force_infill_flag)):
             self.bad_stns_list.append(infill_stn)
             self.bad_stns_neighbors_count.append(curr_n_neighbors)
 
         if not self.force_infill_flag:
-            assert curr_n_neighbors >= self.n_min_nebs, \
+            assert curr_n_neighbors >= self.n_min_nebs, (
                 as_err(('Rank correlation stations (n=%d) less than '
                         '\'n_min_nebs\' or no neighbor for '
                         'station: %s') % (curr_n_neighbors,
-                                          infill_stn))
+                                          infill_stn)))
         return
 
     def _plot_neighbor(self, infill_stn):
         tick_font_size = 5
 
-        infill_x, infill_y = \
-            self.in_coords_df[['X', 'Y']].loc[infill_stn].values
+        infill_x, infill_y = (
+            self.in_coords_df[['X', 'Y']].loc[infill_stn].values)
 
         _nebs = self.rank_corr_stns_dict[infill_stn]
         _n_nebs = len(self.rank_corr_stns_dict[infill_stn])
@@ -403,17 +400,17 @@ class RankCorrStns:
 
         corrs_arr = self.rank_corrs_df.loc[infill_stn,
                                            curr_nebs].values
-        corrs_ctr_arr = \
+        corrs_ctr_arr = (
             self.rank_corr_vals_ctr_df.loc[infill_stn,
-                                           curr_nebs].values
+                                           curr_nebs].values)
         corrs_ctr_arr[isnan(corrs_ctr_arr)] = 0
 
         n_stns = corrs_arr.shape[0]
-        fig, corrs_ax = plt.subplots(1, 1, figsize=(1.0 * n_stns, 3))
+        _, corrs_ax = plt.subplots(1, 1, figsize=(1.0 * n_stns, 3))
         corrs_ax.matshow(corrs_arr.reshape(1, n_stns),
                          vmin=0,
                          vmax=2,
-                         cmap=cmaps.Blues,
+                         cmap=plt.get_cmap('Blues'),
                          origin='lower')
         for s in range(n_stns):
             corrs_ax.text(s,
@@ -518,9 +515,9 @@ class RankCorrStns:
 
         if not self.dont_stop_flag:
             for infill_stn in self.infill_stns:
-                assert infill_stn in self.in_var_df.columns, \
+                assert infill_stn in self.in_var_df.columns, (
                     as_err('infill station %s not in input variable '
-                           'dataframe anymore!' % infill_stn)
+                           'dataframe anymore!' % infill_stn))
 
         # check if at least one infill date is in the in_var_df
         date_in_dates = False
@@ -530,10 +527,10 @@ class RankCorrStns:
                 date_in_dates = True
                 break
 
-        assert date_in_dates, \
-            as_err('None of the infill dates exist in \'in_var_df\' '
-                   'after dropping stations and records with '
-                   'insufficient information!')
+        assert date_in_dates, as_err(
+            'None of the infill dates exist in \'in_var_df\' '
+            'after dropping stations and records with '
+            'insufficient information!')
 
         if self.verbose:
             print(('INFO: \'in_var_df\' shape after calling '
@@ -545,14 +542,14 @@ class RankCorrStns:
 
         rank_corr_stns_pkl_dict['in_var_df'] = self.in_var_df
         rank_corr_stns_pkl_dict['infill_stns'] = self.infill_stns
-        rank_corr_stns_pkl_dict['rank_corr_stns_dict'] = \
-            self.rank_corr_stns_dict
-        rank_corr_stns_pkl_dict['rank_corr_stns_list'] = \
-            self.rank_corr_stns_list
+        rank_corr_stns_pkl_dict['rank_corr_stns_dict'] = (
+            self.rank_corr_stns_dict)
+        rank_corr_stns_pkl_dict['rank_corr_stns_list'] = (
+            self.rank_corr_stns_list)
         rank_corr_stns_pkl_dict['n_infill_stns'] = self.n_infill_stns
         rank_corr_stns_pkl_dict['rank_corrs_df'] = self.rank_corrs_df
-        rank_corr_stns_pkl_dict['rank_corr_vals_ctr_df'] = \
-            self.rank_corr_vals_ctr_df
+        rank_corr_stns_pkl_dict['rank_corr_vals_ctr_df'] = (
+            self.rank_corr_vals_ctr_df)
 
         dump(rank_corr_stns_pkl_dict, rank_corr_stns_pkl_cur, -1)
         rank_corr_stns_pkl_cur.close()

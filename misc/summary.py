@@ -15,6 +15,7 @@ from ..misc.misc_ftns import as_err
 
 
 class Summary:
+
     def __init__(self, norm_cop_obj):
         vars_list = ['summary_df',
                      '_av_vals_lab',
@@ -65,7 +66,7 @@ class Summary:
                               columns=curr_summary_df.columns,
                               dtype=object)
 
-        ### available values
+        # ## available values
         avail_vals = curr_summary_df[self._av_vals_lab]
         n_max_available = avail_vals.max(skipna=True)
         n_min_available = avail_vals.min(skipna=True)
@@ -85,7 +86,7 @@ class Summary:
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._av_vals_lab] = available_val_clrs[i]
 
-        ### missing values
+        # ## missing values
         miss_vals = curr_summary_df[self._miss_vals_lab]
         n_max_missing = max(1, miss_vals.max(skipna=True))
         n_min_missing = miss_vals.min(skipna=True)
@@ -99,7 +100,7 @@ class Summary:
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._miss_vals_lab] = missing_val_clrs[i]
 
-        ### infilled values
+        # ## infilled values
         infill_vals = curr_summary_df[self._infilled_vals_lab
                                       ].values.copy()
         infill_vals[isnan(infill_vals)] = 0.0
@@ -107,33 +108,35 @@ class Summary:
         _miss_vals_copy[_miss_vals_copy == 0.0] = 1.0
         infilled_val_clrs = r_2_g_cm(divide(infill_vals, _miss_vals_copy))
         for i, stn in enumerate(colors_df.index):
-            colors_df.loc[stn, self._infilled_vals_lab] = \
-                infilled_val_clrs[i]
+            colors_df.loc[stn, self._infilled_vals_lab] = infilled_val_clrs[i]
 
-        ### max available neighbors
-        max_avail_neb_vals = \
-            curr_summary_df[self._max_avail_nebs_lab].values.copy()
+        # ## max available neighbors
+        max_avail_neb_vals = (
+            curr_summary_df[self._max_avail_nebs_lab].values.copy())
+
         if self.n_max_nebs == self.n_min_nebs:
             min_nebs = 0.0
         else:
             min_nebs = self.n_min_nebs
+
         max_avail_neb_vals[isnan(max_avail_neb_vals)] = min_nebs
         _manvrs = divide((max_avail_neb_vals - min_nebs),
                          (self.n_max_nebs - min_nebs))
         max_nebs_clrs = r_2_g_cm(_manvrs)
+
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._max_avail_nebs_lab] = max_nebs_clrs[i]
 
-        ### average used neighbors
-        _aanrs = \
+        # ## average used neighbors
+        _aanrs = (
             divide(curr_summary_df[self._avg_avail_nebs_lab].values,
-                   max_avail_neb_vals)
+                   max_avail_neb_vals))
         _aanrs[isnan(_aanrs)] = 0.0
         avg_nebs_clrs = r_2_g_cm(_aanrs)
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._avg_avail_nebs_lab] = avg_nebs_clrs[i]
 
-        ### compared
+        # ## compared
         compared_vals = curr_summary_df[self._compr_lab].values.copy()
         compared_vals[isnan(compared_vals)] = 0.0
         _ = curr_summary_df[self._infilled_vals_lab].values.copy()
@@ -145,7 +148,7 @@ class Summary:
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._compr_lab] = n_compare_clrs[i]
 
-        ### KS limits
+        # ## KS limits
         for i, stn in enumerate(curr_summary_df.index):
             if (curr_summary_df.loc[stn, ks_lim_label] >=
                     (100 * (1.0 - self.ks_alpha))):
@@ -155,7 +158,7 @@ class Summary:
 
             colors_df.loc[stn, ks_lim_label] = ks_clr
 
-        ### flagged
+        # ## flagged
         for i, stn in enumerate(colors_df.index):
             if (curr_summary_df.loc[stn, self._flagged_lab] >
                 (100 * (1 - self.flag_probs[1] + self.flag_probs[0]))):
@@ -165,7 +168,7 @@ class Summary:
 
             colors_df.loc[stn, self._flagged_lab] = flag_clr
 
-        ### bias
+        # ## bias
         max_bias = curr_summary_df[self._bias_lab].max(skipna=True)
         min_bias = curr_summary_df[self._bias_lab].min(skipna=True)
         max_bias = max(abs(max_bias), abs(min_bias))
@@ -180,7 +183,7 @@ class Summary:
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._bias_lab] = bias_clrs[i]
 
-        ### mean absolute error
+        # ## mean absolute error
         max_mae = curr_summary_df[self._mae_lab].max(skipna=True)
         if max_mae == 0.0:
             max_mae = 1.0
@@ -193,7 +196,7 @@ class Summary:
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._mae_lab] = mae_clrs[i]
 
-        ### rmse
+        # ## rmse
         max_rmse = curr_summary_df[self._rmse_lab].max(skipna=True)
         if max_rmse == 0.0:
             max_rmse = 1.0
@@ -206,49 +209,49 @@ class Summary:
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._rmse_lab] = rmse_clrs[i]
 
-        ### nse
+        # ## nse
         nse_vals = curr_summary_df[self._nse_lab].copy().values
         nse_vals[isnan(nse_vals)] = 0.0
         nse_clrs = r_2_g_cm(where(nse_vals < 0.0, 0, nse_vals))
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._nse_lab] = nse_clrs[i]
 
-        ### ln_nse
+        # ## ln_nse
         ln_nse_vals = curr_summary_df[self._ln_nse_lab].copy().values
         ln_nse_vals[isnan(ln_nse_vals)] = 0.0
         ln_nse_clrs = r_2_g_cm(where(ln_nse_vals < 0.0, 0.0, ln_nse_vals))
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._ln_nse_lab] = ln_nse_clrs[i]
 
-        ### kge
+        # ## kge
         kge_vals = curr_summary_df[self._kge_lab].copy().values
         kge_vals[isnan(kge_vals)] = 0.0
         kge_clrs = r_2_g_cm(where(kge_vals < 0.0, 0.0, kge_vals))
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._kge_lab] = kge_clrs[i]
 
-        ### pcorr
+        # ## pcorr
         pcorr_vals = fabs(curr_summary_df[self._pcorr_lab].values)
         pcorr_vals[isnan(pcorr_vals)] = 0.0
         pcorr_clrs = r_2_g_cm(pcorr_vals)
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._pcorr_lab] = pcorr_clrs[i]
 
-        ### scorr
+        # ## scorr
         scorr_vals = fabs(curr_summary_df[self._scorr_lab].values)
         scorr_vals[isnan(scorr_vals)] = 0.0
         scorr_clrs = r_2_g_cm(scorr_vals)
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._scorr_lab] = scorr_clrs[i]
 
-        ### means and variances
+        # ## means and variances
         for i, stn in enumerate(colors_df.index):
             colors_df.loc[stn, self._mean_obs_lab] = r_2_g_colors[-1]
             colors_df.loc[stn, self._mean_infill_lab] = r_2_g_colors[-1]
             colors_df.loc[stn, self._var_obs_lab] = r_2_g_colors[-1]
             colors_df.loc[stn, self._var_infill_lab] = r_2_g_colors[-1]
 
-        ### plot the table
+        # ## plot the table
         _fs = (2 + (0.5 * curr_summary_df.shape[0]), 6)
         plt_fig = plt.figure(figsize=_fs)
 
@@ -283,16 +286,15 @@ class Summary:
         for cell_tup in cell_tups:
             if cell_tup[0] == 0:
                 curr_text_width = table_cells[cell_tup].get_text()
-                curr_text_width = \
-                    curr_text_width.get_window_extent(renderer)
+                curr_text_width = curr_text_width.get_window_extent(renderer)
                 curr_text_width = curr_text_width.width
                 if curr_text_width > max_text_width:
                     max_text_width = curr_text_width
 
         table_cells = table_ax.get_celld()
         padding = table_cells[(0, 0)].PAD
-        cell_width = \
-            float(table_cells[(0, 0)].get_window_extent(renderer).width)
+        cell_width = (
+            float(table_cells[(0, 0)].get_window_extent(renderer).width))
         cell_width = cell_width - (2. * padding * cell_width)
 
         new_font_size = font_size * divide(cell_width, max_text_width)
@@ -349,7 +351,7 @@ class Summary:
             cols_per_fig_idxs = array([0, n_stns])
 
         for stn_idx in range(cols_per_fig_idxs.shape[0] - 1):
-            _1, _2 = cols_per_fig_idxs[stn_idx], cols_per_fig_idxs[stn_idx+1]
+            _1, _2 = cols_per_fig_idxs[stn_idx], cols_per_fig_idxs[stn_idx + 1]
             curr_summary_df = self.summary_df.iloc[_1:_2].copy()
 
             self._plot_sub_summary(curr_summary_df,

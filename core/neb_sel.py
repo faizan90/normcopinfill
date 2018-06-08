@@ -12,6 +12,7 @@ from numpy import divide
 
 
 class NebSel:
+
     def __init__(self, infill_steps_obj):
         vars_list = ['curr_infill_stn',
                      'curr_nrst_stns',
@@ -126,15 +127,14 @@ class NebSel:
                 if infill_date in list(avail_stns_per_step_dict.keys()):
                     avail_stns_per_step_dict[infill_date][3] = best_stns
                     idx = avail_stns_per_step_dict[infill_date][2]
+
                     if idx is None:
                         _ = list(avail_stns_per_step_dict.keys())
                         step_idx = _.index(infill_date)
                         for _step in list(avail_stns_per_step_dict.keys()):
                             _ = avail_stns_per_step_dict[_step][2]
                             if step_idx == _:
-
-                                avail_stns_per_step_dict[_step][3] = \
-                                    best_stns
+                                avail_stns_per_step_dict[_step][3] = best_stns
 
                 if self.debug_mode_flag:
                     print('Found best_stns:', best_stns)

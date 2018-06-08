@@ -31,6 +31,7 @@ from normcop_cyftns import (get_corrcoeff,
 
 
 class CompareInfill:
+
     def __init__(self, norm_cop_obj):
         vars_list = ['n_rand_infill_values',
                      'fin_conf_head',
@@ -95,7 +96,7 @@ class CompareInfill:
                            lw=lw,
                            ls='-',
                            marker='o',
-                           ms=lw+0.5)
+                           ms=lw + 0.5)
 
         infill_ax.plot(self.infill_dates,
                        where(interp_data_idxs, nan, act_var),
@@ -104,8 +105,8 @@ class CompareInfill:
                        ls='-',
                        marker='o',
                        alpha=1.0,
-                       lw=lw+0.5,
-                       ms=lw+1)
+                       lw=lw + 0.5,
+                       ms=lw + 1)
 
         infill_ax.set_xlabel('Time')
         infill_ax.set_ylabel('var_val')
@@ -148,7 +149,7 @@ class CompareInfill:
                        orig_probs,
                        alpha=0.25,
                        c='k',
-                       lw=lw+6,
+                       lw=lw + 6,
                        ls='-')
 
         infill_ax.set_xlabel('Infilled Probability')
@@ -193,7 +194,7 @@ class CompareInfill:
         obs_probs_probs = obs_probs_probs[obs_arg_sort]
 
         ks_d_stat = (divide((-0.5 * mlog(self.ks_alpha * 0.5)),
-                            obs_probs.shape[0]))**0.5
+                            obs_probs.shape[0])) ** 0.5
 
         ks_fl = obs_probs_probs - ks_d_stat
         ks_fl[ks_fl < 0] = 0
@@ -341,7 +342,7 @@ class CompareInfill:
 
         bias = round(divide(np_sum(diff), n_vals), self.n_round)
         mae = round(divide(np_sum(np_abs(diff)), n_vals), self.n_round)
-        rmse = round((divide(np_sum(diff**2), n_vals))**0.5, self.n_round)
+        rmse = round((divide(np_sum(diff ** 2), n_vals)) ** 0.5, self.n_round)
 
         orig_probs = divide(rankdata(orig_vals), (n_vals + 1.))
         orig_probs_sort_idxs = argsort(orig_probs)
@@ -376,16 +377,15 @@ class CompareInfill:
                      self._ln_nse_lab,
                      self._kge_lab,
                      self._pcorr_lab,
-                     self._scorr_lab]] = \
-            [n_vals,
-             bias,
-             mae,
-             rmse,
-             nse,
-             ln_nse,
-             kge,
-             correl_pe,
-             correl_sp]
+                     self._scorr_lab]] = [n_vals,
+                                          bias,
+                                          mae,
+                                          rmse,
+                                          nse,
+                                          ln_nse,
+                                          kge,
+                                          correl_pe,
+                                          correl_sp]
 
         summ_df.loc[self.curr_infill_stn,
                     [self._mean_obs_lab,

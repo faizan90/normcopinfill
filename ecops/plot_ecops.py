@@ -9,7 +9,6 @@ from os import mkdir as os_mkdir
 from os.path import exists as os_exists, join as os_join
 
 from numpy import linspace, mgrid, round as np_round, where, nanmax, nan
-import matplotlib.cm as cmaps
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -30,6 +29,7 @@ plt.ioff()
 
 
 class ECops:
+
     def __init__(self, norm_cop_obj):
         vars_list = ['in_var_df',
                      'infill_stns',
@@ -54,14 +54,14 @@ class ECops:
 
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
-            
+
         if not os_exists(self.ecops_dir):
             os_mkdir(self.ecops_dir)
 
         if not norm_cop_obj._dist_cmptd:
             NrstStns(norm_cop_obj)  # deal with this
-            assert norm_cop_obj._dist_cmptd, \
-                as_err('Call \'cmpt_plot_nrst_stns\' first!')
+            assert norm_cop_obj._dist_cmptd, as_err(
+                'Call \'cmpt_plot_nrst_stns\' first!')
 
         if self.nrst_stns_type == 'dist':
             pass
@@ -73,19 +73,19 @@ class ECops:
                 else:
                     RankCorrStns(norm_cop_obj)
 
-                assert norm_cop_obj._rank_corr_cmptd, \
-                    as_err('Call \'cmpt_plot_rank_corr_stns\' first!')
-                
+                assert norm_cop_obj._rank_corr_cmptd, as_err(
+                    'Call \'cmpt_plot_rank_corr_stns\' first!')
+
                 _vars_list = ['rank_corrs_df']
-                
+
                 if self.max_time_lag_corr:
                     _vars_list.append('time_lags_dict')
 
                 for _var in _vars_list:
-                    setattr(self, 
-                            _var, 
+                    setattr(self,
+                            _var,
                             getattr(norm_cop_obj, _var))
-            
+
         else:
             assert False, as_err('Incorrect \'nrst_stns_type\': %s' %
                                  str(self.nrst_stns_type))
@@ -159,7 +159,6 @@ class ECops:
             if prob_j.min() < 0 or prob_j.max() > 1:
                 assert False, as_err('\'prob_j\' values out of bounds!')
 
-
             if ((self.nrst_stns_type == 'rank') or
                 (self.nrst_stns_type == 'symm')):
                 correl = self.rank_corrs_df.loc[infill_stn, other_stn]
@@ -170,10 +169,10 @@ class ECops:
             asymms_1_list = []
             asymms_2_list = []
             for _ in range(self.n_norm_symm_flds):
-                as_1, as_2 = \
+                as_1, as_2 = (
                     get_norm_rand_symms(correl,
                                         min(self._max_symm_rands,
-                                            prob_i.shape[0]))
+                                            prob_i.shape[0])))
 
                 asymms_1_list.append(as_1)
                 asymms_2_list.append(as_2)
@@ -209,7 +208,7 @@ class ECops:
             ecop_grid_ax.pcolormesh(x_mesh,
                                     y_mesh,
                                     emp_dens_arr,
-                                    cmap=cmaps.Blues,
+                                    cmap=plt.get_cmap('Blues'),
                                     vmin=0,
                                     vmax=max_dens)
             ecop_grid_ax.set_xlabel('infill station: %s' % infill_stn)
@@ -241,10 +240,10 @@ class ECops:
 
             emp_title_str = ''
             emp_title_str += 'Empirical copula - Gridded'
-            emp_title_str += '\n(asymm_1: %1.1E, asymm_2: %1.1E)' % \
-                             (emp_asymm_1, emp_asymm_2)
-            emp_title_str += '\n(asymm_1: %s, asymm_2: %s)' % \
-                             (asymm_1_str, asymm_2_str)
+            emp_title_str += ('\n(asymm_1: %1.1E, asymm_2: %1.1E)' %
+                              (emp_asymm_1, emp_asymm_2))
+            emp_title_str += ('\n(asymm_1: %s, asymm_2: %s)' %
+                              (asymm_1_str, asymm_2_str))
 
             ecop_grid_ax.set_title(emp_title_str)
 
@@ -254,7 +253,7 @@ class ECops:
             _cb = gau_cop_ax.pcolormesh(x_mesh,
                                         y_mesh,
                                         gau_cop_arr,
-                                        cmap=cmaps.Blues,
+                                        cmap=plt.get_cmap('Blues'),
                                         vmin=0,
                                         vmax=max_dens)
             gau_cop_ax.set_xticks(cop_ax_ticks)
@@ -285,19 +284,19 @@ class ECops:
             bounds = linspace(0, max_dens, 5)
             cb.set_ticks(bounds)
             cb.set_ticklabels(['%1.1E' % i_dens for i_dens in bounds])
-            
+
             if self.max_time_lag_corr:
                 curr_lag = curr_lag_dict[other_stn]
             else:
                 curr_lag = 0
 
             title_str = ''
-            title_str += ('Copula densities of stations: %s and %s' % 
+            title_str += ('Copula densities of stations: %s and %s' %
                           (infill_stn, other_stn))
-            title_str += ('\nn = %d, corr = %0.3f, bins = %d' % 
+            title_str += ('\nn = %d, corr = %0.3f, bins = %d' %
                           (prob_i.shape[0], correl, self.cop_bins))
-            title_str += ('\n(rho: %0.3f, tau: %0.3f, lag: %d)' % (correl, 
-                                                                   tau, 
+            title_str += ('\n(rho: %0.3f, tau: %0.3f, lag: %d)' % (correl,
+                                                                   tau,
                                                                    curr_lag))
             plt.suptitle(title_str)
 

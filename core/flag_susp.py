@@ -19,6 +19,7 @@ from pandas import DataFrame
 
 
 class FlagSusp:
+
     def __init__(self, norm_cop_obj):
         vars_list = ['infill_dates',
                      'curr_infill_stn',
@@ -65,10 +66,10 @@ class FlagSusp:
             if self.conf_ser[_conf_head] in self.flag_probs:
                 _conf_head_list.append(_conf_head)
 
-        conf_var_vals_lo = \
-            out_conf_df[_conf_head_list[0]].loc[self.infill_dates].values
-        conf_var_vals_hi = \
-            out_conf_df[_conf_head_list[1]].loc[self.infill_dates].values
+        conf_var_vals_lo = (
+            out_conf_df[_conf_head_list[0]].loc[self.infill_dates].values)
+        conf_var_vals_hi = (
+            out_conf_df[_conf_head_list[1]].loc[self.infill_dates].values)
 
         conf_var_vals_lo[isnan(conf_var_vals_lo)] = -inf
         conf_var_vals_hi[isnan(conf_var_vals_hi)] = +inf
@@ -118,8 +119,8 @@ class FlagSusp:
         n_tot = n_out_bds + n_within_lims
 
         if n_tot:
-            summ_df.iloc[0, 0] = \
-                 divide(100 * n_out_bds, n_tot)
+            summ_df.iloc[0, 0] = (
+                 divide(100 * n_out_bds, n_tot))
             summ_df.iloc[0, 0] = round(summ_df.iloc[0, 0], self.n_round)
 
         if not self.update_summary_df_only:
@@ -134,7 +135,7 @@ class FlagSusp:
             infill_ax.plot(self.infill_dates,
                            flag_arr,
                            alpha=alpha,
-                           lw=lw+0.5,
+                           lw=lw + 0.5,
                            ls='-')
 
             infill_ax.set_xlabel('Time')

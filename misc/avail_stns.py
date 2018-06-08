@@ -12,6 +12,7 @@ from ..misc.misc_ftns import as_err
 
 
 class AvailStns:
+
     def __init__(self, norm_cop_obj):
         vars_list = ['in_var_df_orig',
                      'out_var_df',
@@ -44,29 +45,29 @@ class AvailStns:
 
         avail_nrst_stns_orig_ser = self.in_var_df_orig.count(axis=1)
 
-        avail_nrst_stns_orig_ser_infilled = \
-            self.in_var_df_orig[self.infill_stns].count(axis=1)
+        avail_nrst_stns_orig_ser_infilled = (
+            self.in_var_df_orig[self.infill_stns].count(axis=1))
 
         if not self.n_rand_infill_values:
             avail_nrst_stns_ser = self.out_var_df.count(axis=1)
 
-            avail_nrst_stns_ser_infilled = \
-                self.out_var_df[self.infill_stns].count(axis=1)
+            avail_nrst_stns_ser_infilled = (
+                self.out_var_df[self.infill_stns].count(axis=1))
         else:
             avail_nrst_stns_ser = self.out_var_dfs_list[0].count(axis=1)
 
-            avail_nrst_stns_ser_infilled = \
-                self.out_var_dfs_list[0][self.infill_stns].count(axis=1)
+            avail_nrst_stns_ser_infilled = (
+                self.out_var_dfs_list[0][self.infill_stns].count(axis=1))
 
-        assert avail_nrst_stns_orig_ser.sum() > 0, \
-            as_err('in_var_df is empty!')
-        assert avail_nrst_stns_ser.sum() > 0, \
-            as_err('out_var_df is empty!')
+        assert avail_nrst_stns_orig_ser.sum() > 0, as_err(
+            'in_var_df is empty!')
+        assert avail_nrst_stns_ser.sum() > 0, as_err(
+            'out_var_df is empty!')
 
-        assert avail_nrst_stns_orig_ser_infilled.sum() > 0, \
-            as_err('in_var_df_infilled is empty!')
-        assert avail_nrst_stns_ser_infilled.sum() > 0, \
-            as_err('out_var_df_infilled is empty!')
+        assert avail_nrst_stns_orig_ser_infilled.sum() > 0, as_err(
+            'in_var_df_infilled is empty!')
+        assert avail_nrst_stns_ser_infilled.sum() > 0, as_err(
+            'out_var_df_infilled is empty!')
 
         _out_labs_list = ['Original (all stations)',
                           'Infilled (all stations)',

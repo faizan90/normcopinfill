@@ -14,9 +14,10 @@ from normcop_cyftns import fill_correl_mat, get_corrcoeff
 
 
 class BestLagCorrs:
+
     def __init__(self, norms_df, max_time_lag_corr):
-        assert isinstance(norms_df, DataFrame), \
-            as_err('norms_df not a DataFrame!')
+        assert isinstance(norms_df, DataFrame), as_err(
+            'norms_df not a DataFrame!')
 
         self.norms_df = norms_df.copy()
         self.infill_stn = norms_df.columns[0]

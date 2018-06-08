@@ -7,13 +7,13 @@ Created on %(date)s
 from os.path import join as os_join
 
 from numpy import repeat, tile
-import matplotlib.cm as cmaps
 import matplotlib.pyplot as plt
 
 from adjustText import adjust_text
 
 
 class PlotCondFtns:
+
     def __init__(self, infill_steps_obj):
         vars_list = ['infill_type',
                      'curr_infill_stn',
@@ -122,7 +122,7 @@ class PlotCondFtns:
         corrs_ax.matshow(full_corrs_arr,
                          vmin=0,
                          vmax=1,
-                         cmap=cmaps.Blues,
+                         cmap=plt.get_cmap('Blues'),
                          origin='lower')
         for s in zip(repeat(list(range(n_stns)), n_stns),
                      tile(list(range(n_stns)), n_stns)):

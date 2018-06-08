@@ -8,7 +8,6 @@ from os.path import join as os_join
 
 from numpy import nan, isnan
 import matplotlib.pyplot as plt
-import matplotlib.cm as cmaps
 from adjustText import adjust_text
 from pandas import DataFrame
 
@@ -17,17 +16,18 @@ from ..misc.misc_ftns import as_err, get_lag_ser
 
 import pyximport
 pyximport.install()
-from normcop_cyftns import (get_corrcoeff) #get_asymms_sample,
+from normcop_cyftns import (get_corrcoeff)  # get_asymms_sample,
 
 plt.ioff()
 
 
 class BestLagRankCorrStns(RankCorrStns):
+
     def __init__(self, norm_cop_obj):
         super(BestLagRankCorrStns, self).__init__(norm_cop_obj)
 
-        assert self.max_time_lag_corr, \
-            as_err('Cannot use this class if \'max_time_lag_corr\' is zero!')
+        assert self.max_time_lag_corr, as_err(
+            'Cannot use this class if \'max_time_lag_corr\' is zero!')
 
         self.in_var_df = self.in_var_df.reindex(self.full_date_index)
 
@@ -121,8 +121,8 @@ class BestLagRankCorrStns(RankCorrStns):
 
     def _get_rank_corr(self, i_stn, tot_corrs_written):
         ser_i = self.in_var_df[i_stn].copy()
-        assert len(ser_i.shape) == 1, \
-            as_err('ser_i has more than one column!')
+        assert len(ser_i.shape) == 1, as_err(
+            'ser_i has more than one column!')
 
         if i_stn in self.drop_infill_stns:
             return tot_corrs_written
@@ -138,10 +138,10 @@ class BestLagRankCorrStns(RankCorrStns):
 
             try:
                 if self.loop_stns_df.loc[j_stn, i_stn]:
-                    self.rank_corrs_df.loc[i_stn, j_stn] = \
-                        self.rank_corrs_df.loc[j_stn, i_stn]
-                    self.rank_corr_vals_ctr_df.loc[i_stn, j_stn] = \
-                        self.rank_corr_vals_ctr_df.loc[j_stn, i_stn]
+                    self.rank_corrs_df.loc[i_stn, j_stn] = (
+                        self.rank_corrs_df.loc[j_stn, i_stn])
+                    self.rank_corr_vals_ctr_df.loc[i_stn, j_stn] = (
+                        self.rank_corr_vals_ctr_df.loc[j_stn, i_stn])
                     if not isnan(self.rank_corrs_df.loc[i_stn, j_stn]):
                         tot_corrs_written += 1
                     self.loop_stns_df.loc[i_stn, j_stn] = True
@@ -158,8 +158,8 @@ class BestLagRankCorrStns(RankCorrStns):
                 _ = self.in_var_df[j_stn].copy()
                 ser_j = get_lag_ser(_, curr_time_lag)
 
-                assert ser_i.shape[0] == ser_j.shape[0], \
-                    as_err('ser_i and ser_j have unequal shapes!')
+                assert ser_i.shape[0] == ser_j.shape[0], as_err(
+                    'ser_i and ser_j have unequal shapes!')
 
                 ij_df = DataFrame(index=ser_i.index,
                                   data={'i': ser_i.values,
@@ -178,10 +178,10 @@ class BestLagRankCorrStns(RankCorrStns):
                     ser_j_rank.rank().div(ser_j_rank.shape[0] + 1.).values
 
                 if self.infill_type == 'discharge-censored':
-                    prob_ser_i[prob_ser_i < self.cut_cdf_thresh] = \
-                        self.cut_cdf_thresh
-                    prob_ser_j[prob_ser_j < self.cut_cdf_thresh] = \
-                        self.cut_cdf_thresh
+                    prob_ser_i[prob_ser_i < self.cut_cdf_thresh] = (
+                        self.cut_cdf_thresh)
+                    prob_ser_j[prob_ser_j < self.cut_cdf_thresh] = (
+                        self.cut_cdf_thresh)
 
                 correl = get_corrcoeff(prob_ser_i, prob_ser_j)
 
@@ -252,8 +252,8 @@ class BestLagRankCorrStns(RankCorrStns):
     def _plot_neighbor(self, infill_stn):
         tick_font_size = 5
 
-        infill_x, infill_y = \
-            self.in_coords_df[['X', 'Y']].loc[infill_stn].values
+        (infill_x,
+         infill_y) = self.in_coords_df[['X', 'Y']].loc[infill_stn].values
 
         _nebs = self.rank_corr_stns_dict[infill_stn]
         _n_nebs = len(self.rank_corr_stns_dict[infill_stn])
@@ -314,17 +314,17 @@ class BestLagRankCorrStns(RankCorrStns):
 
         corrs_arr = self.rank_corrs_df.loc[infill_stn,
                                            curr_nebs].values
-        corrs_ctr_arr = \
+        corrs_ctr_arr = (
             self.rank_corr_vals_ctr_df.loc[infill_stn,
-                                           curr_nebs].values
+                                           curr_nebs].values)
         corrs_ctr_arr[isnan(corrs_ctr_arr)] = 0
 
         n_stns = corrs_arr.shape[0]
-        fig, corrs_ax = plt.subplots(1, 1, figsize=(1.0 * n_stns, 3))
+        _, corrs_ax = plt.subplots(1, 1, figsize=(1.0 * n_stns, 3))
         corrs_ax.matshow(corrs_arr.reshape(1, n_stns),
                          vmin=0,
                          vmax=2,
-                         cmap=cmaps.Blues,
+                         cmap=plt.get_cmap('Blues'),
                          origin='lower')
         for s in range(n_stns):
             _1 = int(corrs_ctr_arr[s])
