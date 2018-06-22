@@ -31,32 +31,31 @@ plt.ioff()
 class ECops:
 
     def __init__(self, norm_cop_obj):
-        vars_list = ['in_var_df',
-                     'infill_stns',
-                     'rank_corr_stns_dict',
-                     'nrst_stns_dict',
-                     'debug_mode_flag',
-                     'dont_stop_flag',
-                     'nrst_stns_type',
-                     'max_time_lag_corr',
-                     'verbose',
-                     'ncpus',
-                     '_norm_cop_pool',
-                     'cop_bins',
-                     'infill_type',
-                     'min_valid_vals',
-                     '_rank_method',
-                     'n_norm_symm_flds',
-                     '_max_symm_rands',
-                     'ecops_dir',
-                     'out_fig_dpi',
-                     'out_fig_fmt']
 
-        for _var in vars_list:
+        vars_list_1 = ['nrst_stns_type',
+                       'max_time_lag_corr']
+
+        vars_list_2 = ['in_var_df',
+                       'infill_stns',
+                       'rank_corr_stns_dict',
+                       'nrst_stns_dict',
+                       'debug_mode_flag',
+                       'dont_stop_flag',
+                       'verbose',
+                       'ncpus',
+                       '_norm_cop_pool',
+                       'cop_bins',
+                       'infill_type',
+                       'min_valid_vals',
+                       '_rank_method',
+                       'n_norm_symm_flds',
+                       '_max_symm_rands',
+                       'ecops_dir',
+                       'out_fig_dpi',
+                       'out_fig_fmt']
+
+        for _var in vars_list_1:
             setattr(self, _var, getattr(norm_cop_obj, _var))
-
-        if not os_exists(self.ecops_dir):
-            os_mkdir(self.ecops_dir)
 
         if not norm_cop_obj._dist_cmptd:
             NrstStns(norm_cop_obj)  # deal with this
@@ -76,19 +75,20 @@ class ECops:
                 assert norm_cop_obj._rank_corr_cmptd, as_err(
                     'Call \'cmpt_plot_rank_corr_stns\' first!')
 
-                _vars_list = ['rank_corrs_df']
+                vars_list_2.append('rank_corrs_df')
 
                 if self.max_time_lag_corr:
-                    _vars_list.append('time_lags_dict')
-
-                for _var in _vars_list:
-                    setattr(self,
-                            _var,
-                            getattr(norm_cop_obj, _var))
+                    vars_list_2.append('time_lags_dict')
 
         else:
             assert False, as_err('Incorrect \'nrst_stns_type\': %s' %
                                  str(self.nrst_stns_type))
+
+        for _var in vars_list_2:
+            setattr(self, _var, getattr(norm_cop_obj, _var))
+
+        if not os_exists(self.ecops_dir):
+            os_mkdir(self.ecops_dir)
 
         if self.verbose:
             print('INFO: Plotting empirical copulas of infill stations '
