@@ -14,10 +14,7 @@ from numpy import vectorize
 from pandas import DataFrame
 
 from ..misc.misc_ftns import as_err
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import get_dist
+from ..cyth import get_dist
 
 plt.ioff()
 

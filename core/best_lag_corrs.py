@@ -7,10 +7,7 @@ Created on %(date)s
 from pandas import DataFrame
 
 from ..misc.misc_ftns import as_err, get_lag_ser
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import fill_correl_mat, get_corrcoeff
+from ..cyth import fill_correl_mat, get_corrcoeff
 
 
 class BestLagCorrs:

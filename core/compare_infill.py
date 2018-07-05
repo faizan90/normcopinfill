@@ -18,16 +18,14 @@ from numpy import (isnan,
                    nan)
 
 import matplotlib.pyplot as plt
-
 from pandas import DataFrame
 from scipy.stats import rankdata
 
-import pyximport
-pyximport.install()
-from normcop_cyftns import (get_corrcoeff,
-                            get_kge_py,
-                            get_ns_py,
-                            get_ln_ns_py)
+from ..cyth import (
+    get_corrcoeff,
+    get_kge_py,
+    get_ns_py,
+    get_ln_ns_py)
 
 
 class CompareInfill:

@@ -19,10 +19,7 @@ from pandas import DataFrame
 from scipy.interpolate import interp1d
 
 from ..misc.misc_ftns import as_err
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import norm_ppf_py_arr
+from ..cyth import norm_ppf_py_arr
 
 
 class StepTrans:

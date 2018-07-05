@@ -12,9 +12,9 @@ from numpy import (array,
                    ediff1d,
                    isclose,
                    nan)
-from ..misc.misc_ftns import as_err
-
 from pandas import Series
+
+from ..misc.misc_ftns import as_err
 
 
 class ConfInfill:

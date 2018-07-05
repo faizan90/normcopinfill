@@ -22,10 +22,7 @@ from pandas import DataFrame
 
 from .nrst_nebs import NrstStns
 from ..misc.misc_ftns import get_norm_rand_symms, as_err
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import (get_asymms_sample, get_corrcoeff)
+from ..cyth import get_asymms_sample, get_corrcoeff
 
 plt.ioff()
 

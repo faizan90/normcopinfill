@@ -13,10 +13,7 @@ from pandas import DataFrame
 
 from .rank_corr_nebs import RankCorrStns
 from ..misc.misc_ftns import as_err, get_lag_ser
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import (get_corrcoeff)  # get_asymms_sample,
+from ..cyth import get_corrcoeff
 
 plt.ioff()
 

@@ -16,10 +16,7 @@ from numpy import (array,
 from scipy.interpolate import interp1d
 
 from ..misc.misc_ftns import as_err
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import norm_ppf_py, norm_cdf_py, norm_pdf_py
+from ..cyth import norm_ppf_py, norm_cdf_py, norm_pdf_py
 
 
 class DiscContVars:

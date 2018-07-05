@@ -9,10 +9,7 @@ from numpy import full, nan, isnan, divide, all as np_all, isfinite
 from pandas import Timedelta
 
 from ..misc.misc_ftns import as_err
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import norm_ppf_py
+from ..cyth import norm_ppf_py
 
 
 class StepVars:

@@ -16,14 +16,12 @@ from ..nebors.nrst_nebs import NrstStns
 from ..nebors.rank_corr_nebs import RankCorrStns
 from ..nebors.rank_corr_nebs_time_lag import BestLagRankCorrStns
 from ..misc.misc_ftns import get_norm_rand_symms, as_err, full_tb
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import (get_asymms_sample,
-                            get_corrcoeff,
-                            bi_var_copula,
-                            tau_sample,
-                            bivar_gau_cop_arr)
+from ..cyth import (
+    get_asymms_sample,
+    get_corrcoeff,
+    bi_var_copula,
+    tau_sample,
+    bivar_gau_cop_arr)
 
 plt.ioff()
 

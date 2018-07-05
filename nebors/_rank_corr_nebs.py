@@ -17,21 +17,18 @@ from numpy import (full,
                    where,
                    abs as np_abs)
 import matplotlib.pyplot as plt
-import matplotlib.cm as cmaps
 from adjustText import adjust_text
 from pandas import DataFrame
 
 from .nrst_nebs import NrstStns
 from ..misc.misc_ftns import get_norm_rand_symms, as_err
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import (get_asymms_sample, get_corrcoeff)
+from ..cyth import get_asymms_sample, get_corrcoeff
 
 plt.ioff()
 
 
 class RankCorrStns:
+
     def __init__(self, norm_cop_obj):
         self.norm_cop_obj = norm_cop_obj
 
@@ -405,11 +402,11 @@ class RankCorrStns:
         corrs_ctr_arr[isnan(corrs_ctr_arr)] = 0
 
         n_stns = corrs_arr.shape[0]
-        fig, corrs_ax = plt.subplots(1, 1, figsize=(1.0 * n_stns, 3))
+        _, corrs_ax = plt.subplots(1, 1, figsize=(1.0 * n_stns, 3))
         corrs_ax.matshow(corrs_arr.reshape(1, n_stns),
                          vmin=0,
                          vmax=2,
-                         cmap=cmaps.Blues,
+                         cmap=plt.get_cmap('Blues'),
                          origin='lower')
         for s in range(n_stns):
             corrs_ax.text(s,
@@ -536,7 +533,7 @@ class RankCorrStns:
             print(('INFO: \'in_var_df\' shape after calling '
                    '\'cmpt_plot_rank_corr_stns\':'), self.in_var_df.shape)
 
-        ### save pickle
+        # ## save pickle
         rank_corr_stns_pkl_dict = {}
         rank_corr_stns_pkl_cur = open(self._out_rank_corr_stns_pkl_file, 'wb')
 

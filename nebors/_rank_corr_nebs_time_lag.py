@@ -8,30 +8,24 @@ from pickle import dump, load
 from os import mkdir as os_mkdir
 from os.path import exists as os_exists, join as os_join
 
-from numpy import (full,
-                   nan,
-                   array,
-                   all as np_all,
+from numpy import (nan,
                    isfinite,
                    isnan,
                    where,
                    abs as np_abs)
 import matplotlib.pyplot as plt
-import matplotlib.cm as cmaps
 from adjustText import adjust_text
 from pandas import DataFrame
 
 from .nrst_nebs import NrstStns
-from ..misc.misc_ftns import as_err, get_lag_ser #get_norm_rand_symms,
-
-import pyximport
-pyximport.install()
-from normcop_cyftns import (get_corrcoeff) #get_asymms_sample,
+from ..misc.misc_ftns import as_err, get_lag_ser
+from ..cyth import get_corrcoeff
 
 plt.ioff()
 
 
 class BestLagRankCorrStns:
+
     def __init__(self, norm_cop_obj):
         self.norm_cop_obj = norm_cop_obj
 
@@ -434,11 +428,11 @@ class BestLagRankCorrStns:
         corrs_ctr_arr[isnan(corrs_ctr_arr)] = 0
 
         n_stns = corrs_arr.shape[0]
-        fig, corrs_ax = plt.subplots(1, 1, figsize=(1.0 * n_stns, 3))
+        _, corrs_ax = plt.subplots(1, 1, figsize=(1.0 * n_stns, 3))
         corrs_ax.matshow(corrs_arr.reshape(1, n_stns),
                          vmin=0,
                          vmax=2,
-                         cmap=cmaps.Blues,
+                         cmap=plt.get_cmap('Blues'),
                          origin='lower')
         for s in range(n_stns):
             _1 = int(corrs_ctr_arr[s])
@@ -570,7 +564,7 @@ class BestLagRankCorrStns:
 
         self.in_var_df = self.in_var_df.reindex(self.full_date_index)
 
-        ### save pickle
+        # ## save pickle
         rank_corr_stns_pkl_dict = {}
         rank_corr_stns_pkl_cur = open(self._out_rank_corr_stns_pkl_file, 'wb')
 

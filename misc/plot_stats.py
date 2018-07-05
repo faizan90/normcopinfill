@@ -6,7 +6,6 @@ This is a temporary script file.
 
 from numpy import divide, repeat, tile
 from pandas import DataFrame, to_numeric
-import matplotlib.cm as cmaps
 import matplotlib.pyplot as plt
 
 
