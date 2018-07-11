@@ -44,7 +44,7 @@ from ..misc.plot_stats import PlotStats
 from ..misc.avail_stns import AvailStns
 from ..misc.summary import Summary
 from ..misc.misc_ftns import pprt, as_err, full_tb
-from std_logger import StdFileLoggerCtrl
+from ..misc.std_logger import StdFileLoggerCtrl
 
 plt.ioff()
 set_printoptions(precision=6,
