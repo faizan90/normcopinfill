@@ -43,7 +43,7 @@ if __name__ == '__main__':
     infill_date_str = 'slice'
 
     # the time period for which it should infill, its type depends on infill_date_str
-    censor_period = ['1961-01-01', '1961-11-30']
+    censor_period = ['1961-01-01', '1964-11-30']
 
     # the number of minimum days/steps that every station should have prior to infilling
         # so that it is used in the process, stations with steps less than this are
@@ -108,19 +108,19 @@ if __name__ == '__main__':
 #     infill_cop.debug_mode_flag = True
 #     infill_cop.plot_diag_flag = True
 #     infill_cop.plot_step_cdf_pdf_flag = True
-#     infill_cop.compare_infill_flag = True
-#     infill_cop.flag_susp_flag = True
+    infill_cop.compare_infill_flag = True
+    infill_cop.flag_susp_flag = True
 #     infill_cop.force_infill_flag = False  # force infill if avail_cols < n_nrst_stns_min
 #     infill_cop.plot_neighbors_flag = True
 #    infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
 #    infill_cop.overwrite_flag = False
 #    infill_cop.read_pickles_flag = True
 #    infill_cop.use_best_stns_flag = False
-#    infill_cop.dont_stop_flag = False
+    infill_cop.dont_stop_flag = False
 #     infill_cop.plot_long_term_corrs_flag = True
 #    infill_cop.save_step_vars_flag = True
 #    infill_cop.plot_rand_flag = True
-    infill_cop.stn_based_mp_infill = False
+#     infill_cop.stn_based_mp_infill = False
 
 #    infill_cop.nrst_stns_type = 'dist'
     infill_cop.nrst_stns_type = 'rank'

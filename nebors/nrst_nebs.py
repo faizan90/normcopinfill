@@ -51,7 +51,8 @@ class NrstStns:
                      'max_time_lag_corr',
                      'out_fig_dpi',
                      '_out_nrst_stns_pkl_file',
-                     'out_nebor_plots_dir']
+                     'out_nebor_plots_dir',
+                     'pkls_dir']
 
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
@@ -63,6 +64,9 @@ class NrstStns:
 
         self._got_nrst_stns_flag = False
         self._plotted_nrst_stns_flag = False
+
+        if not os_exists(self.pkls_dir):
+            os_mkdir(self.pkls_dir)
 
         self.get_nrst_stns()
         assert self._got_nrst_stns_flag

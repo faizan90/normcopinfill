@@ -4,7 +4,8 @@ Created on %(date)s
 
 @author: %(username)s
 """
-from os.path import join as os_join
+from os import mkdir as os_mkdir
+from os.path import join as os_join, exists as os_exists
 
 from numpy import nan, isnan
 import matplotlib.pyplot as plt

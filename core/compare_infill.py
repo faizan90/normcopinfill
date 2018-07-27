@@ -53,7 +53,8 @@ class CompareInfill:
                      'fig_size_long',
                      'out_fig_dpi',
                      'out_fig_fmt',
-                     'ks_alpha']
+                     'ks_alpha',
+                     'verbose']
 
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
@@ -409,8 +410,10 @@ class CompareInfill:
                                       correl_sp,
                                       out_compar_plot_loc)
             else:
-                pprt(['Too many values not plotting the infill comparision!'],
-                     nbh=8)
+                if self.verbose:
+                    pprt(['Too many values not plotting the infill '
+                          'comparision!'],
+                         nbh=8)
 
             self._plot_infill_vs_obs_cdf_time_sers(infill_probs,
                                                    orig_probs,
