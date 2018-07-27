@@ -11,24 +11,26 @@ from datetime import datetime
 from os import mkdir as os_mkdir
 from os.path import exists as os_exists, join as os_join
 
-from numpy import (any as np_any,
-                   divide,
-                   intersect1d,
-                   isnan,
-                   linspace,
-                   logical_not,
-                   seterr,
-                   set_printoptions,
-                   where)
+from numpy import (
+    any as np_any,
+    divide,
+    intersect1d,
+    isnan,
+    linspace,
+    logical_not,
+    seterr,
+    set_printoptions,
+    where)
 from pathos.multiprocessing import ProcessPool as mp_pool
 import matplotlib.pyplot as plt
 
-from pandas import (date_range,
-                    read_csv,
-                    to_datetime,
-                    to_numeric,
-                    DataFrame,
-                    Index)
+from pandas import (
+    date_range,
+    read_csv,
+    to_datetime,
+    to_numeric,
+    DataFrame,
+    Index)
 
 from .infill_steps import InfillSteps
 from .plot_infill import PlotInfill
@@ -47,10 +49,11 @@ from ..misc.misc_ftns import pprt, as_err, full_tb
 from ..misc.std_logger import StdFileLoggerCtrl
 
 plt.ioff()
-set_printoptions(precision=6,
-                 threshold=2000,
-                 linewidth=200000,
-                 formatter={'float': '{:0.6f}'.format})
+set_printoptions(
+    precision=6,
+    threshold=2000,
+    linewidth=200000,
+    formatter={'float': '{:0.6f}'.format})
 
 seterr(all='ignore')
 
@@ -238,11 +241,6 @@ class NormCopulaInfill:
         The confidence limits of the Kolmogorov-Smirnov test. Should be between
         0 and 1.
         Default is 0.05.
-    n_rand_infill_values: integer
-        Create n_rand_infill_values output dataframes. Each of which contains
-        a randomly selected value from the conditional distribution for a given
-        step.
-        Default is 0.
     cut_cdf_thresh: float
         A CDF value below which all values get an average probability
         (between zero and \'cut_cdf_thresh\'). This is to handle very low
@@ -308,9 +306,6 @@ class NormCopulaInfill:
         Default is False.
     save_step_vars_flag: bool
         Save values of several parameters for each step during infilling.
-        Default is False.
-    plot_rand_flag: bool
-        Plot the n_rand_infill_values with the non-exeedence values as well.
         Default is False.
     stn_based_mp_infill: bool
         Choose how multiprocessing is used to infill. If True, each station is
@@ -434,7 +429,6 @@ class NormCopulaInfill:
                  freq='D',
                  verbose=True):
 
-        # TODO: save all variables to a file with a timestamp
         self.verbose = bool(verbose)
         self.in_var_file = str(in_var_file)
         self.out_dir = str(out_dir)
@@ -454,27 +448,32 @@ class NormCopulaInfill:
         if not os_exists(self.out_dir):
             os_mkdir(self.out_dir)
 
-        self._out_log_file = os_join(self.out_dir,
-                                     ('norm_cop_infill_log_%s.log' %
-                                      datetime.now().strftime('%Y%m%d%H%M%S')))
+        self._out_log_file = os_join(
+            self.out_dir,
+            ('norm_cop_infill_log_%s.log' %
+             datetime.now().strftime('%Y%m%d%H%M%S')))
+
         self.log_link = StdFileLoggerCtrl(self._out_log_file)
         print('INFO: Infilling started at:',
               datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-        self.in_var_df = read_csv(self.in_var_file, sep=self.sep,
-                                  index_col=0, encoding='utf-8')
+        self.in_var_df = read_csv(
+            self.in_var_file,
+            sep=self.sep,
+            index_col=0,
+            encoding='utf-8',
+            engine='python')
 
-        self.in_var_df.index = to_datetime(self.in_var_df.index,
-                                           format=self.time_fmt)
+        self.in_var_df.index = to_datetime(
+            self.in_var_df.index, format=self.time_fmt)
 
         # Checking validity of parameters and adjustments if necessary
 
         assert self.in_var_df.shape[0] > 0, '\'in_var_df\' has no records!'
         assert self.in_var_df.shape[1] > 1, '\'in_var_df\' has < 2 fields!'
 
-        self.in_var_df.columns = list(map(str, self.in_var_df.columns))
-        self.in_var_df.columns = [stn.strip()
-                                  for stn in self.in_var_df.columns]
+        self.in_var_df.columns = self.in_var_df.columns.map(str)
+        self.in_var_df.columns = self.in_var_df.columns.map(str.strip)
 
         self.in_var_df_orig = self.in_var_df.copy()
 
@@ -487,16 +486,20 @@ class NormCopulaInfill:
             print('INFO: \'in_var_df\' shape after dropping NaN steps:',
                   self.in_var_df.shape)
 
-        self.in_coords_df = read_csv(self.in_coords_file, sep=sep, index_col=0,
-                                     encoding='utf-8')
+        self.in_coords_df = read_csv(
+            self.in_coords_file,
+            sep=sep, index_col=0,
+            encoding='utf-8',
+            engine='python')
+
         assert self.in_coords_df.shape[0] > 0, (
             '\'in_coords_df\' has no records!')
         assert self.in_coords_df.shape[1] >= 2, (
             '\'in_coords_df\' has < 2 fields!')
 
-        self.in_coords_df.index = list(map(str, self.in_coords_df.index))
-        self.in_coords_df.index = [stn.strip()
-                                   for stn in self.in_coords_df.index]
+        self.in_coords_df.index = self.in_coords_df.index.map(str)
+        self.in_coords_df.index = self.in_coords_df.index.map(str.strip)
+
         _ = ~self.in_coords_df.index.duplicated(keep='last')
         self.in_coords_df = self.in_coords_df[_]
 
@@ -519,19 +522,22 @@ class NormCopulaInfill:
             self.skip_stns = [stn.strip() for stn in self.skip_stns]
 
             if len(self.skip_stns) > 0:
-                self.in_var_df.drop(labels=self.skip_stns,
-                                    axis=1,
-                                    inplace=True,
-                                    errors='ignore')
+                self.in_var_df.drop(
+                    labels=self.skip_stns,
+                    axis=1,
+                    inplace=True,
+                    errors='ignore')
 
-                self.in_coords_df.drop(labels=self.skip_stns,
-                                       axis=1,
-                                       inplace=True,
-                                       errors='ignore')
+                self.in_coords_df.drop(
+                    labels=self.skip_stns,
+                    axis=1,
+                    inplace=True,
+                    errors='ignore')
 
             if self.verbose:
-                print(('INFO: \'in_var_df\' shape after dropping '
-                       '\'skip_stns\':'), self.in_var_df.shape)
+                print(
+                    'INFO: \'in_var_df\' shape after dropping \'skip_stns\':',
+                    self.in_var_df.shape)
 
         assert self.min_valid_vals >= 1, (
             '\'min_valid_vals\' cannot be less than one!')
@@ -541,8 +547,7 @@ class NormCopulaInfill:
 
         if self.n_max_nebs + 1 > self.in_var_df.shape[1]:
             self.n_max_nebs = self.in_var_df.shape[1] - 1
-            print(('WARNING: \'n_max_nebs\' reduced to %d' %
-                   self.n_max_nebs))
+            print('WARNING: \'n_max_nebs\' reduced to %d' % self.n_max_nebs)
 
         assert self.n_min_nebs <= self.n_max_nebs, (
             '\'n_min_nebs\' > \'n_max_nebs\'!')
@@ -558,6 +563,7 @@ class NormCopulaInfill:
 
         if ((self.infill_interval_type == 'slice') or
             (self.infill_interval_type == 'indiv')):
+
             assert hasattr(self.infill_dates_list, '__iter__'), (
                '\'infill_dates_list\' not an iterable!')
 
@@ -566,37 +572,41 @@ class NormCopulaInfill:
                 'For infill_interval_type \'slice\' only '
                 'two objects inside \'infill_dates_list\' are allowed!')
 
-            self.infill_dates_list = to_datetime(self.infill_dates_list,
-                                                 format=self.time_fmt)
+            self.infill_dates_list = to_datetime(
+                self.infill_dates_list, format=self.time_fmt)
+
             assert self.infill_dates_list[1] > self.infill_dates_list[0], (
                 'Infill dates not in ascending order!')
 
             _strt_date, _end_date = (
-                to_datetime([self.infill_dates_list[0],
-                             self.infill_dates_list[-1]],
-                            format=self.time_fmt))
+                to_datetime([
+                    self.infill_dates_list[0], self.infill_dates_list[-1]],
+                    format=self.time_fmt))
 
-            self.infill_dates = date_range(start=_strt_date,
-                                           end=_end_date,
-                                           freq=self.freq)
+            self.infill_dates = date_range(
+                start=_strt_date, end=_end_date, freq=self.freq)
+
         elif self.infill_interval_type == 'all':
             self.infill_dates_list = None
             self.infill_dates = self.in_var_df.index
+
         elif self.infill_interval_type == 'indiv':
             assert len(self.infill_dates_list) > 0, (
                    '\'infill_dates_list\' is empty!')
-            self.infill_dates = to_datetime(self.infill_dates_list,
-                                            format=self.time_fmt)
+
+            self.infill_dates = to_datetime(
+                self.infill_dates_list, format=self.time_fmt)
         else:
             assert False, (
                 '\'infill_interval_type\' can only be \'slice\', \'all\', '
                 'or \'indiv\'!')
 
-        insuff_val_cols = self.in_var_df.columns[self.in_var_df.count() <
-                                                 self.min_valid_vals]
+        insuff_val_cols = self.in_var_df.columns[
+            self.in_var_df.count() < self.min_valid_vals]
 
         if len(insuff_val_cols) > 0:
             self.in_var_df.drop(labels=insuff_val_cols, axis=1, inplace=True)
+
             if self.verbose:
                 print(('INFO: The following stations (n=%d) '
                        'are with insufficient values:\n') %
@@ -614,8 +624,8 @@ class NormCopulaInfill:
             '\'min_valid_vals\' after dropping days with insufficient '
             'records!')
 
-        commn_stns = intersect1d(self.in_var_df.columns,
-                                 self.in_coords_df.index)
+        commn_stns = intersect1d(
+            self.in_var_df.columns, self.in_coords_df.index)
 
         self.in_var_df = self.in_var_df[commn_stns]
         self.in_coords_df = self.in_coords_df.loc[commn_stns]
@@ -634,21 +644,24 @@ class NormCopulaInfill:
         if self.verbose:
             print('INFO: \'in_var_df\' shape after station name intersection '
                   'with \'in_coords_df\':', self.in_var_df.shape)
+
             print('INFO: \'in_coords_df\' shape after station name '
                   'intersection with \'in_var_df\':', self.in_coords_df.shape)
 
         assert self.n_min_nebs < self.in_var_df.shape[1], (
             'Number of stations in \'in_var_df\' less than '
             '\'n_min_nebs\' after intersecting station names!')
+
         if self.n_max_nebs >= self.in_var_df.shape[1]:
             self.n_max_nebs = self.in_var_df.shape[1] - 1
+
             print(('WARNING: \'n_max_nebs\' set to %d after station '
                    'names intersection!') % self.n_max_nebs)
 
         self.n_infill_stns = len(self.infill_stns)
         assert self.n_infill_stns > 0
 
-        self.ncpus = min(self.ncpus, self.n_infill_stns)
+        # self.ncpus = min(self.ncpus, self.n_infill_stns)
 
         for infill_stn in self.infill_stns:
             assert infill_stn in self.in_var_df.columns, (
@@ -673,15 +686,9 @@ class NormCopulaInfill:
             'No infill dates exist in \'in_var_df\' after dropping '
             'stations and records with insufficient information!')
 
-        self.full_date_index = date_range(self.in_var_df.index[+0],
-                                          self.in_var_df.index[-1],
-                                          freq=self.freq)
+        self.full_date_index = date_range(
+            self.in_var_df.index[0], self.in_var_df.index[-1], freq=self.freq)
         self.in_var_df = self.in_var_df.reindex(self.full_date_index)
-
-## =============================================================================
-# # setting some values to nan to reproduce an error
-#        self.in_var_df.loc[self.infill_dates, self.infill_stns] = nan
-## =============================================================================
 
         # ## Initiating additional required variables
         self.nrst_stns_list = []
@@ -701,25 +708,27 @@ class NormCopulaInfill:
         self.n_discret = 300
         self.n_norm_symm_flds = 200
         self._max_symm_rands = 50000
-        self.thresh_mp_steps = 100
+        self.thresh_mp_steps = 1000
 
         self.fig_size_long = (20, 7)
         self.out_fig_dpi = 300
         self.out_fig_fmt = 'png'
 
-        self.conf_heads = ['var_0.05',
-                           'var_0.25',
-                           'var_0.50',
-                           'var_0.75',
-                           'var_0.95']
+        self.conf_heads = [
+            'var_0.05',
+            'var_0.25',
+            'var_0.50',
+            'var_0.75',
+            'var_0.95']
+
         self.conf_probs = [0.05, 0.25, 0.5, 0.75, 0.95]
         self.fin_conf_head = self.conf_heads[2]
         _ = self.in_var_df.shape[0]
         self.adj_prob_bounds = [0.0001, 0.9999]
-        self.adj_prob_bounds[0] = min(self.adj_prob_bounds[0],
-                                      (1. / self.in_var_df.shape[0]))
-        self.adj_prob_bounds[1] = max(self.adj_prob_bounds[1],
-                                      1 - (1. / self.in_var_df.shape[1]))
+        self.adj_prob_bounds[0] = min(
+            self.adj_prob_bounds[0], (1. / self.in_var_df.shape[0]))
+        self.adj_prob_bounds[1] = max(
+            self.adj_prob_bounds[1], 1 - (1. / self.in_var_df.shape[1]))
 
         self.flag_probs = [0.05, 0.95]
         self.n_round = 3
@@ -727,7 +736,6 @@ class NormCopulaInfill:
         self.max_corr = 0.9995
         self.min_corr = 0.5  # drop neighbors that have less abs corr than this
         self.ks_alpha = 0.05
-        self.n_rand_infill_values = 0
 
         if self.infill_type == 'discharge-censored':
             self.cut_cdf_thresh = 0.8
@@ -762,29 +770,58 @@ class NormCopulaInfill:
         self.plot_rand_flag = False
         self.stn_based_mp_infill = True
 
-        self.out_var_file = os_join(self.out_dir, 'infilled_var_df.csv')
+        self.indiv_stn_outs_dir = os_join(
+            self.out_dir, '01_individual_station_outputs')
+
+        if not os_exists(self.indiv_stn_outs_dir):
+            os_mkdir(self.indiv_stn_outs_dir)
+
+        self.comb_stn_out_dir = os_join(
+            self.out_dir, '02_combined_station_outputs')
+        if not os_exists(self.comb_stn_out_dir):
+            os_mkdir(self.comb_stn_out_dir)
+
+        self.out_var_file = os_join(
+            self.comb_stn_out_dir, 'infilled_var_df.csv')
         self.out_var_infill_stns_file = (
-            os_join(self.out_dir, 'infilled_var_df_infill_stns.csv'))
-        self.out_var_infill_stn_coords_file = (
-            os_join(self.out_dir, 'infilled_var_df_infill_stns_coords.csv'))
-        self.out_flag_file = os_join(self.out_dir, 'infilled_flag_var_df.csv')
-        self.out_stns_avail_file = os_join(self.out_dir, 'n_avail_stns_df.csv')
-        self.out_stns_avail_fig = os_join(self.out_dir, 'n_avail_stns_compare')
-        self.out_nebor_plots_dir = os_join(self.out_dir, 'neighbor_stns_plots')
-        self.out_rank_corr_plots_dir = os_join(self.out_dir,
-                                               'rank_corr_stns_plots')
-        self.out_long_term_corrs_dir = os_join(self.out_dir,
-                                               'long_term_correlations')
-        self.out_summary_file = os_join(self.out_dir, 'summary_df.csv')
-        self.out_summary_fig = os_join(self.out_dir, 'summary_df')
+            os_join(self.comb_stn_out_dir, 'infilled_var_df_infill_stns.csv'))
+        self.out_var_infill_stn_coords_file = os_join(
+            self.comb_stn_out_dir, 'infilled_var_df_infill_stns_coords.csv')
+        self.out_flag_file = os_join(
+            self.comb_stn_out_dir, 'infilled_flag_var_df.csv')
 
-        self._out_rank_corr_stns_pkl_file = os_join(self.out_dir,
-                                                    'rank_corr_stns_vars.pkl')
-        self._out_nrst_stns_pkl_file = os_join(self.out_dir,
-                                               'nrst_stns_vars.pkl')
+        self.out_nebor_plots_dir = os_join(
+            self.out_dir, '03_neighbor_stns_plots')
+        self.out_rank_corr_plots_dir = os_join(
+            self.out_dir, '04_rank_corr_stns_plots')
+        self.out_long_term_corrs_dir = os_join(
+            self.out_dir, '05_long_term_correlations')
+        self.ecops_dir = os_join(self.out_dir, '06_empirical_copula_plots')
 
-        self.ecops_dir = os_join(self.out_dir, 'empirical_copula_plots')
-        self.out_var_stats_file = os_join(self.out_dir, 'var_statistics.png')
+        self.stats_dir = os_join(self.out_dir, '07_station_statistics')
+        if not os_exists(self.stats_dir):
+            os_mkdir(self.stats_dir)
+        self.out_var_stats_file = os_join(self.stats_dir, 'var_statistics.png')
+
+        self.pkls_dir = os_join(self.out_dir, '08_pickles')
+        if not os_exists(self.pkls_dir):
+            os_mkdir(self.pkls_dir)
+
+        self._out_rank_corr_stns_pkl_file = os_join(
+            self.pkls_dir, 'rank_corr_stns_vars.pkl')
+        self._out_nrst_stns_pkl_file = os_join(
+            self.pkls_dir, 'nrst_stns_vars.pkl')
+
+        self.summary_dir = os_join(self.out_dir, '09_summary')
+        if not os_exists(self.summary_dir):
+            os_mkdir(self.summary_dir)
+
+        self.out_stns_avail_file = os_join(
+            self.summary_dir, 'n_avail_stns_df.csv')
+        self.out_stns_avail_fig = os_join(
+            self.summary_dir, 'n_avail_stns_compare')
+        self.out_summary_file = os_join(self.summary_dir, 'summary_df.csv')
+        self.out_summary_fig = os_join(self.summary_dir, 'summary_df')
 
         if self.infill_type == 'precipitation':
             self.var_le_trs = 0.0
@@ -841,12 +878,12 @@ class NormCopulaInfill:
                               (ii + 1, self.n_infill_stns, infill_stn)])
 
         self.curr_infill_stn = infill_stn
-        self.stn_out_dir = os_join(self.out_dir, infill_stn)
+        self.stn_out_dir = os_join(self.indiv_stn_outs_dir, infill_stn)
         out_conf_df_file = (
             os_join(self.stn_out_dir,
                     'stn_%s_infill_conf_vals_df.csv' % infill_stn))
-        out_add_info_file = os_join(self.stn_out_dir,
-                                    'add_info_df_stn_%s.csv' % infill_stn)
+        out_add_info_file = os_join(
+            self.stn_out_dir, 'add_info_df_stn_%s.csv' % infill_stn)
 
         # load infill
         no_out = True
@@ -854,52 +891,46 @@ class NormCopulaInfill:
         if ((not self.overwrite_flag) and
             os_exists(out_conf_df_file) and
             os_exists(out_add_info_file)):
+
             if self.verbose:
                 pprt(['Output exists already. Not overwriting.'], nbh=8)
 
             try:
-                out_conf_df = read_csv(out_conf_df_file,
-                                       sep=str(self.sep),
-                                       encoding='utf-8',
-                                       index_col=0)
-                out_conf_df.index = to_datetime(out_conf_df.index,
-                                                format=self.time_fmt)
+                out_conf_df = read_csv(
+                    out_conf_df_file,
+                    sep=str(self.sep),
+                    encoding='utf-8',
+                    index_col=0,
+                    engine='python')
 
-                out_add_info_df = read_csv(out_add_info_file,
-                                           sep=str(self.sep),
-                                           encoding='utf-8',
-                                           index_col=0)
-                out_add_info_df.index = to_datetime(out_add_info_df.index,
-                                                    format=self.time_fmt)
+                out_conf_df.index = to_datetime(
+                    out_conf_df.index, format=self.time_fmt)
+
+                out_add_info_df = read_csv(
+                    out_add_info_file,
+                    sep=str(self.sep),
+                    encoding='utf-8',
+                    index_col=0,
+                    engine='python')
+
+                out_add_info_df.index = to_datetime(
+                    out_add_info_df.index, format=self.time_fmt)
 
                 n_infilled_vals = out_conf_df.dropna().shape[0]
 
-                if not self.n_rand_infill_values:
-                    _idxs = (
-                        isnan(self.in_var_df_orig.loc[self.infill_dates,
-                                                      self.curr_infill_stn]))
-                    _ser = self.in_var_df_orig.loc[self.infill_dates,
-                                                   self.curr_infill_stn]
-                    out_stn_ser = _ser.where(
-                        logical_not(_idxs),
-                        out_conf_df[self.fin_conf_head],
-                        axis=0)
-                    self.out_var_df.loc[out_conf_df.index,
-                                        infill_stn] = out_stn_ser
-                else:
-                    for rand_idx in range(self.n_rand_infill_values):
-                        _idxs = self.in_var_df_orig.loc[self.infll_dates,
-                                                        self.curr_infill_stn]
-                        _idxs = isnan(_idxs)
-                        _idxs = logical_not(_idxs)
-                        _ser = self.in_var_df_orig.loc[
-                            self.infill_dates, self.curr_infill_stn]
-                        _lab = self.fin_conf_head % rand_idx
-                        out_stn_ser = _ser.where(_idxs,
-                                                 out_conf_df[_lab],
-                                                 axis=0)
-                        self.out_var_dfs_list[rand_idx].loc[
-                            out_conf_df.index, infill_stn] = out_stn_ser
+                _idxs = isnan(self.in_var_df_orig.loc[
+                        self.infill_dates, self.curr_infill_stn])
+
+                _ser = self.in_var_df_orig.loc[
+                    self.infill_dates, self.curr_infill_stn]
+
+                out_stn_ser = _ser.where(
+                    logical_not(_idxs),
+                    out_conf_df[self.fin_conf_head],
+                    axis=0)
+
+                self.out_var_df.loc[
+                    out_conf_df.index, infill_stn] = out_stn_ser
 
                 no_out = False
             except Exception as msg:
@@ -913,9 +944,8 @@ class NormCopulaInfill:
         if self.compare_infill_flag:
             nan_idxs = list(range(self.infill_dates.shape[0]))
         else:
-            nan_idxs = where(
-                isnan(self.in_var_df.loc[self.infill_dates,
-                                         self.curr_infill_stn].values))[0]
+            nan_idxs = where(isnan(self.in_var_df.loc[
+                self.infill_dates, self.curr_infill_stn].values))[0]
 
         n_nan_idxs = len(nan_idxs)
         if (n_infilled_vals < n_nan_idxs and (not no_out)):
@@ -925,15 +955,18 @@ class NormCopulaInfill:
                      nbh=8)
             no_out = True
 
-        self.summary_df.loc[self.curr_infill_stn,
-                            self._miss_vals_lab] = n_nan_idxs
+        self.summary_df.loc[
+            self.curr_infill_stn, self._miss_vals_lab] = n_nan_idxs
 
         if self.nrst_stns_type == 'rank':
             self.curr_nrst_stns = self.rank_corr_stns_dict[infill_stn]
+
         elif self.nrst_stns_type == 'dist':
             self.curr_nrst_stns = self.nrst_stns_dict[infill_stn]
+
         elif self.nrst_stns_type == 'symm':
             self.curr_nrst_stns = self.rank_corr_stns_dict[infill_stn]
+
         else:
             raise Exception(as_err('Incorrect \'nrst_stns_type\': %s!' %
                                    self.nrst_stns_type))
@@ -945,24 +978,28 @@ class NormCopulaInfill:
             # mkdirs
             dir_list = [self.stn_out_dir]
 
-            self.stn_infill_cdfs_dir = os_join(self.stn_out_dir,
-                                               'stn_infill_cdfs')
-            self.stn_infill_pdfs_dir = os_join(self.stn_out_dir,
-                                               'stn_infill_pdfs')
-            self.stn_step_cdfs_dir = os_join(self.stn_out_dir,
-                                             'stn_step_cdfs')
-            self.stn_step_corrs_dir = os_join(self.stn_out_dir,
-                                              'stn_step_corrs')
-            self.stn_step_vars_dir = os_join(self.stn_out_dir,
-                                             'stn_step_vars')
+            self.stn_infill_cdfs_dir = os_join(
+                self.stn_out_dir, 'stn_infill_cdfs')
+
+            self.stn_infill_pdfs_dir = os_join(
+                self.stn_out_dir, 'stn_infill_pdfs')
+
+            self.stn_step_cdfs_dir = os_join(
+                self.stn_out_dir, 'stn_step_cdfs')
+
+            self.stn_step_corrs_dir = os_join(
+                self.stn_out_dir, 'stn_step_corrs')
+
+            self.stn_step_vars_dir = os_join(
+                self.stn_out_dir, 'stn_step_vars')
 
             if self.plot_step_cdf_pdf_flag:
-                dir_list.extend([self.stn_infill_cdfs_dir,
-                                 self.stn_infill_pdfs_dir])
+                dir_list.extend([
+                    self.stn_infill_cdfs_dir, self.stn_infill_pdfs_dir])
 
             if self.plot_diag_flag:
-                dir_list.extend([self.stn_step_cdfs_dir,
-                                 self.stn_step_corrs_dir])
+                dir_list.extend([
+                    self.stn_step_cdfs_dir, self.stn_step_corrs_dir])
 
             if self.save_step_vars_flag:
                 dir_list.extend([self.stn_step_vars_dir])
@@ -971,29 +1008,34 @@ class NormCopulaInfill:
                 if not os_exists(_dir):
                     os_mkdir(_dir)
 
-            idxs = linspace(0,
-                            n_nan_idxs,
-                            self.ncpus + 1,
-                            endpoint=True,
-                            dtype='int64')
+            idxs = linspace(
+                0,
+                n_nan_idxs,
+                self.ncpus + 1,
+                endpoint=True,
+                dtype='int64')
 
             if self.verbose:
                 infill_start = timeit.default_timer()
                 pprt(['%d steps to infill' % n_nan_idxs], nbh=8)
                 pprt(['Neighbors are:'], nbh=8)
+
                 for i_msg in range(0, len(self.curr_nrst_stns), 3):
                     pprt(self.curr_nrst_stns[i_msg:(i_msg + 3)], nbh=12)
 
             # initiate infill
-            out_conf_df = DataFrame(index=self.infill_dates,
-                                    columns=self.conf_ser.index,
-                                    dtype=float)
-            out_add_info_df = DataFrame(index=self.infill_dates,
-                                        dtype=float,
-                                        columns=['infill_status',
-                                                 'n_neighbors_raw',
-                                                 'n_neighbors_fin',
-                                                 'act_val_prob'])
+            out_conf_df = DataFrame(
+                index=self.infill_dates,
+                columns=self.conf_ser.index,
+                dtype=float)
+
+            out_add_info_df = DataFrame(
+                index=self.infill_dates,
+                dtype=float,
+                columns=['infill_status',
+                         'n_neighbors_raw',
+                         'n_neighbors_fin',
+                         'act_val_prob'])
 
             if ((n_nan_idxs > self.thresh_mp_steps) and
                 not self.stn_based_mp_infill):
@@ -1007,7 +1049,9 @@ class NormCopulaInfill:
                 (self.ncpus == 1) or
                 (not use_mp_infill) or
                 self.debug_mode_flag):
+
                 sub_dfs = [self._infill(self.infill_dates[nan_idxs])]
+
             else:
                 n_sub_dates = 0
                 sub_infill_dates_list = []
@@ -1025,8 +1069,9 @@ class NormCopulaInfill:
 
                 try:
                     sub_dfs = list(self._norm_cop_pool.uimap(
-                            self._infill, sub_infill_dates_list))
+                        self._infill, sub_infill_dates_list))
                     self._norm_cop_pool.clear()
+
                 except Exception as msg:
                     self._norm_cop_pool.close()
                     self._norm_cop_pool.join()
@@ -1036,26 +1081,19 @@ class NormCopulaInfill:
                 sub_conf_df = sub_df[0]
                 sub_add_info_df = sub_df[1]
 
-                _ser = self.in_var_df_orig.loc[sub_conf_df.index,
-                                               self.curr_infill_stn]
+                _ser = self.in_var_df_orig.loc[
+                    sub_conf_df.index, self.curr_infill_stn]
+
                 _idxs = isnan(_ser)
                 _idxs = logical_not(_idxs)
 
-                if not self.n_rand_infill_values:
-                    sub_stn_ser = (_ser.where(_idxs,
-                                              sub_conf_df[self.fin_conf_head],
-                                              axis=0)).copy()
-                    self.out_var_df.loc[sub_stn_ser.index,
-                                        self.curr_infill_stn] = sub_stn_ser
-                else:
-                    for rand_idx in range(self.n_rand_infill_values):
-                        _lab = self.fin_conf_head % rand_idx
-                        sub_stn_ser = (_ser.where(_idxs,
-                                                  sub_conf_df[_lab],
-                                                  axis=0)).copy()
-                        self.out_var_dfs_list[rand_idx].loc[
-                                sub_stn_ser.index,
-                                self.curr_infill_stn] = sub_stn_ser
+                sub_stn_ser = (_ser.where(
+                    _idxs,
+                    sub_conf_df[self.fin_conf_head],
+                    axis=0)).copy()
+
+                self.out_var_df.loc[
+                    sub_stn_ser.index, self.curr_infill_stn] = sub_stn_ser
 
                 out_conf_df.update(sub_conf_df)
                 out_add_info_df.update(sub_add_info_df)
@@ -1077,55 +1115,60 @@ class NormCopulaInfill:
 
             # ## prepare output
             out_conf_df = out_conf_df.apply(lambda x: to_numeric(x))
-            out_conf_df.to_csv(out_conf_df_file,
-                               sep=str(self.sep),
-                               encoding='utf-8')
-            out_add_info_df.to_csv(out_add_info_file,
-                                   sep=str(self.sep),
-                                   encoding='utf-8')
+            out_conf_df.to_csv(
+                out_conf_df_file,
+                sep=str(self.sep),
+                encoding='utf-8')
 
-        self.summary_df.loc[self.curr_infill_stn,
-                            self._infilled_vals_lab] = n_infilled_vals
+            out_add_info_df.to_csv(
+                out_add_info_file, sep=str(self.sep), encoding='utf-8')
+
+        self.summary_df.loc[
+            self.curr_infill_stn, self._infilled_vals_lab] = n_infilled_vals
 
         _ = len(self.curr_nrst_stns)
-        self.summary_df.loc[self.curr_infill_stn,
-                            self._max_avail_nebs_lab] = _
+        self.summary_df.loc[
+            self.curr_infill_stn, self._max_avail_nebs_lab] = _
 
         _ = round(out_add_info_df['n_neighbors_fin'].dropna().mean(), 1)
-        self.summary_df.loc[self.curr_infill_stn,
-                            self._avg_avail_nebs_lab] = _
+        self.summary_df.loc[
+            self.curr_infill_stn, self._avg_avail_nebs_lab] = _
 
         # make plots
         # plot number of gauges available and used
         if self.verbose:
             infill_start = timeit.default_timer()
 
-        nebs_used_per_step_file = os_join(self.stn_out_dir,
-                                          ('stns_used_infill_%s.png' %
-                                           infill_stn))
+        nebs_used_per_step_file = os_join(
+            self.stn_out_dir, 'stns_used_infill_%s.png' % infill_stn)
 
         if (self.overwrite_flag or
             no_out or
             (not os_exists(nebs_used_per_step_file))):
+
             lw = 0.8
             alpha = 0.7
 
             plt.figure(figsize=self.fig_size_long)
             infill_ax = plt.subplot(111)
-            infill_ax.plot(self.infill_dates,
-                           out_add_info_df['n_neighbors_raw'].values,
-                           label='n_neighbors_raw',
-                           c='r',
-                           alpha=alpha,
-                           lw=lw + 0.5,
-                           ls='-')
-            infill_ax.plot(self.infill_dates,
-                           out_add_info_df['n_neighbors_fin'].values,
-                           label='n_neighbors_fin',
-                           c='b',
-                           marker='o',
-                           lw=0,
-                           ms=2)
+
+            infill_ax.plot(
+                self.infill_dates,
+                out_add_info_df['n_neighbors_raw'].values,
+                label='n_neighbors_raw',
+                c='r',
+                alpha=alpha,
+                lw=lw + 0.5,
+                ls='-')
+
+            infill_ax.plot(
+                self.infill_dates,
+                out_add_info_df['n_neighbors_fin'].values,
+                label='n_neighbors_fin',
+                c='b',
+                marker='o',
+                lw=0,
+                ms=2)
 
             infill_ax.set_xlabel('Time')
             infill_ax.set_xlim(self.infill_dates[0], self.infill_dates[-1])
@@ -1136,31 +1179,41 @@ class NormCopulaInfill:
                           'for infilling at station: %s') % infill_stn)
             plt.grid()
             plt.legend(framealpha=0.5, loc=0)
-            plt.savefig(nebs_used_per_step_file,
-                        dpi=self.out_fig_dpi,
-                        bbox_inches='tight')
+            plt.savefig(
+                nebs_used_per_step_file,
+                dpi=self.out_fig_dpi,
+                bbox_inches='tight')
             plt.close('all')
 
         # the original unfilled series of the infilled station
         act_var = self.in_var_df_orig[infill_stn].loc[self.infill_dates].values
 
         # plot the infilled series
-        out_infill_plot_loc = os_join(self.stn_out_dir,
-                                      'missing_infill_%s.png' % infill_stn)
         plot_infill_cond = True
 
         if not self.overwrite_flag:
             plot_infill_cond = (plot_infill_cond and no_out)
 
-        use_mp = not (self.debug_mode_flag or
-                      self.stn_based_mp_infill or
-                      (self.ncpus == 1))
+        if (self.infill_dates.shape[0] > 365) and (plot_infill_cond):
+            if self.verbose:
+                pprt(['Too many values, not plotting the infilled series!'],
+                     nbh=8)
+            plot_infill_cond = False
+
+        use_mp = not (
+            self.debug_mode_flag or
+            self.stn_based_mp_infill or
+            (self.ncpus == 1))
+
         compare_iter = None
         flag_susp_iter = None
 
         if plot_infill_cond:
             if self.verbose:
                 pprt(['Plotting infill...'], nbh=8)
+
+            out_infill_plot_loc = os_join(
+                self.stn_out_dir, 'missing_infill_%s.png' % infill_stn)
 
             args_tup = (self, act_var, out_conf_df, out_infill_plot_loc)
             if use_mp:
@@ -1169,9 +1222,6 @@ class NormCopulaInfill:
                 PlotInfill(args_tup)
 
         # plot the comparison between the actual and infilled series
-        out_compar_plot_loc = os_join(self.stn_out_dir,
-                                      'compare_infill_%s.png' % infill_stn)
-
         if self.compare_infill_flag and np_any(act_var):
             if self.verbose:
                 pprt(['Plotting infill comparison...'], nbh=8)
@@ -1181,6 +1231,9 @@ class NormCopulaInfill:
             else:
                 update_summary_df_only = False
 
+            out_compar_plot_loc = os_join(
+                self.stn_out_dir, 'compare_infill_%s.png' % infill_stn)
+
             args_tup = (act_var,
                         out_conf_df,
                         out_compar_plot_loc,
@@ -1189,8 +1242,8 @@ class NormCopulaInfill:
 
             compare_obj = CompareInfill(self)
             if use_mp and (not update_summary_df_only):
-                compare_iter = self._norm_cop_pool.uimap(compare_obj.plot_all,
-                                                         (args_tup,))
+                compare_iter = self._norm_cop_pool.uimap(
+                    compare_obj.plot_all, (args_tup,))
             else:
                 self.summary_df.update(compare_obj.plot_all(args_tup))
         else:
@@ -1198,8 +1251,8 @@ class NormCopulaInfill:
                 pprt(['Nothing to compare...'], nbh=8)
 
         # plot steps showing if the actual data is within the bounds
-        out_flag_susp_loc = os_join(self.stn_out_dir,
-                                    'flag_infill_%s.png' % infill_stn)
+        out_flag_susp_loc = os_join(
+            self.stn_out_dir, 'flag_infill_%s.png' % infill_stn)
 
         if self.flag_susp_flag and np_any(act_var):
             if self.verbose:
@@ -1215,9 +1268,10 @@ class NormCopulaInfill:
                         out_conf_df,
                         out_flag_susp_loc,
                         update_summary_df_only)
+
             if use_mp and (not update_summary_df_only):
-                flag_susp_iter = self._norm_cop_pool.uimap(flag_susp_obj.plot,
-                                                           (args_tup,))
+                flag_susp_iter = self._norm_cop_pool.uimap(
+                    flag_susp_obj.plot, (args_tup,))
             else:
                 _ = flag_susp_obj.plot(args_tup)
                 self.summary_df.update(_[0])
@@ -1246,10 +1300,7 @@ class NormCopulaInfill:
 
         if self.stn_based_mp_infill:
             # must return a tuple in case of stn_based_mp_infill
-            return (self.summary_df,
-                    self.flag_df,
-                    self.out_var_df,
-                    self.out_var_dfs_list)
+            return (self.summary_df, self.flag_df, self.out_var_df)
         return
 
     def infill(self):
@@ -1303,23 +1354,23 @@ class NormCopulaInfill:
                    '%d') % self.infill_dates.shape[0])
             print(('INFO: Total number of stations to infill: '
                    '%d') % len(self.infill_stns))
-            if self.n_rand_infill_values:
-                print('INFO: n_rand_infill_values:', self.n_rand_infill_values)
 
         assert self.n_infill_stns == len(self.infill_stns)
 
         if ((self.ncpus == 1) or
             self.debug_mode_flag or
             (not self.stn_based_mp_infill)):
+
             for ii, infill_stn in enumerate(self.infill_stns):
                 self._infill_stn(ii, infill_stn)
+
         else:
             try:
                 iis = list(range(0, self.n_infill_stns))
-                _all_res = list(self._norm_cop_pool.map(self._infill_stn,
-                                                        iis,
-                                                        self.infill_stns))
+                _all_res = list(self._norm_cop_pool.map(
+                    self._infill_stn, iis, self.infill_stns))
                 self._norm_cop_pool.clear()
+
             except:
                 self._norm_cop_pool.close()
                 self._norm_cop_pool.join()
@@ -1343,43 +1394,28 @@ class NormCopulaInfill:
                 if self.out_var_df is not None:
                     self.out_var_df.update(_res[2])
 
-                if self.out_var_dfs_list is not None:
-                    for rand_idx in range(self.n_rand_infill_values):
-                        _1 = self.out_var_dfs_list[rand_idx]
-                        _2 = _res[3][rand_idx].loc[:, self.curr_infill_stn]
-                        _1.loc[:, self.curr_infill_stn].update(_2)
+        self.out_var_df.to_csv(
+            self.out_var_file, sep=str(self.sep), encoding='utf-8')
 
-        if not self.n_rand_infill_values:
-            self.out_var_df.to_csv(self.out_var_file,
-                                   sep=str(self.sep),
-                                   encoding='utf-8')
+        _ = self.out_var_df.loc[self.infill_dates, self.infill_stns]
+        _.to_csv(self.out_var_infill_stns_file,
+                 sep=str(self.sep),
+                 encoding='utf-8')
 
-            _ = self.out_var_df.loc[self.infill_dates, self.infill_stns]
-            _.to_csv(self.out_var_infill_stns_file,
-                     sep=str(self.sep),
-                     encoding='utf-8')
+        _ = self.in_coords_df.loc[self.infill_stns]
+        _.to_csv(self.out_var_infill_stn_coords_file,
+                 sep=str(self.sep),
+                 encoding='utf-8')
 
-            _ = self.in_coords_df.loc[self.infill_stns]
-            _.to_csv(self.out_var_infill_stn_coords_file,
-                     sep=str(self.sep),
-                     encoding='utf-8')
-        else:
-            out_var_file_tmpl = self.out_var_file[:-4]
-            for rand_idx in range(self.n_rand_infill_values):
-                out_var_file = out_var_file_tmpl + '_%0.4d.csv' % rand_idx
-                self.out_var_dfs_list[rand_idx].to_csv(out_var_file,
-                                                       sep=str(self.sep),
-                                                       encoding='utf-8')
-
-        self.summary_df.to_csv(self.out_summary_file,
-                               sep=str(self.sep),
-                               encoding='utf-8')
+        self.summary_df.to_csv(
+            self.out_summary_file, sep=str(self.sep), encoding='utf-8')
 
         if self.flag_susp_flag:
-            self.flag_df.to_csv(self.out_flag_file,
-                                sep=str(self.sep),
-                                encoding='utf-8',
-                                float_format='%2.0f')
+            self.flag_df.to_csv(
+                self.out_flag_file,
+                sep=str(self.sep),
+                encoding='utf-8', float_format='%2.0f')
+
         self._infilled = True
         print('\n')
         return
@@ -1495,13 +1531,7 @@ class NormCopulaInfill:
 
         self._get_ncpus()
 
-        if not self.n_rand_infill_values:
-            self.out_var_df = self.in_var_df_orig.copy()
-            self.out_var_dfs_list = None
-        else:
-            self.out_var_dfs_list = (
-                [self.in_var_df_orig.copy()] * self.n_rand_infill_values)
-            self.out_var_df = None
+        self.out_var_df = self.in_var_df_orig.copy()
 
         self._av_vals_lab = 'Available values'
         self._miss_vals_lab = 'Missing values'
@@ -1525,40 +1555,41 @@ class NormCopulaInfill:
         self._pcorr_lab = 'Pearson correlation'
         self._scorr_lab = 'Spearman correlation'
 
-        self._summary_cols = [self._av_vals_lab,
-                              self._miss_vals_lab,
-                              self._infilled_vals_lab,
-                              self._max_avail_nebs_lab,
-                              self._avg_avail_nebs_lab,
-                              self._compr_lab,
-                              self._ks_lims_lab,
-                              self._flagged_lab,
-                              self._mean_obs_lab,
-                              self._mean_infill_lab,
-                              self._var_obs_lab,
-                              self._var_infill_lab,
-                              self._bias_lab,
-                              self._mae_lab,
-                              self._rmse_lab,
-                              self._nse_lab,
-                              self._ln_nse_lab,
-                              self._kge_lab,
-                              self._pcorr_lab,
-                              self._scorr_lab]
+        self._summary_cols = [
+            self._av_vals_lab,
+            self._miss_vals_lab,
+            self._infilled_vals_lab,
+            self._max_avail_nebs_lab,
+            self._avg_avail_nebs_lab,
+            self._compr_lab,
+            self._ks_lims_lab,
+            self._flagged_lab,
+            self._mean_obs_lab,
+            self._mean_infill_lab,
+            self._var_obs_lab,
+            self._var_infill_lab,
+            self._bias_lab,
+            self._mae_lab,
+            self._rmse_lab,
+            self._nse_lab,
+            self._ln_nse_lab,
+            self._kge_lab,
+            self._pcorr_lab,
+            self._scorr_lab]
 
-        self.summary_df = DataFrame(index=self.infill_stns,
-                                    columns=self._summary_cols,
-                                    dtype=float)
+        self.summary_df = DataFrame(
+            index=self.infill_stns, columns=self._summary_cols, dtype=float)
 
         self._bef_infill_chked = True
         return
 
     def _infill(self, infill_dates):
         try:
-            (out_conf_df,
-             out_add_info_df) = (
+            (out_conf_df, out_add_info_df) = (
                  self.infill_steps_obj.infill_steps(infill_dates))
+
             return out_conf_df, out_add_info_df
+
         except:
             plt.close('all')
             full_tb(exc_info(), self.dont_stop_flag)
@@ -1568,6 +1599,7 @@ class NormCopulaInfill:
             return (DataFrame(index=infill_dates,
                               columns=self.conf_ser.index,
                               dtype=float),
+
                     DataFrame(index=infill_dates,
                               dtype=float,
                               columns=['infill_status',

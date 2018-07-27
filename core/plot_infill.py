@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 
 class PlotInfill:
+
     def __init__(self, args):
         norm_cop_obj = args[0]
         vars_list = ['curr_infill_stn',
@@ -43,9 +44,11 @@ class PlotInfill:
             if (not self.plot_rand_flag) and ('rand' in _conf_head):
                 break
 
-            conf_var_vals = where(full_data_idxs,
-                                  out_conf_df[_conf_head].loc[
-                                          self.infill_dates], act_var)
+            conf_var_vals = where(
+                full_data_idxs,
+                out_conf_df[_conf_head].loc[self.infill_dates],
+                act_var)
+
             infill_ax.plot(self.infill_dates,
                            conf_var_vals,
                            label=_conf_head,
@@ -53,7 +56,7 @@ class PlotInfill:
                            lw=lw,
                            ls='-',
                            marker='o',
-                           ms=lw+0.5)
+                           ms=lw + 0.5)
 
         infill_ax.plot(self.infill_dates,
                        act_var,
@@ -62,8 +65,8 @@ class PlotInfill:
                        ls='-',
                        marker='o',
                        alpha=1.0,
-                       lw=lw+0.5,
-                       ms=lw+1)
+                       lw=lw + 0.5,
+                       ms=lw + 1)
 
         infill_ax.set_xlabel('Time')
         infill_ax.set_ylabel('var_val')

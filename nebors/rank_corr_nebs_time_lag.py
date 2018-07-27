@@ -50,12 +50,9 @@ class BestLagRankCorrStns(RankCorrStns):
         setattr(norm_cop_obj, 'rank_corr_stns_list', self.rank_corr_stns_list)
         setattr(norm_cop_obj, 'n_infill_stns', self.n_infill_stns)
         setattr(norm_cop_obj, 'rank_corrs_df', self.rank_corrs_df)
-        setattr(norm_cop_obj,
-                'rank_corr_vals_ctr_df',
-                self.rank_corr_vals_ctr_df)
-        setattr(norm_cop_obj,
-                'time_lags_dict',
-                self.time_lags_dict)
+        setattr(
+            norm_cop_obj, 'rank_corr_vals_ctr_df', self.rank_corr_vals_ctr_df)
+        setattr(norm_cop_obj, 'time_lags_dict', self.time_lags_dict)
         return
 
     def _get_symm_corr(self, prob_ser_i, prob_ser_j, correl):
@@ -137,12 +134,18 @@ class BestLagRankCorrStns(RankCorrStns):
                 if self.loop_stns_df.loc[j_stn, i_stn]:
                     self.rank_corrs_df.loc[i_stn, j_stn] = (
                         self.rank_corrs_df.loc[j_stn, i_stn])
+
                     self.rank_corr_vals_ctr_df.loc[i_stn, j_stn] = (
                         self.rank_corr_vals_ctr_df.loc[j_stn, i_stn])
+
                     if not isnan(self.rank_corrs_df.loc[i_stn, j_stn]):
                         tot_corrs_written += 1
+
                     self.loop_stns_df.loc[i_stn, j_stn] = True
+                    self.time_lags_dict[i_stn][j_stn] = self.time_lags_dict[j_stn][i_stn]
+
                     continue
+
             except KeyError:
                 pass
 
@@ -160,7 +163,8 @@ class BestLagRankCorrStns(RankCorrStns):
 
                 ij_df = DataFrame(index=ser_i.index,
                                   data={'i': ser_i.values,
-                                        'j': ser_j.values})
+                                        'j': ser_j.values},
+                                  dtype=float)
                 ij_df.dropna(axis=0, how='any', inplace=True)
 
                 if ij_df.shape[0] <= self.min_valid_vals:

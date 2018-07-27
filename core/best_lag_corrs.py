@@ -42,7 +42,8 @@ class BestLagCorrs:
 
                 ij_df = DataFrame(index=ser_i.index,
                                   data={'i': ser_i.values,
-                                        'j': ser_j.values})
+                                        'j': ser_j.values},
+                                  dtype=float)
                 ij_df.dropna(axis=0, how='any', inplace=True)
 
                 correl = get_corrcoeff(ij_df['i'].values, ij_df['j'].values)

@@ -24,7 +24,6 @@ class ConfInfill:
                      'adj_prob_bounds',
                      'conf_heads',
                      'flag_probs',
-                     'n_rand_infill_values',
                      'fin_conf_head',
                      'verbose',
                      'flag_susp_flag',
@@ -116,15 +115,10 @@ class ConfInfill:
             as_err(('\'adj_bounds_probs\' not ascending (%s)!') %
                    str(self.adj_prob_bounds)))
 
-        if self.n_rand_infill_values:
-            # changing this would have effects
-            # this would appear as rand_%0.4d in the output
-            self.fin_conf_head = 'rand_%0.4d'
-        else:
-            assert self.fin_conf_head in self.conf_heads, (
-                as_err(('\'_fin_conf_head\': %s not in '
-                        '\'_conf_heads\': %s') %
-                       (self.fin_conf_head, self.conf_heads)))
+        assert self.fin_conf_head in self.conf_heads, (
+            as_err(('\'_fin_conf_head\': %s not in '
+                    '\'_conf_heads\': %s') %
+                   (self.fin_conf_head, self.conf_heads)))
 
         if self.verbose:
             print(('INFO: Using \'%s\' as the final infill value' %
@@ -146,10 +140,6 @@ class ConfInfill:
         self.conf_ser = Series(index=self.conf_heads,
                                data=self.conf_probs,
                                dtype=float)
-
-        if self.n_rand_infill_values:
-            for i in range(self.n_rand_infill_values):
-                self.conf_ser['rand_%0.4d' % i] = nan
 
         self._conf_ser_cmptd = True
         return

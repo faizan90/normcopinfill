@@ -23,7 +23,6 @@ class FlagSusp:
     def __init__(self, norm_cop_obj):
         vars_list = ['infill_dates',
                      'curr_infill_stn',
-                     'n_rand_infill_values',
                      'fin_conf_head',
                      'flag_probs',
                      'conf_ser',
@@ -48,18 +47,11 @@ class FlagSusp:
          out_flag_susp_loc,
          self.update_summary_df_only) = args
 
-        if not self.n_rand_infill_values:
-            interp_data_idxs = logical_or(isnan(act_var),
-                                          isnan(out_conf_df[
-                                                  self.fin_conf_head].loc[
-                                                          self.infill_dates
-                                                          ].values))
-        else:
-            interp_data_idxs = logical_or(isnan(act_var),
-                                          isnan(out_conf_df[
-                                                  self.fin_conf_head % 0].loc[
-                                                          self.infill_dates
-                                                          ].values))
+        interp_data_idxs = logical_or(isnan(act_var),
+                                      isnan(out_conf_df[
+                                              self.fin_conf_head].loc[
+                                                      self.infill_dates
+                                                      ].values))
 
         _conf_head_list = []
         for _conf_head in out_conf_df.columns:

@@ -35,8 +35,6 @@ class BefAll:
             '\'out_fig_dpi\' is non-unicode!')
         assert isinstance(self.n_norm_symm_flds, int), (
             '\'n_norm_symm_flds\' is a non-integer!')
-        assert isinstance(self.n_rand_infill_values, int), (
-            '\'n_rand_infill_values\' is non-integer')
         assert isinstance(self.thresh_mp_steps, int), (
             '\'thresh_mp_steps\' is non-integer')
         assert isinstance(self.max_time_lag_corr, int), (
@@ -63,13 +61,6 @@ class BefAll:
                  str(self.cut_cdf_thresh)))
         else:
             self.cut_cdf_thresh = None
-
-        if self.n_rand_infill_values:
-            _c1 = self.n_rand_infill_values > 0
-            _c2 = self.n_rand_infill_values < 10000
-            assert _c1 and _c2, (
-                ('\'n_rand_infill_values\' (%s) not between '
-                 '0 and 10000') % str(self.n_rand_infill_values))
 
         if ((self.infill_type == 'precipitation') or
             (self.infill_type == 'discharge-censored')):

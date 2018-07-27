@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 from scipy.stats import rankdata
 
+from ..misc.misc_ftns import pprt
 from ..cyth import (
     get_corrcoeff,
     get_kge_py,
@@ -31,8 +32,7 @@ from ..cyth import (
 class CompareInfill:
 
     def __init__(self, norm_cop_obj):
-        vars_list = ['n_rand_infill_values',
-                     'fin_conf_head',
+        vars_list = ['fin_conf_head',
                      'infill_dates',
                      'curr_infill_stn',
                      '_compr_lab',
@@ -326,10 +326,7 @@ class CompareInfill:
         # compare the observed and infill bounds and plot
         orig_vals = act_var[not_interp_data_idxs]
 
-        if not self.n_rand_infill_values:
-            infill_vals = out_conf_df[self.fin_conf_head]
-        else:
-            infill_vals = out_conf_df[self.fin_conf_head % 0]
+        infill_vals = out_conf_df[self.fin_conf_head]
 
         infill_vals = infill_vals.loc[self.infill_dates].values
         infill_vals = infill_vals[not_interp_data_idxs]
@@ -395,21 +392,25 @@ class CompareInfill:
                                                infill_var]
 
         if not self.update_summary_df_only:
-            self._plot_comparison(out_conf_df,
-                                  interp_data_idxs,
-                                  alpha,
-                                  lw,
-                                  act_var,
-                                  n_vals,
-                                  bias,
-                                  mae,
-                                  rmse,
-                                  nse,
-                                  ln_nse,
-                                  kge,
-                                  correl_pe,
-                                  correl_sp,
-                                  out_compar_plot_loc)
+            if self.infill_dates.shape[0] < 365:
+                self._plot_comparison(out_conf_df,
+                                      interp_data_idxs,
+                                      alpha,
+                                      lw,
+                                      act_var,
+                                      n_vals,
+                                      bias,
+                                      mae,
+                                      rmse,
+                                      nse,
+                                      ln_nse,
+                                      kge,
+                                      correl_pe,
+                                      correl_sp,
+                                      out_compar_plot_loc)
+            else:
+                pprt(['Too many values not plotting the infill comparision!'],
+                     nbh=8)
 
             self._plot_infill_vs_obs_cdf_time_sers(infill_probs,
                                                    orig_probs,
@@ -446,18 +447,11 @@ class CompareInfill:
 
         lw, alpha = 0.8, 0.7
 
-        if not self.n_rand_infill_values:
-            interp_data_idxs = logical_or(isnan(act_var),
-                                          isnan(out_conf_df[
-                                                  self.fin_conf_head].loc[
-                                                          self.infill_dates
-                                                          ].values))
-        else:
-            interp_data_idxs = logical_or(isnan(act_var),
-                                          isnan(out_conf_df[
-                                                  self.fin_conf_head % 0].loc[
-                                                          self.infill_dates
-                                                          ].values))
+        interp_data_idxs = logical_or(isnan(act_var),
+                                      isnan(out_conf_df[
+                                              self.fin_conf_head].loc[
+                                                      self.infill_dates
+                                                      ].values))
 
         not_interp_data_idxs = logical_not(interp_data_idxs)
 

@@ -236,7 +236,8 @@ class BestLagRankCorrStns:
 
                 ij_df = DataFrame(index=ser_i.index,
                                   data={'i': ser_i.values,
-                                        'j': ser_j.values})
+                                        'j': ser_j.values},
+                                  dtype=float)
                 ij_df.dropna(axis=0, how='any', inplace=True)
 
                 if ij_df.shape[0] <= self.min_valid_vals:
