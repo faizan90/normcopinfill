@@ -24,14 +24,14 @@ if __name__ == '__main__':
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'neckar_norm_cop_infill_discharge_test'
+    out_dir = r'benchmark_pre_02_oc'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
 
     # names of the stations to be infilled as a list
-    infill_stns = ['427', '406']
-#     infill_stns = 'all'
+#     infill_stns = ['427', '406']
+    infill_stns = 'all'
 
     # names of the stations that should not be used in the process
     drop_stns = ['417', '24701', '45409', '76159', '1438', '2465']  # [] #
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     infill_date_str = 'slice'
 
     # the time period for which it should infill, its type depends on infill_date_str
-    censor_period = ['1961-01-01', '1964-11-30']
+    censor_period = ['1961-01-01', '1980-12-31']
 
     # the number of minimum days/steps that every station should have prior to infilling
         # so that it is used in the process, stations with steps less than this are
@@ -67,12 +67,12 @@ if __name__ == '__main__':
         # it serves as buffer i.e. may be on some days fewer stations
         # are available so n_nrn_max ensures that we have at least
         # n_nrn_min stations
-    n_nrn_max = 20
+    n_nrn_max = 10
 
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
         # achieve fastest speeds
-    ncpus = 7
+    ncpus = 31
 
     # the seperator used in the input files
         # it is also used in the output
@@ -116,11 +116,11 @@ if __name__ == '__main__':
 #    infill_cop.overwrite_flag = False
 #    infill_cop.read_pickles_flag = True
 #    infill_cop.use_best_stns_flag = False
-    infill_cop.dont_stop_flag = False
+#     infill_cop.dont_stop_flag = False
 #     infill_cop.plot_long_term_corrs_flag = True
 #    infill_cop.save_step_vars_flag = True
 #    infill_cop.plot_rand_flag = True
-#     infill_cop.stn_based_mp_infill = False
+    infill_cop.stn_based_mp_infill = False
 
 #    infill_cop.nrst_stns_type = 'dist'
     infill_cop.nrst_stns_type = 'rank'

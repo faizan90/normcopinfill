@@ -4,8 +4,7 @@ Created on %(date)s
 
 @author: %(username)s
 """
-from os import mkdir as os_mkdir
-from os.path import join as os_join, exists as os_exists
+from os.path import join as os_join
 
 from numpy import nan, isnan
 import matplotlib.pyplot as plt
@@ -22,6 +21,7 @@ plt.ioff()
 class BestLagRankCorrStns(RankCorrStns):
 
     def __init__(self, norm_cop_obj):
+
         super(BestLagRankCorrStns, self).__init__(norm_cop_obj)
 
         assert self.max_time_lag_corr, as_err(
@@ -143,7 +143,8 @@ class BestLagRankCorrStns(RankCorrStns):
                         tot_corrs_written += 1
 
                     self.loop_stns_df.loc[i_stn, j_stn] = True
-                    self.time_lags_dict[i_stn][j_stn] = self.time_lags_dict[j_stn][i_stn]
+                    self.time_lags_dict[i_stn][j_stn] = (
+                        self.time_lags_dict[j_stn][i_stn])
 
                     continue
 
@@ -174,10 +175,11 @@ class BestLagRankCorrStns(RankCorrStns):
 
                 ser_i_rank = ij_df['i'].rank()
                 ser_j_rank = ij_df['j'].rank()
-                prob_ser_i = \
-                    ser_i_rank.rank().div(ser_i_rank.shape[0] + 1.).values
-                prob_ser_j = \
-                    ser_j_rank.rank().div(ser_j_rank.shape[0] + 1.).values
+
+                prob_ser_i = (
+                    ser_i_rank.rank().div(ser_i_rank.shape[0] + 1.).values)
+                prob_ser_j = (
+                    ser_j_rank.rank().div(ser_j_rank.shape[0] + 1.).values)
 
                 if self.infill_type == 'discharge-censored':
                     prob_ser_i[prob_ser_i < self.cut_cdf_thresh] = (
@@ -189,6 +191,7 @@ class BestLagRankCorrStns(RankCorrStns):
 
                 if ((abs(correl) > max_correl) and
                     (abs(correl) >= self.min_corr)):
+
                     max_correl = correl
                     max_ct = ser_i_rank.shape[0]
                     best_lag = curr_time_lag
@@ -211,15 +214,17 @@ class BestLagRankCorrStns(RankCorrStns):
         return tot_corrs_written
 
     def _get_rank_corrs(self):
-        self.rank_corrs_df = DataFrame(index=self.infill_stns,
-                                       columns=self.in_var_df.columns,
-                                       dtype=float)
+
+        self.rank_corrs_df = DataFrame(
+            index=self.infill_stns,
+            columns=self.in_var_df.columns,
+            dtype=float)
+
         self.rank_corr_vals_ctr_df = self.rank_corrs_df.copy()
 
         # A DF to keep track of stations that have been processed
-        self.loop_stns_df = DataFrame(index=self.infill_stns,
-                                      columns=self.in_var_df.columns,
-                                      dtype=bool)
+        self.loop_stns_df = DataFrame(
+            index=self.infill_stns, columns=self.in_var_df.columns, dtype=bool)
         self.loop_stns_df[:] = False
         self.rank_corr_vals_ctr_df[:] = 0.0
 
@@ -231,18 +236,19 @@ class BestLagRankCorrStns(RankCorrStns):
 
         tot_corrs_written = 0
         for i_stn in self.infill_stns:
-            tot_corrs_written = self._get_rank_corr(i_stn,
-                                                    tot_corrs_written)
-            if not self.rank_corrs_df.loc[i_stn].dropna().shape[0]:
-                if self.dont_stop_flag:
-                    self.drop_infill_stns.append(i_stn)
-                    if self.verbose:
-                        print('WARNING:', drop_str % (i_stn,
-                                                      self.nrst_stns_type))
-                    continue
-                else:
-                    raise Exception(drop_str % (i_stn,
-                                                self.nrst_stns_type))
+            tot_corrs_written = self._get_rank_corr(i_stn, tot_corrs_written)
+
+            if self.rank_corrs_df.loc[i_stn].dropna().shape[0]:
+                continue
+
+            if self.dont_stop_flag:
+                self.drop_infill_stns.append(i_stn)
+                if self.verbose:
+                    print('WARNING:', drop_str % (i_stn, self.nrst_stns_type))
+                continue
+
+            else:
+                raise Exception(drop_str % (i_stn, self.nrst_stns_type))
 
         if self.verbose:
             print('INFO: %d out of possible %d correlations written' %
@@ -252,6 +258,7 @@ class BestLagRankCorrStns(RankCorrStns):
         return
 
     def _plot_neighbor(self, infill_stn):
+
         tick_font_size = 5
 
         (infill_x,
@@ -259,23 +266,30 @@ class BestLagRankCorrStns(RankCorrStns):
 
         _nebs = self.rank_corr_stns_dict[infill_stn]
         _n_nebs = len(self.rank_corr_stns_dict[infill_stn])
+
         hi_corr_stns_ax = plt.subplot(111)
-        hi_corr_stns_ax.scatter(infill_x,
-                                infill_y,
-                                c='r',
-                                label='infill_stn')
-        hi_corr_stns_ax.scatter(self.in_coords_df['X'].loc[_nebs],
-                                self.in_coords_df['Y'].loc[_nebs],
-                                alpha=0.75,
-                                c='c',
-                                label='hi_corr_stn (%d)' % _n_nebs)
+        hi_corr_stns_ax.scatter(
+            infill_x,
+            infill_y,
+            c='r',
+            label='infill_stn')
+
+        hi_corr_stns_ax.scatter(
+            self.in_coords_df['X'].loc[_nebs],
+            self.in_coords_df['Y'].loc[_nebs],
+            alpha=0.75,
+            c='c',
+            label='hi_corr_stn (%d)' % _n_nebs)
+
         plt_texts = []
-        _txt_obj = hi_corr_stns_ax.text(infill_x,
-                                        infill_y,
-                                        infill_stn,
-                                        va='top',
-                                        ha='left',
-                                        fontsize=tick_font_size)
+        _txt_obj = hi_corr_stns_ax.text(
+            infill_x,
+            infill_y,
+            infill_stn,
+            va='top',
+            ha='left',
+            fontsize=tick_font_size)
+
         plt_texts.append(_txt_obj)
         for stn in self.rank_corr_stns_dict[infill_stn]:
             if infill_stn == stn:
@@ -299,46 +313,54 @@ class BestLagRankCorrStns(RankCorrStns):
         hi_corr_stns_ax.set_xlabel('Eastings', size=tick_font_size)
         hi_corr_stns_ax.set_ylabel('Northings', size=tick_font_size)
         hi_corr_stns_ax.legend(framealpha=0.5, loc=0)
+
+        hi_corr_stns_ax.set_xlim(self.xs.min(), self.xs.max())
+        hi_corr_stns_ax.set_ylim(self.ys.min(), self.ys.max())
+
         plt.setp(hi_corr_stns_ax.get_xticklabels(),
                  size=tick_font_size)
         plt.setp(hi_corr_stns_ax.get_yticklabels(),
                  size=tick_font_size)
-        plt.savefig(os_join(self.out_rank_corr_plots_dir,
-                            'rank_corr_stn_%s.png' % infill_stn),
-                    dpi=self.out_fig_dpi,
-                    bbox_inches='tight')
+        plt.savefig(
+            os_join(self.out_rank_corr_plots_dir,
+                    'rank_corr_stn_%s.png' % infill_stn),
+            dpi=self.out_fig_dpi,
+            bbox_inches='tight')
+
         plt.clf()
         return
 
     def _plot_long_term_corr(self, infill_stn):
+
         tick_font_size = 6
         curr_nebs = self.rank_corr_stns_dict[infill_stn]
 
-        corrs_arr = self.rank_corrs_df.loc[infill_stn,
-                                           curr_nebs].values
+        corrs_arr = self.rank_corrs_df.loc[infill_stn, curr_nebs].values
         corrs_ctr_arr = (
-            self.rank_corr_vals_ctr_df.loc[infill_stn,
-                                           curr_nebs].values)
+            self.rank_corr_vals_ctr_df.loc[infill_stn, curr_nebs].values)
         corrs_ctr_arr[isnan(corrs_ctr_arr)] = 0
 
         n_stns = corrs_arr.shape[0]
         _, corrs_ax = plt.subplots(1, 1, figsize=(1.0 * n_stns, 3))
-        corrs_ax.matshow(corrs_arr.reshape(1, n_stns),
-                         vmin=0,
-                         vmax=2,
-                         cmap=plt.get_cmap('Blues'),
-                         origin='lower')
+        corrs_ax.matshow(
+            corrs_arr.reshape(1, n_stns),
+            vmin=0,
+            vmax=2,
+            cmap=plt.get_cmap('Blues'),
+            origin='lower')
+
         for s in range(n_stns):
             _1 = int(corrs_ctr_arr[s])
             _2 = self.time_lags_dict[infill_stn][curr_nebs[s]]
             _lab = '%0.4f\n(%d, %d)' % (corrs_arr[s], _1, _2)
 
-            corrs_ax.text(s,
-                          0,
-                          _lab,
-                          va='center',
-                          ha='center',
-                          fontsize=tick_font_size)
+            corrs_ax.text(
+                s,
+                0,
+                _lab,
+                va='center',
+                ha='center',
+                fontsize=tick_font_size)
 
         corrs_ax.set_yticks([])
         corrs_ax.set_yticklabels([])
@@ -350,19 +372,19 @@ class BestLagRankCorrStns(RankCorrStns):
         corrs_ax.spines['top'].set_position(('outward', 10))
         corrs_ax.spines['bottom'].set_position(('outward', 10))
 
-        corrs_ax.tick_params(labelleft=False,
-                             labelbottom=True,
-                             labeltop=False,
-                             labelright=False)
+        corrs_ax.tick_params(
+            labelleft=False,
+            labelbottom=True,
+            labeltop=False,
+            labelright=False)
 
-        plt.setp(corrs_ax.get_xticklabels(),
-                 size=tick_font_size,
-                 rotation=45)
+        plt.setp(corrs_ax.get_xticklabels(), size=tick_font_size, rotation=45)
         plt.suptitle('station: %s long-term corrs' % infill_stn)
         _ = 'long_term_stn_%s_rank_corrs.png' % infill_stn
-        plt.savefig(os_join(self.out_long_term_corrs_dir, _),
-                    dpi=self.out_fig_dpi,
-                    bbox_inches='tight')
+        plt.savefig(
+            os_join(self.out_long_term_corrs_dir, _),
+            dpi=self.out_fig_dpi,
+            bbox_inches='tight')
         return
 
 

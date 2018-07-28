@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on %(date)s
 
@@ -31,28 +30,29 @@ class NrstStns:
 
         self.norm_cop_obj = norm_cop_obj
 
-        vars_list = ['in_var_df',
-                     'infill_stns',
-                     'infill_dates',
-                     'full_date_index',
-                     'in_coords_df',
-                     '_dist_cmptd',
-                     'plot_neighbors_flag',
-                     'read_pickles_flag',
-                     'dont_stop_flag',
-                     'verbose',
-                     'nrst_stns_list',
-                     'nrst_stns_dict',
-                     'xs',
-                     'ys',
-                     'n_min_nebs',
-                     'n_max_nebs',
-                     'min_valid_vals',
-                     'max_time_lag_corr',
-                     'out_fig_dpi',
-                     '_out_nrst_stns_pkl_file',
-                     'out_nebor_plots_dir',
-                     'pkls_dir']
+        vars_list = [
+            'in_var_df',
+            'infill_stns',
+            'infill_dates',
+            'full_date_index',
+            'in_coords_df',
+            '_dist_cmptd',
+            'plot_neighbors_flag',
+            'read_pickles_flag',
+            'dont_stop_flag',
+            'verbose',
+            'nrst_stns_list',
+            'nrst_stns_dict',
+            'xs',
+            'ys',
+            'n_min_nebs',
+            'n_max_nebs',
+            'min_valid_vals',
+            'max_time_lag_corr',
+            'out_fig_dpi',
+            '_out_nrst_stns_pkl_file',
+            'out_nebor_plots_dir',
+            'pkls_dir']
 
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
@@ -93,23 +93,18 @@ class NrstStns:
         # calculate distances of all stations from the infill_stn
         dists = vectorize(get_dist)(infill_x, infill_y, self.xs, self.ys)
 
-        dists_df = DataFrame(index=self.in_coords_df.index,
-                             data=dists,
-                             columns=['dists'],
-                             dtype=float)
+        dists_df = DataFrame(
+            index=self.in_coords_df.index,
+            data=dists,
+            columns=['dists'],
+            dtype=float)
+
         dists_df.sort_values('dists', axis=0, inplace=True)
-        # till here
 
         # take the nearest n_nrn stations to the infill_stn
         # that also have enough common records and with data existing
         # for atleast one of the infill_dates
         for nrst_stn in dists_df.index[1:]:
-#            # if the infill_stn is already a neighbor of nrst_stn
-#            if nrst_stn in list(self.nrst_stns_dict.keys()):
-#                if infill_stn in self.nrst_stns_dict[nrst_stn]:
-#                    curr_nebs_list.append(nrst_stn)
-#                    continue
-
             _cond_2 = False
             _cond_3 = False
 
@@ -133,6 +128,7 @@ class NrstStns:
         if len(_) >= self.n_min_nebs:
             if infill_stn not in self.nrst_stns_list:
                 self.nrst_stns_list.append(infill_stn)
+
         else:
             as_err(('Neighboring stations less than '
                     '\'n_min_nebs\' '
@@ -256,31 +252,37 @@ class NrstStns:
                     len(self.nrst_stns_dict[infill_stn]))
 
             nrst_stns_ax = plt.subplot(111)
-            nrst_stns_ax.scatter(infill_x,
-                                 infill_y,
-                                 c='r',
-                                 label='infill_stn')
-            nrst_stns_ax.scatter(self.in_coords_df['X'].loc[_nebs],
-                                 self.in_coords_df['Y'].loc[_nebs],
-                                 alpha=0.75,
-                                 c='c',
-                                 label=_lab)
+            nrst_stns_ax.scatter(
+                infill_x,
+                infill_y,
+                c='r',
+                label='infill_stn')
+
+            nrst_stns_ax.scatter(
+                self.in_coords_df['X'].loc[_nebs],
+                self.in_coords_df['Y'].loc[_nebs],
+                alpha=0.75,
+                c='c',
+                label=_lab)
+
             plt_texts = []
-            _txt_obj = nrst_stns_ax.text(infill_x,
-                                         infill_y,
-                                         infill_stn,
-                                         va='top',
-                                         ha='left',
-                                         fontsize=tick_font_size)
+            _txt_obj = nrst_stns_ax.text(
+                infill_x,
+                infill_y,
+                infill_stn,
+                va='top',
+                ha='left',
+                fontsize=tick_font_size)
             plt_texts.append(_txt_obj)
 
             for stn in self.nrst_stns_dict[infill_stn]:
-                _txt_obj = nrst_stns_ax.text(self.in_coords_df['X'].loc[stn],
-                                             self.in_coords_df['Y'].loc[stn],
-                                             stn,
-                                             va='top',
-                                             ha='left',
-                                             fontsize=5)
+                _txt_obj = nrst_stns_ax.text(
+                    self.in_coords_df['X'].loc[stn],
+                    self.in_coords_df['Y'].loc[stn],
+                    stn,
+                    va='top',
+                    ha='left',
+                    fontsize=5)
                 plt_texts.append(_txt_obj)
 
             adjust_text(plt_texts, only_move={'points': 'y', 'text': 'y'})
@@ -288,6 +290,10 @@ class NrstStns:
             nrst_stns_ax.set_xlabel('Eastings', size=tick_font_size)
             nrst_stns_ax.set_ylabel('Northings', size=tick_font_size)
             nrst_stns_ax.legend(framealpha=0.5, loc=0)
+
+            nrst_stns_ax.set_xlim(self.xs.min(), self.xs.max())
+            nrst_stns_ax.set_ylim(self.ys.min(), self.ys.max())
+
             plt.setp(nrst_stns_ax.get_xticklabels(), size=tick_font_size)
             plt.setp(nrst_stns_ax.get_yticklabels(), size=tick_font_size)
             plt.savefig(os_join(self.out_nebor_plots_dir,

@@ -1,17 +1,17 @@
-# -*- coding: utf-8 -*-
 """
 Created on %(date)s
 
 @author: %(username)s
 """
-from numpy import (array,
-                   isfinite,
-                   all as np_all,
-                   where,
-                   any as np_any,
-                   ediff1d,
-                   isclose,
-                   nan)
+from numpy import (
+    array,
+    isfinite,
+    all as np_all,
+    where,
+    any as np_any,
+    ediff1d,
+    isclose)
+
 from pandas import Series
 
 from ..misc.misc_ftns import as_err
@@ -20,22 +20,25 @@ from ..misc.misc_ftns import as_err
 class ConfInfill:
 
     def __init__(self, norm_cop_obj):
-        vars_list = ['conf_probs',
-                     'adj_prob_bounds',
-                     'conf_heads',
-                     'flag_probs',
-                     'fin_conf_head',
-                     'verbose',
-                     'flag_susp_flag',
-                     '_conf_ser_cmptd']
 
-        reassign_vars_list = ['conf_probs',
-                              'adj_prob_bounds',
-                              'conf_heads',
-                              'flag_probs',
-                              'fin_conf_head',
-                              'conf_ser',
-                              '_conf_ser_cmptd']
+        vars_list = [
+            'conf_probs',
+            'adj_prob_bounds',
+            'conf_heads',
+            'flag_probs',
+            'fin_conf_head',
+            'verbose',
+            'flag_susp_flag',
+            '_conf_ser_cmptd']
+
+        reassign_vars_list = [
+            'conf_probs',
+            'adj_prob_bounds',
+            'conf_heads',
+            'flag_probs',
+            'fin_conf_head',
+            'conf_ser',
+            '_conf_ser_cmptd']
 
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
@@ -52,6 +55,7 @@ class ConfInfill:
         Check if all the variables for the calculation of confidence intervals
         are correct
         '''
+
         try:
             self.conf_probs = array(self.conf_probs, dtype=float)
         except:
@@ -137,9 +141,8 @@ class ConfInfill:
                      '\'_conf_probs\' (%s)!') %
                      (str(_flag_val), str(self.conf_probs)))
 
-        self.conf_ser = Series(index=self.conf_heads,
-                               data=self.conf_probs,
-                               dtype=float)
+        self.conf_ser = Series(
+            index=self.conf_heads, data=self.conf_probs, dtype=float)
 
         self._conf_ser_cmptd = True
         return

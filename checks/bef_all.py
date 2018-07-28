@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on %(date)s
 
@@ -59,6 +58,7 @@ class BefAll:
                     (self.cut_cdf_thresh < 1.0)), (
                 ('\'cut_cdf_thresh\' (%s) not between 0 and 1' %
                  str(self.cut_cdf_thresh)))
+
         else:
             self.cut_cdf_thresh = None
 

@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 """
 Created on %(date)s
 
 @author: Faizan Anwar, IWS Uni-Stuttgart
 """
+
 from pandas import DataFrame
 
 from ..misc.misc_ftns import as_err, get_lag_ser
@@ -13,6 +13,7 @@ from ..cyth import fill_correl_mat, get_corrcoeff
 class BestLagCorrs:
 
     def __init__(self, norms_df, max_time_lag_corr):
+
         assert isinstance(norms_df, DataFrame), as_err(
             'norms_df not a DataFrame!')
 
@@ -29,6 +30,7 @@ class BestLagCorrs:
         return
 
     def _get_best_lags(self):
+
         ser_i = self.norms_df[self.infill_stn].copy()
 
         for j_stn in self.nebs:
@@ -40,10 +42,10 @@ class BestLagCorrs:
                 _ = self.norms_df[j_stn].copy()
                 ser_j = get_lag_ser(_, curr_time_lag)
 
-                ij_df = DataFrame(index=ser_i.index,
-                                  data={'i': ser_i.values,
-                                        'j': ser_j.values},
-                                  dtype=float)
+                ij_df = DataFrame(
+                    index=ser_i.index,
+                    data={'i': ser_i.values, 'j': ser_j.values},
+                    dtype=float)
                 ij_df.dropna(axis=0, how='any', inplace=True)
 
                 correl = get_corrcoeff(ij_df['i'].values, ij_df['j'].values)
@@ -61,6 +63,7 @@ class BestLagCorrs:
         return
 
     def _lag_norms_df(self):
+
         assert self.best_stn_lags_dict, as_err('Nothing to lag!')
 
         for j_stn in self.nebs:
@@ -68,6 +71,7 @@ class BestLagCorrs:
         return
 
     def fill_lag_correl_mat(self):
+
         self._get_best_lags()
         self._lag_norms_df()
 
