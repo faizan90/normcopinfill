@@ -17,6 +17,10 @@ from ..cyth import get_dist
 
 plt.ioff()
 
+from multiprocessing import current_process
+
+current_process().authkey = b'all_worker_have_the_same_key'
+
 
 class NrstStns:
     '''
@@ -27,8 +31,6 @@ class NrstStns:
     '''
 
     def __init__(self, norm_cop_obj):
-
-        self.norm_cop_obj = norm_cop_obj
 
         vars_list = [
             'in_var_df',
@@ -52,7 +54,10 @@ class NrstStns:
             'out_fig_dpi',
             '_out_nrst_stns_pkl_file',
             'out_nebor_plots_dir',
-            'pkls_dir']
+            'pkls_dir',
+            'stns_valid_dates',
+            '_norm_cop_pool',
+            'ncpus']
 
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
@@ -68,6 +73,10 @@ class NrstStns:
         if not os_exists(self.pkls_dir):
             os_mkdir(self.pkls_dir)
 
+        if self._norm_cop_pool is None:
+            norm_cop_obj._get_ncpus()
+            self._norm_cop_pool = norm_cop_obj._norm_cop_pool
+
         self.get_nrst_stns()
         assert self._got_nrst_stns_flag
 
@@ -80,65 +89,6 @@ class NrstStns:
         setattr(norm_cop_obj, 'infill_stns', self.infill_stns)
         setattr(norm_cop_obj, 'nrst_stns_dict', self.nrst_stns_dict)
         setattr(norm_cop_obj, 'nrst_stns_list', self.nrst_stns_list)
-
-        return
-
-    def _get_nrst_stn(self, infill_stn):
-        curr_nebs_list = []
-
-        # get the x and y coordinates of the infill_stn
-        (infill_x,
-         infill_y) = self.in_coords_df[['X', 'Y']].loc[infill_stn].values
-
-        # calculate distances of all stations from the infill_stn
-        dists = vectorize(get_dist)(infill_x, infill_y, self.xs, self.ys)
-
-        dists_df = DataFrame(
-            index=self.in_coords_df.index,
-            data=dists,
-            columns=['dists'],
-            dtype=float)
-
-        dists_df.sort_values('dists', axis=0, inplace=True)
-
-        # take the nearest n_nrn stations to the infill_stn
-        # that also have enough common records and with data existing
-        # for atleast one of the infill_dates
-        for nrst_stn in dists_df.index[1:]:
-            _cond_2 = False
-            _cond_3 = False
-
-            _ = self.in_var_df[[infill_stn, nrst_stn]].dropna()
-            _cond_2 = (_.shape[0] >= self.min_valid_vals)
-
-            _ = self.in_var_df[nrst_stn].dropna()
-            if _.index.intersection(self.infill_dates).shape[0]:
-                _cond_3 = True
-
-            if _cond_2 and _cond_3:
-                if nrst_stn not in curr_nebs_list:
-                    curr_nebs_list.append(nrst_stn)
-
-                if nrst_stn not in self.nrst_stns_list:
-                    self.nrst_stns_list.append(nrst_stn)
-
-        self.nrst_stns_dict[infill_stn] = curr_nebs_list
-
-        _ = self.nrst_stns_dict[infill_stn]
-        if len(_) >= self.n_min_nebs:
-            if infill_stn not in self.nrst_stns_list:
-                self.nrst_stns_list.append(infill_stn)
-
-        else:
-            as_err(('Neighboring stations less than '
-                    '\'n_min_nebs\' '
-                    'for station: %s') % infill_stn)
-
-            if self.dont_stop_flag:
-                self.bad_stns_list.append(infill_stn)
-                self.bad_stns_neighbors_count.append(len(_))
-            else:
-                raise Exception('Too few nebors!')
         return
 
     def _load_pickle(self):
@@ -170,9 +120,42 @@ class NrstStns:
         if self.verbose:
             print('INFO: Computing nearest stations...')
 
-        # ## cmpt nrst stns
-        for infill_stn in self.infill_stns:
-            self._get_nrst_stn(infill_stn)
+        mp = True if self.ncpus > 1 else False
+
+        if mp:
+            from multiprocessing import Manager
+
+            mng_nrst_stns_list = Manager().list(self.nrst_stns_list)
+            mng_nrst_stns_dict = Manager().dict(self.nrst_stns_dict)
+            mng_bad_stns_list = Manager().list(self.bad_stns_list)
+            mng_bad_stns_neighbors_count = Manager().list(
+                self.bad_stns_neighbors_count)
+            mng_lock = Manager().Lock()  # just to be safe
+
+            mng_list = [
+                mng_nrst_stns_list,
+                mng_nrst_stns_dict,
+                mng_bad_stns_list,
+                mng_bad_stns_neighbors_count,
+                mng_lock]
+
+        else:
+            mng_list = []
+
+        get_nrst_stns_obj = GetNrstStns(self, mng_list)
+
+        if mp:
+            self._norm_cop_pool.map(
+                get_nrst_stns_obj._get_nrst_stn, self.infill_stns)
+
+            self.nrst_stns_list = list(mng_nrst_stns_list)
+            self.nrst_stns_dict = dict(mng_nrst_stns_dict)
+            self.bad_stns_list = list(mng_bad_stns_list)
+            self.bad_stns_neighbors_count = list(mng_bad_stns_neighbors_count)
+
+        else:
+            for infill_stn in self.infill_stns:
+                get_nrst_stns_obj._get_nrst_stn(infill_stn)
 
         for bad_stn in self.bad_stns_list:
             self.infill_stns = self.infill_stns.drop(bad_stn)
@@ -182,8 +165,10 @@ class NrstStns:
             print('INFO: These infill stations had too few values '
                   'to be considered for the rest of the analysis:')
             print('Station: n_neighbors')
-            for bad_stn in zip(self.bad_stns_list,
-                               self.bad_stns_neighbors_count):
+
+            for bad_stn in zip(
+                self.bad_stns_list, self.bad_stns_neighbors_count):
+
                 print('%s: %d' % (bad_stn[0], bad_stn[1]))
 
         # have the nrst_stns_list in the in_var_df only
@@ -192,8 +177,8 @@ class NrstStns:
 
         for infill_stn in self.infill_stns:
             assert infill_stn in self.in_var_df.columns, as_err(
-                ('Station %s not in input variable dataframe '
-                 'anymore!') % infill_stn)
+                ('Station %s not in input variable dataframe anymore!') %
+                infill_stn)
 
         # check if at least one infill date is in the in_var_df
         date_in_dates = False
@@ -215,7 +200,6 @@ class NrstStns:
         if self.max_time_lag_corr:
             self.in_var_df = self.in_var_df.reindex(self.full_date_index)
 
-        # ## save pickle
         nrst_stns_pickle_dict = {}
         nrst_stns_pickle_cur = open(self._out_nrst_stns_pkl_file, 'wb')
 
@@ -304,6 +288,105 @@ class NrstStns:
 
         plt.close('all')
         self._plotted_nrst_stns_flag = True
+        return
+
+
+class GetNrstStns:
+
+    def __init__(self, nrst_stns_obj, mng_list):
+        vars_list = [
+            'in_coords_df',
+            'xs',
+            'ys',
+            'stns_valid_dates',
+            'min_valid_vals',
+            'infill_dates',
+            'nrst_stns_list',
+            'nrst_stns_dict',
+            'n_min_nebs',
+            'dont_stop_flag',
+            'bad_stns_list',
+            'bad_stns_neighbors_count']
+
+        for _var in vars_list:
+            setattr(self, _var, getattr(nrst_stns_obj, _var))
+
+        if mng_list:
+            self.mp = True
+            self.nrst_stns_list = mng_list[0]
+            self.nrst_stns_dict = mng_list[1]
+            self.bad_stns_list = mng_list[2]
+            self.bad_stns_neighbors_count = mng_list[3]
+            self.lock = mng_list[4]
+
+        else:
+            self.mp = False
+
+        return
+
+    def _get_nrst_stn(self, infill_stn):
+
+        curr_nebs_list = []
+
+        # get the x and y coordinates of the infill_stn
+        (infill_x,
+         infill_y) = self.in_coords_df[['X', 'Y']].loc[infill_stn].values
+
+        # calculate distances of all stations from the infill_stn
+        dists = vectorize(get_dist)(infill_x, infill_y, self.xs, self.ys)
+
+        dists_df = DataFrame(
+            index=self.in_coords_df.index,
+            data=dists,
+            columns=['dists'],
+            dtype=float)
+
+        dists_df.sort_values('dists', axis=0, inplace=True)
+
+        # take the nearest n_nrn stations to the infill_stn
+        # that also have enough common records and with data existing
+        # for atleast one of the infill_dates
+        for nrst_stn in dists_df.index[1:]:
+            _cond_2 = False
+            _cond_3 = False
+
+            _ = self.stns_valid_dates[infill_stn].intersection(
+                self.stns_valid_dates[nrst_stn])
+
+            _cond_2 = _.shape[0] >= self.min_valid_vals
+
+            _ = self.stns_valid_dates[nrst_stn]
+            if _.intersection(self.infill_dates).shape[0]:
+                _cond_3 = True
+
+            if _cond_2 and _cond_3:
+                curr_nebs_list.append(nrst_stn)
+
+                if self.mp: self.lock.acquire()
+                if nrst_stn not in self.nrst_stns_list:
+                    self.nrst_stns_list.append(nrst_stn)
+                if self.mp: self.lock.release()
+
+        self.nrst_stns_dict[infill_stn] = curr_nebs_list
+
+        _ = self.nrst_stns_dict[infill_stn]
+        if len(_) >= self.n_min_nebs:
+
+            if self.mp: self.lock.acquire()
+            if infill_stn not in self.nrst_stns_list:
+                self.nrst_stns_list.append(infill_stn)
+            if self.mp: self.lock.release()
+
+        else:
+            as_err(('Neighboring stations less than '
+                    '\'n_min_nebs\' '
+                    'for station: %s') % infill_stn)
+
+            if self.dont_stop_flag:
+                self.bad_stns_list.append(infill_stn)
+                self.bad_stns_neighbors_count.append(len(_))
+            else:
+                raise Exception('Too few nebors!')
         return
 
 

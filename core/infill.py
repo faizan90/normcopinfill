@@ -680,6 +680,10 @@ class NormCopulaInfill:
             self.in_var_df.index[0], self.in_var_df.index[-1], freq=self.freq)
         self.in_var_df = self.in_var_df.reindex(self.full_date_index)
 
+        self.stns_valid_dates = {}
+        for stn in self.in_var_df.columns:
+            self.stns_valid_dates[stn] = self.in_var_df[stn].dropna().index
+
         # ## Initiating additional required variables
         self.nrst_stns_list = []
         self.nrst_stns_dict = {}

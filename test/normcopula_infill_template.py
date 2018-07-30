@@ -67,7 +67,7 @@ if __name__ == '__main__':
         # it serves as buffer i.e. may be on some days fewer stations
         # are available so n_nrn_max ensures that we have at least
         # n_nrn_min stations
-    n_nrn_max = 40
+    n_nrn_max = 10
 
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
