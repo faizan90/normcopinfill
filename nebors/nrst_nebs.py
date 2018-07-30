@@ -148,6 +148,8 @@ class NrstStns:
             self._norm_cop_pool.map(
                 get_nrst_stns_obj._get_nrst_stn, self.infill_stns)
 
+            self._norm_cop_pool.clear()
+
             self.nrst_stns_list = list(mng_nrst_stns_list)
             self.nrst_stns_dict = dict(mng_nrst_stns_dict)
             self.bad_stns_list = list(mng_bad_stns_list)
@@ -226,67 +228,46 @@ class NrstStns:
         if not os_exists(self.out_nebor_plots_dir):
             os_mkdir(self.out_nebor_plots_dir)
 
-        tick_font_size = 5
-        for infill_stn in self.infill_stns:
-            (infill_x,
-             infill_y) = self.in_coords_df[['X',
-                                            'Y']].loc[infill_stn].values
-            _nebs = self.nrst_stns_dict[infill_stn]
-            _lab = ('neibor_stn (%d)' %
-                    len(self.nrst_stns_dict[infill_stn]))
+        mp = True if self.ncpus > 1 else False
+        if mp:
+            plt_gen = (
+                (_stn,
+                 self.in_coords_df[['X']].loc[_stn].values,
+                 self.in_coords_df[['Y']].loc[_stn].values,
+                 self.nrst_stns_dict[_stn],
+                 self.in_coords_df['X'].loc[self.nrst_stns_dict[_stn]],
+                 self.in_coords_df['Y'].loc[self.nrst_stns_dict[_stn]],
+                 self.xs,
+                 self.ys,
+                 self.out_nebor_plots_dir,
+                 self.out_fig_dpi)
+                for _stn in self.infill_stns)
 
-            nrst_stns_ax = plt.subplot(111)
-            nrst_stns_ax.scatter(
-                infill_x,
-                infill_y,
-                c='r',
-                label='infill_stn')
+            self._norm_cop_pool.map(plot_nrst_stns, plt_gen)
+            self._norm_cop_pool.clear()
+        else:
+            for infill_stn in self.infill_stns:
+                (infill_x, infill_y) = (
+                    self.in_coords_df[['X', 'Y']].loc[infill_stn].values)
 
-            nrst_stns_ax.scatter(
-                self.in_coords_df['X'].loc[_nebs],
-                self.in_coords_df['Y'].loc[_nebs],
-                alpha=0.75,
-                c='c',
-                label=_lab)
+                nebs = self.nrst_stns_dict[infill_stn]
+                x_nebs = self.in_coords_df['X'].loc[nebs]
+                y_nebs = self.in_coords_df['Y'].loc[nebs]
 
-            plt_texts = []
-            _txt_obj = nrst_stns_ax.text(
-                infill_x,
-                infill_y,
-                infill_stn,
-                va='top',
-                ha='left',
-                fontsize=tick_font_size)
-            plt_texts.append(_txt_obj)
+                args = (
+                    infill_stn,
+                    infill_x,
+                    infill_y,
+                    nebs,
+                    x_nebs,
+                    y_nebs,
+                    self.xs,
+                    self.ys,
+                    self.out_nebor_plots_dir,
+                    self.out_fig_dpi)
 
-            for stn in self.nrst_stns_dict[infill_stn]:
-                _txt_obj = nrst_stns_ax.text(
-                    self.in_coords_df['X'].loc[stn],
-                    self.in_coords_df['Y'].loc[stn],
-                    stn,
-                    va='top',
-                    ha='left',
-                    fontsize=5)
-                plt_texts.append(_txt_obj)
+                plot_nrst_stns(args)
 
-            adjust_text(plt_texts, only_move={'points': 'y', 'text': 'y'})
-            nrst_stns_ax.grid()
-            nrst_stns_ax.set_xlabel('Eastings', size=tick_font_size)
-            nrst_stns_ax.set_ylabel('Northings', size=tick_font_size)
-            nrst_stns_ax.legend(framealpha=0.5, loc=0)
-
-            nrst_stns_ax.set_xlim(self.xs.min(), self.xs.max())
-            nrst_stns_ax.set_ylim(self.ys.min(), self.ys.max())
-
-            plt.setp(nrst_stns_ax.get_xticklabels(), size=tick_font_size)
-            plt.setp(nrst_stns_ax.get_yticklabels(), size=tick_font_size)
-            plt.savefig(os_join(self.out_nebor_plots_dir,
-                                '%s_neibor_stns.png' % infill_stn),
-                        dpi=self.out_fig_dpi,
-                        bbox_inches='tight')
-            plt.clf()
-
-        plt.close('all')
         self._plotted_nrst_stns_flag = True
         return
 
@@ -388,6 +369,76 @@ class GetNrstStns:
             else:
                 raise Exception('Too few nebors!')
         return
+
+
+def plot_nrst_stns(args):
+
+    (infill_stn,
+     infill_x,
+     infill_y,
+     nebs,
+     x_nebs,
+     y_nebs,
+     xs,
+     ys,
+     out_nebor_plots_dir,
+     out_fig_dpi) = args
+
+    tick_font_size = 5
+    n_nebs = len(nebs)
+
+    nrst_stns_ax = plt.subplot(111)
+
+    nrst_stns_ax.scatter(
+        x_nebs,
+        y_nebs,
+        alpha=0.75,
+        c='c',
+        label='nebor_stn (%d)' % n_nebs)
+
+    nrst_stns_ax.scatter(
+        infill_x,
+        infill_y,
+        c='r',
+        label='infill_stn')
+
+    plt_texts = []
+    for stn in nebs:
+        _txt_obj = nrst_stns_ax.text(
+            x_nebs[stn],
+            y_nebs[stn],
+            stn,
+            va='top',
+            ha='left',
+            fontsize=5)
+        plt_texts.append(_txt_obj)
+
+    _txt_obj = nrst_stns_ax.text(
+        infill_x,
+        infill_y,
+        infill_stn,
+        va='top',
+        ha='left',
+        fontsize=tick_font_size)
+    plt_texts.append(_txt_obj)
+
+    adjust_text(plt_texts, only_move={'points': 'y', 'text': 'y'})
+    nrst_stns_ax.grid()
+    nrst_stns_ax.set_xlabel('Eastings', size=tick_font_size)
+    nrst_stns_ax.set_ylabel('Northings', size=tick_font_size)
+    nrst_stns_ax.legend(framealpha=0.5, loc=0)
+
+    nrst_stns_ax.set_xlim(0.995 * xs.min(), 1.005 * xs.max())
+    nrst_stns_ax.set_ylim(0.995 * ys.min(), 1.005 * ys.max())
+
+    plt.setp(nrst_stns_ax.get_xticklabels(), size=tick_font_size)
+    plt.setp(nrst_stns_ax.get_yticklabels(), size=tick_font_size)
+    plt.savefig(
+        os_join(out_nebor_plots_dir, '%s_neibor_stns.png' % infill_stn),
+        dpi=out_fig_dpi,
+        bbox_inches='tight')
+    plt.close()
+    return
 
 
 if __name__ == '__main__':
