@@ -250,7 +250,7 @@ class InfillStation:
                          'act_val_prob'])
 
             if ((n_nan_idxs > self.thresh_mp_steps) and
-                not self.stn_based_mp_infill):
+                not self.stn_based_mp_infill_flag):
                 use_mp_infill = True
             else:
                 use_mp_infill = False
@@ -353,7 +353,8 @@ class InfillStation:
         nebs_used_per_step_file = os_join(
             self.stn_out_dir, 'stns_used_infill_%s.png' % infill_stn)
 
-        if (self.overwrite_flag or
+        if self.plot_used_stns_flag and (
+            self.overwrite_flag or
             no_out or
             (not os_exists(nebs_used_per_step_file))):
 
@@ -400,7 +401,7 @@ class InfillStation:
         act_var = self.in_var_df_orig[infill_stn].loc[self.infill_dates].values
 
         # plot the infilled series
-        plot_infill_cond = True
+        plot_infill_cond = self.plot_stn_infill_flag
 
         if not self.overwrite_flag:
             plot_infill_cond = (plot_infill_cond and no_out)
@@ -413,7 +414,7 @@ class InfillStation:
 
         use_mp = not (
             self.debug_mode_flag or
-            self.stn_based_mp_infill or
+            self.stn_based_mp_infill_flag or
             (self.ncpus == 1))
 
         compare_iter = None
@@ -445,11 +446,12 @@ class InfillStation:
             out_compar_plot_loc = os_join(
                 self.stn_out_dir, 'compare_infill_%s.png' % infill_stn)
 
-            args_tup = (act_var,
-                        out_conf_df,
-                        out_compar_plot_loc,
-                        out_add_info_df,
-                        update_summary_df_only)
+            args_tup = (
+                act_var,
+                out_conf_df,
+                out_compar_plot_loc,
+                out_add_info_df,
+                update_summary_df_only)
 
             compare_obj = CompareInfill(self)
             if use_mp and (not update_summary_df_only):

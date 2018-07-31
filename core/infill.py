@@ -296,7 +296,7 @@ class NormCopulaInfill:
     save_step_vars_flag: bool
         Save values of several parameters for each step during infilling.
         Default is False.
-    stn_based_mp_infill: bool
+    stn_based_mp_infill_flag: bool
         Choose how multiprocessing is used to infill. If True, each station is
         infilled by a single process i.e. simulataneous infilling of many
         stations. If False, a single station is infilled by ncpus process at
@@ -586,6 +586,7 @@ class NormCopulaInfill:
 
             self.infill_dates = to_datetime(
                 self.infill_dates_list, format=self.time_fmt)
+
         else:
             assert False, (
                 '\'infill_interval_type\' can only be \'slice\', \'all\', '
@@ -762,7 +763,9 @@ class NormCopulaInfill:
         self.plot_long_term_corrs_flag = False
         self.save_step_vars_flag = False
         self.plot_rand_flag = False
-        self.stn_based_mp_infill = True
+        self.stn_based_mp_infill_flag = True
+        self.plot_used_stns_flag = False
+        self.plot_stn_infill_flag = False
 
         self.indiv_stn_outs_dir = os_join(
             self.out_dir, '01_individual_station_outputs')
@@ -929,7 +932,7 @@ class NormCopulaInfill:
 
         if ((self.ncpus == 1) or
             self.debug_mode_flag or
-            (not self.stn_based_mp_infill)):
+            (not self.stn_based_mp_infill_flag)):
 
             _all_res = []
             for ii, infill_stn in enumerate(self.infill_stns):
@@ -1033,16 +1036,17 @@ class NormCopulaInfill:
         if self._norm_cop_pool is not None:
             self._norm_cop_pool.clear()
 
-        if self.debug_mode_flag:
-            self.ncpus = 1
-            if self.dont_stop_flag:
-                self.dont_stop_flag = False
-                if self.verbose:
-                    print('INFO: \'dont_stop_flag\' set to False!')
-        elif self.ncpus == 1:
-            pass
-        elif not hasattr(self._norm_cop_pool, '_id'):
-            self._norm_cop_pool = mp_pool(nodes=self.ncpus)
+        else:
+            if self.debug_mode_flag:
+                self.ncpus = 1
+                if self.dont_stop_flag:
+                    self.dont_stop_flag = False
+                    if self.verbose:
+                        print('INFO: \'dont_stop_flag\' set to False!')
+            elif self.ncpus == 1:
+                pass
+            elif not hasattr(self._norm_cop_pool, '_id'):
+                self._norm_cop_pool = mp_pool(nodes=self.ncpus)
         return
 
     def _before_infill_checks(self):
@@ -1117,10 +1121,13 @@ class NormCopulaInfill:
             self.var_le_trs, self.var_ge_trs, self.ge_le_trs_n = 3 * [None]
 
         if self.flag_susp_flag:
-            self.flag_df = DataFrame(columns=self.infill_stns,
-                                     index=self.infill_dates,
-                                     dtype=float)
+            self.flag_df = DataFrame(
+                columns=self.infill_stns,
+                index=self.infill_dates,
+                dtype=float)
+
             self.compare_infill_flag = True
+
         else:
             self.flag_df = None
 
@@ -1134,8 +1141,8 @@ class NormCopulaInfill:
         self._max_avail_nebs_lab = 'Max. available neighbors'
         self._avg_avail_nebs_lab = 'Avg. neighbors used for infilling'
         self._compr_lab = 'Compared values'
-        self._ks_lims_lab = (('%%age values within %0.0f%% '
-                              'KS-limits') % (100 * (1.0 - self.ks_alpha)))
+        self._ks_lims_lab = ('%%age values within %0.0f%% KS-limits' %
+                             (100 * (1.0 - self.ks_alpha)))
         self._flagged_lab = 'Flagged values %age'
         self._mean_obs_lab = 'Mean (observed)'
         self._mean_infill_lab = 'Mean (infilled)'

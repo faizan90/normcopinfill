@@ -343,7 +343,7 @@ class InfillSteps:
                     pprt(['\'infill_date\':', infill_date], nbh=12)
 
                     pprt(['\'best_stns\': \'covariance\''], nbh=12)
-                    for bstn_cov in zip(best_stns.tolist(), cov_vec):
+                    for bstn_cov in zip(list(best_stns), cov_vec):
                         pprt(['%s: %0.7f' % (bstn_cov[0], bstn_cov[1])],
                              nbh=16)
 

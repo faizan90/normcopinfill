@@ -49,7 +49,7 @@ if __name__ == '__main__':
         # so that it is used in the process, stations with steps less than this are
         # dropped
     min_valid_vals = int(365 * 3)
-#    min_valid_vals = int(365 * 3 / 30.)
+#     min_valid_vals = int(365 * 3 / 30.)
 
     # type of data used:
         # for continuous data: 'discharge'
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         # it serves as buffer i.e. may be on some days fewer stations
         # are available so n_nrn_max ensures that we have at least
         # n_nrn_min stations
-    n_nrn_max = 10
+    n_nrn_max = 20
 
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
@@ -112,33 +112,35 @@ if __name__ == '__main__':
 #     infill_cop.flag_susp_flag = True
 #     infill_cop.force_infill_flag = False  # force infill if avail_cols < n_nrst_stns_min
 #     infill_cop.plot_neighbors_flag = True
-#    infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
-#    infill_cop.overwrite_flag = False
+#     infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
+#     infill_cop.overwrite_flag = False
 #     infill_cop.read_pickles_flag = True
-#    infill_cop.use_best_stns_flag = False
+#     infill_cop.use_best_stns_flag = False
 #     infill_cop.dont_stop_flag = False
 #     infill_cop.plot_long_term_corrs_flag = True
-#    infill_cop.save_step_vars_flag = True
-#    infill_cop.plot_rand_flag = True
-#     infill_cop.stn_based_mp_infill = False
+#     infill_cop.save_step_vars_flag = True
+#     infill_cop.plot_rand_flag = True
+#     infill_cop.stn_based_mp_infill_flag = False
+#     infill_cop.plot_used_stns_flag = True
+#     infill_cop.plot_stn_infill_flag = True
 
-#    infill_cop.nrst_stns_type = 'dist'
+#     infill_cop.nrst_stns_type = 'dist'
     infill_cop.nrst_stns_type = 'rank'
 
-    infill_cop.min_corr = 0.7
+    infill_cop.min_corr = 0.5
 #     infill_cop.max_time_lag_corr = 6
-#    infill_cop.cut_cdf_thresh = 0.5
+#     infill_cop.cut_cdf_thresh = 0.5
 
-    _beg = timeit.default_timer()
-    infill_cop.cmpt_plot_nrst_stns()
-    _end = timeit.default_timer()
-    _tot = (_end - _beg)
-    print('Took %0.4f secs!' % _tot)
+#     _beg = timeit.default_timer()
+#     infill_cop.cmpt_plot_nrst_stns()
+#     _end = timeit.default_timer()
+#     _tot = (_end - _beg)
+#     print('Took %0.4f secs!' % _tot)
 #     infill_cop.cmpt_plot_rank_corr_stns()
-#    infill_cop.cmpt_plot_symm_stns()
+#     infill_cop.cmpt_plot_symm_stns()
 #     infill_cop.plot_stats()
 #     infill_cop.plot_ecops()
-#     infill_cop.infill()
+    infill_cop.infill()
 #     infill_cop.cmpt_plot_avail_stns()
 #     infill_cop.plot_summary()
 

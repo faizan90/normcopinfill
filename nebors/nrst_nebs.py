@@ -73,9 +73,8 @@ class NrstStns:
         if not os_exists(self.pkls_dir):
             os_mkdir(self.pkls_dir)
 
-        if self._norm_cop_pool is None:
-            norm_cop_obj._get_ncpus()
-            self._norm_cop_pool = norm_cop_obj._norm_cop_pool
+        norm_cop_obj._get_ncpus()
+        self._norm_cop_pool = norm_cop_obj._norm_cop_pool
 
         self.get_nrst_stns()
         assert self._got_nrst_stns_flag
@@ -349,7 +348,7 @@ class GetNrstStns:
                     self.nrst_stns_list.append(nrst_stn)
                 if self.mp: self.lock.release()
 
-            # TODO: make this more fexible
+            # TODO: make this more flexible
             if len(curr_nebs_list) >= (2 * self.n_max_nebs):
                 break
 
