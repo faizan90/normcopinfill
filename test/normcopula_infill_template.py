@@ -111,10 +111,10 @@ if __name__ == '__main__':
 #     infill_cop.compare_infill_flag = True
 #     infill_cop.flag_susp_flag = True
 #     infill_cop.force_infill_flag = False  # force infill if avail_cols < n_nrst_stns_min
-    infill_cop.plot_neighbors_flag = True
+#     infill_cop.plot_neighbors_flag = True
 #    infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
 #    infill_cop.overwrite_flag = False
-    infill_cop.read_pickles_flag = True
+#     infill_cop.read_pickles_flag = True
 #    infill_cop.use_best_stns_flag = False
 #     infill_cop.dont_stop_flag = False
 #     infill_cop.plot_long_term_corrs_flag = True

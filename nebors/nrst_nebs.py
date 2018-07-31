@@ -287,7 +287,8 @@ class GetNrstStns:
             'n_min_nebs',
             'dont_stop_flag',
             'bad_stns_list',
-            'bad_stns_neighbors_count']
+            'bad_stns_neighbors_count',
+            'n_max_nebs']
 
         for _var in vars_list:
             setattr(self, _var, getattr(nrst_stns_obj, _var))
@@ -347,6 +348,10 @@ class GetNrstStns:
                 if nrst_stn not in self.nrst_stns_list:
                     self.nrst_stns_list.append(nrst_stn)
                 if self.mp: self.lock.release()
+
+            # TODO: make this more fexible
+            if len(curr_nebs_list) >= (2 * self.n_max_nebs):
+                break
 
         self.nrst_stns_dict[infill_stn] = curr_nebs_list
 
