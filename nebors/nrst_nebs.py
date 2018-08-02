@@ -242,7 +242,7 @@ class NrstStns:
                  self.out_fig_dpi)
                 for _stn in self.infill_stns)
 
-            self._norm_cop_pool.map(plot_nrst_stns, plt_gen)
+            self._norm_cop_pool.map(_plot_nrst_stns, plt_gen)
             self._norm_cop_pool.clear()
         else:
             for infill_stn in self.infill_stns:
@@ -265,7 +265,7 @@ class NrstStns:
                     self.out_nebor_plots_dir,
                     self.out_fig_dpi)
 
-                plot_nrst_stns(args)
+                _plot_nrst_stns(args)
 
         self._plotted_nrst_stns_flag = True
         return
@@ -375,7 +375,7 @@ class GetNrstStns:
         return
 
 
-def plot_nrst_stns(args):
+def _plot_nrst_stns(args):
 
     (infill_stn,
      infill_x,
@@ -398,7 +398,7 @@ def plot_nrst_stns(args):
         y_nebs,
         alpha=0.75,
         c='c',
-        label='nebor_stn (%d)' % n_nebs)
+        label='nrst_stn (%d)' % n_nebs)
 
     nrst_stns_ax.scatter(
         infill_x,
@@ -414,7 +414,7 @@ def plot_nrst_stns(args):
             stn,
             va='top',
             ha='left',
-            fontsize=5)
+            fontsize=tick_font_size)
         plt_texts.append(_txt_obj)
 
     _txt_obj = nrst_stns_ax.text(
@@ -437,10 +437,12 @@ def plot_nrst_stns(args):
 
     plt.setp(nrst_stns_ax.get_xticklabels(), size=tick_font_size)
     plt.setp(nrst_stns_ax.get_yticklabels(), size=tick_font_size)
+
     plt.savefig(
         os_join(out_nebor_plots_dir, '%s_neibor_stns.png' % infill_stn),
         dpi=out_fig_dpi,
         bbox_inches='tight')
+
     plt.close()
     return
 

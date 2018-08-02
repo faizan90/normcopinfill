@@ -15,7 +15,6 @@ from numpy import (
     set_printoptions)
 from pathos.multiprocessing import ProcessPool as mp_pool
 import matplotlib.pyplot as plt
-# from memory_profiler import profile
 
 from pandas import (
     date_range,
@@ -68,25 +67,25 @@ class NormCopulaInfill:
     Parameters
     ----------
     in_var_file: string
-        Location of the file that holds the input time series data.
+        Full path to the file that holds the input time series data.
         The file should have its first column as time. The header
         should be the names of the stations. Any valid separator is
-        allowed. The first row should be the name of the stations.
+        allowed.
     in_coords_file: string
-        Location of the file that has stations' coordinates.
-        The names of the stations should be the first column. The header
+        Full path to the file that has stations' coordinates.
+        Names of the stations should be the first column. The header
         should have the \'X\' for eastings, \'Y\' for northings. Rest
         is ignored. Any valid separator is allowed.
     out_dir: string
-        Location of the output directory. Will be created if it does
+        Full path to the output directory. Will be created if it does
         not exist. All the ouputs are stored inside this directory.
-    infill_stns: list_like
+    infill_stns: list_like of strings
         Names of the stations that should be infilled. These names
         should be in the in_var_file header and the index of
         in_coords_file.
     min_valid_vals: integer
-        The minimum number of the union of one station with others
-        so that all have valid values. This is different in different
+        Minimum number of the union of one station with others
+        so that all have valid values. It varies for different
         cases. e.g. for calculating the long term correlation only
         two stations are used but during infilling all stations
         should satisfy this condition with respect to each other. i.e.
@@ -98,13 +97,14 @@ class NormCopulaInfill:
         considered for infilling.
         indiv: only fill on these dates.
         all: fill wherever there is a missing value.
+            infill_dates_list is ignored in this case.
     infill_type: string
-        The form of variable to be infilled. It can be \'precipitation\',
+        Type of the variable to be infilled. It can be \'precipitation\',
         \'discharge\' and \'discharge-censored\'.
-        For \'discharge-censored\', CDF values below \'cut_cdf_thresh\' are
-        assigned an average probability.
-    infill_dates_list: list_like, date_like
-        A list containing the dates on which infilling is done.
+        For \'discharge-censored\', CDF values below cut_cdf_thresh are
+        assigned 0.5 * cut_cdf_thresh probability.
+    infill_dates_list: list_like of strings
+        A list containing the dates for which to infill.
         The way this list is used depends on the value of
         infill_interval_type.
         if infill_interval_type is \'slice\' and infill_dates_list
@@ -130,7 +130,7 @@ class NormCopulaInfill:
     skip_stns: list_like
         The names of the stations that should not be used while
         infilling. Normally, after calling the
-        \'cmpt_plot_rank_corr_stns\', one can see the stations
+        cmpt_plot_rank_corr_stns method, one can see the stations
         that do not correlate well with the infill_stns.
         Default is None.
     sep: string
@@ -142,7 +142,8 @@ class NormCopulaInfill:
         Format of the time in the in_var_file. This is required to
         convert the string time to a datetime object that allows
         for a more accurate indexing. Any valid time format from the datetime
-        module can be used.
+        module can be used. infill_dates_list should have the time in similar
+        format.
         Default is \'%Y-%m-%d\'.
     freq: string or pandas datetime offset object
         The type of interval used in the in_var_file. e.g. for
@@ -305,6 +306,12 @@ class NormCopulaInfill:
         shutdowns in the past. A given process shutdown results in loss of
         infilling on that particular station or those infill dates.
         Default is True.
+    plot_used_stns_flag: bool
+        Plot time series of the number of stations that were available
+        and finally used for infilling for each station
+    plot_stn_infill_flag: bool
+        Plot the infilled time series with confidence intervals
+        (if a given step was infilled).
 
     Outputs
     -------
@@ -400,24 +407,24 @@ class NormCopulaInfill:
 
     '''
 
-#     @profile
-    def __init__(self,
-                 in_var_file,
-                 in_coords_file,
-                 out_dir,
-                 infill_stns,
-                 min_valid_vals,
-                 infill_interval_type,
-                 infill_type,
-                 infill_dates_list,
-                 n_min_nebs=1,
-                 n_max_nebs=1,
-                 ncpus=1,
-                 skip_stns=None,
-                 sep=';',
-                 time_fmt='%Y-%m-%d',
-                 freq='D',
-                 verbose=True):
+    def __init__(
+            self,
+            in_var_file,
+            in_coords_file,
+            out_dir,
+            infill_stns,
+            min_valid_vals,
+            infill_interval_type,
+            infill_type,
+            infill_dates_list,
+            n_min_nebs=1,
+            n_max_nebs=1,
+            ncpus=1,
+            skip_stns=None,
+            sep=';',
+            time_fmt='%Y-%m-%d',
+            freq='D',
+            verbose=True):
 
         self.verbose = bool(verbose)
         self.in_var_file = str(in_var_file)
@@ -694,8 +701,10 @@ class NormCopulaInfill:
 
         if ((self.infill_type == 'precipitation') or
             (self.infill_type == 'discharge-censored')):
+
             self.nrst_stns_type = 'rank'
             self._rank_method = 'max'
+
         else:
             self.nrst_stns_type = 'symm'  # can be rank or dist or symm
             self._rank_method = 'average'
@@ -816,6 +825,7 @@ class NormCopulaInfill:
         return
 
     def plot_ecops(self):
+
         BefAll(self)
         assert self._bef_all_chked, 'Initiate \'BefAll\' first!'
 
@@ -825,6 +835,7 @@ class NormCopulaInfill:
         return
 
     def plot_stats(self):
+
         if not os_exists(self.stats_dir):
             os_mkdir(self.stats_dir)
 
@@ -832,6 +843,7 @@ class NormCopulaInfill:
         return
 
     def cmpt_plot_nrst_stns(self):
+
         BefAll(self)
         assert self._bef_all_chked, 'Initiate \'BefAll\' first!'
 
@@ -850,6 +862,7 @@ class NormCopulaInfill:
         return
 
     def _get_neb_stns(self, infill_stn):
+
         if self.nrst_stns_type == 'rank':
             curr_nrst_stns = self.rank_corr_stns_dict[infill_stn]
 
@@ -869,6 +882,7 @@ class NormCopulaInfill:
         '''
         Perform the infilling based on given data
         '''
+
         if not self._bef_infill_chked:
             self._before_infill_checks()
         assert self._bef_infill_chked, (
@@ -1019,10 +1033,12 @@ class NormCopulaInfill:
         return
 
     def cmpt_plot_avail_stns(self):
+
         AvailStns(self)
         return
 
     def plot_summary(self):
+
         Summary(self)
         return
 
@@ -1047,9 +1063,12 @@ class NormCopulaInfill:
                 pass
             elif not hasattr(self._norm_cop_pool, '_id'):
                 self._norm_cop_pool = mp_pool(nodes=self.ncpus)
+            else:
+                raise RuntimeError('Error in _get_ncpus!')
         return
 
     def _before_infill_checks(self):
+
         BefAll(self)
         assert self._bef_all_chked, 'Initiate \'BefAll\' first!'
 
