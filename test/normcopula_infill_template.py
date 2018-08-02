@@ -24,14 +24,14 @@ if __name__ == '__main__':
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'pre_nrst_test'
+    out_dir = r'post_rank_corr_test'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
 
     # names of the stations to be infilled as a list
-#     infill_stns = ['427', '406']
-    infill_stns = 'all'
+    infill_stns = ['427', '406', '2446']
+#     infill_stns = 'all'
 
     # names of the stations that should not be used in the process
     drop_stns = ['417', '24701', '45409', '76159', '1438', '2465']  # [] #
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         # it serves as buffer i.e. may be on some days fewer stations
         # are available so n_nrn_max ensures that we have at least
         # n_nrn_min stations
-    n_nrn_max = 20
+    n_nrn_max = 10
 
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
