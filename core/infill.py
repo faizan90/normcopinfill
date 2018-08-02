@@ -974,7 +974,7 @@ class NormCopulaInfill:
 
                 nebs = (nebs_dict[_] for _ in self.infill_stns)
 
-                _all_res = list(self._norm_cop_pool.map(
+                _all_res = list(self._norm_cop_pool.uimap(
                     infill_stn_obj._infill_stn,
                     iis,
                     self.infill_stns,

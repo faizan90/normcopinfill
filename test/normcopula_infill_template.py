@@ -24,14 +24,14 @@ if __name__ == '__main__':
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'post_rank_corr_test'
+    out_dir = r'post_rank_corr_test_3'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
 
     # names of the stations to be infilled as a list
-    infill_stns = ['427', '406', '2446']
-#     infill_stns = 'all'
+#     infill_stns = ['409', '411', '2446']
+    infill_stns = 'all'
 
     # names of the stations that should not be used in the process
     drop_stns = ['417', '24701', '45409', '76159', '1438', '2465']  # [] #
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         # it serves as buffer i.e. may be on some days fewer stations
         # are available so n_nrn_max ensures that we have at least
         # n_nrn_min stations
-    n_nrn_max = 10
+    n_nrn_max = 30
 
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
@@ -111,13 +111,13 @@ if __name__ == '__main__':
 #     infill_cop.compare_infill_flag = True
 #     infill_cop.flag_susp_flag = True
 #     infill_cop.force_infill_flag = False  # force infill if avail_cols < n_nrst_stns_min
-    infill_cop.plot_neighbors_flag = True
+#     infill_cop.plot_neighbors_flag = True
 #     infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
 #     infill_cop.overwrite_flag = False
     infill_cop.read_pickles_flag = True
 #     infill_cop.use_best_stns_flag = False
 #     infill_cop.dont_stop_flag = False
-    infill_cop.plot_long_term_corrs_flag = True
+#     infill_cop.plot_long_term_corrs_flag = True
 #     infill_cop.save_step_vars_flag = True
 #     infill_cop.plot_rand_flag = True
 #     infill_cop.stn_based_mp_infill_flag = False

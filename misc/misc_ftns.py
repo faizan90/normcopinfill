@@ -6,7 +6,7 @@ This is a temporary script file.
 """
 from traceback import format_exception
 
-from numpy import divide, nan
+from numpy import divide, nan, linspace, unique, concatenate, array
 from scipy.stats import rankdata
 
 from ..cyth import gen_n_rns_arr, norm_ppf_py_arr, get_asymms_sample
@@ -68,6 +68,20 @@ def get_lag_ser(in_ser_raw, lag=0):
         in_ser.values[lag:] = in_ser.values[:-lag]
         in_ser.values[:lag] = nan
     return in_ser
+
+
+def ret_mp_idxs(n_vals, n_cpus):
+    idxs = linspace(0, n_vals, n_cpus + 1, endpoint=True, dtype='int64')
+
+    idxs = unique(idxs)
+
+    assert idxs.shape[0]
+
+    if idxs.shape[0] == 1:
+        idxs = concatenate((array([0]), idxs))
+
+    assert (idxs[0] == 0) & (idxs[-1] == n_vals), idxs
+    return idxs
 
 
 if __name__ == '__main__':

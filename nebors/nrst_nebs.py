@@ -80,9 +80,8 @@ class NrstStns:
         assert self._got_nrst_stns_flag
 
         if self.plot_neighbors_flag:
-            print('Did not plot nrst nebs!')
-#             self.plot_nrst_stns()
-#             assert self._plotted_nrst_stns_flag
+            self.plot_nrst_stns()
+            assert self._plotted_nrst_stns_flag
 
         setattr(norm_cop_obj, '_dist_cmptd', True)
         setattr(norm_cop_obj, 'in_var_df', self.in_var_df)
