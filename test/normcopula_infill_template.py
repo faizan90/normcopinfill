@@ -24,7 +24,7 @@ if __name__ == '__main__':
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'post_rank_corr_test_3'
+    out_dir = r'post_rank_corr_test_01'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     infill_date_str = 'slice'
 
     # the time period for which it should infill, its type depends on infill_date_str
-    censor_period = ['1961-01-01', '1980-12-31']
+    censor_period = ['1961-01-01', '1963-12-31']
 
     # the number of minimum days/steps that every station should have prior to infilling
         # so that it is used in the process, stations with steps less than this are
@@ -67,12 +67,12 @@ if __name__ == '__main__':
         # it serves as buffer i.e. may be on some days fewer stations
         # are available so n_nrn_max ensures that we have at least
         # n_nrn_min stations
-    n_nrn_max = 30
+    n_nrn_max = 5
 
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
         # achieve fastest speeds
-    ncpus = 7
+    ncpus = 31
 
     # the seperator used in the input files
         # it is also used in the output
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 #     infill_cop.debug_mode_flag = True
 #     infill_cop.plot_diag_flag = True
 #     infill_cop.plot_step_cdf_pdf_flag = True
-#     infill_cop.compare_infill_flag = True
+    infill_cop.compare_infill_flag = True
 #     infill_cop.flag_susp_flag = True
 #     infill_cop.force_infill_flag = False  # force infill if avail_cols < n_nrst_stns_min
 #     infill_cop.plot_neighbors_flag = True
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 #     infill_cop.overwrite_flag = False
     infill_cop.read_pickles_flag = True
 #     infill_cop.use_best_stns_flag = False
-#     infill_cop.dont_stop_flag = False
+    infill_cop.dont_stop_flag = False
 #     infill_cop.plot_long_term_corrs_flag = True
 #     infill_cop.save_step_vars_flag = True
 #     infill_cop.plot_rand_flag = True
@@ -128,22 +128,27 @@ if __name__ == '__main__':
     infill_cop.nrst_stns_type = 'rank'
 
     infill_cop.min_corr = 0.5
-#     infill_cop.max_time_lag_corr = 6
+    infill_cop.max_time_lag_corr = 3
 #     infill_cop.cut_cdf_thresh = 0.5
-    infill_cop.cmpt_plot_nrst_stns()
 
-    _beg = timeit.default_timer()
-    infill_cop.cmpt_plot_rank_corr_stns()
-    _end = timeit.default_timer()
-    _tot = (_end - _beg)
-    print('Took %0.4f secs!' % _tot)
+#     _beg = timeit.default_timer()
+#     infill_cop.cmpt_plot_nrst_stns()
+#     _end = timeit.default_timer()
+#     _tot = (_end - _beg)
+#     print('Took %0.4f secs!' % _tot)
+#
+#     _beg = timeit.default_timer()
+#     infill_cop.cmpt_plot_rank_corr_stns()
+#     _end = timeit.default_timer()
+#     _tot = (_end - _beg)
+#     print('Took %0.4f secs!' % _tot)
 
 #     infill_cop.cmpt_plot_symm_stns()
 #     infill_cop.plot_stats()
 #     infill_cop.plot_ecops()
-#     infill_cop.infill()
-#     infill_cop.cmpt_plot_avail_stns()
-#     infill_cop.plot_summary()
+    infill_cop.infill()
+    infill_cop.cmpt_plot_avail_stns()
+    infill_cop.plot_summary()
 
     stop = timeit.default_timer()  # Ending time
     print('\n\a\a\a Done with everything on %s. Total run time was about %0.4f seconds \a\a\a' % (time.asctime(), stop - start))

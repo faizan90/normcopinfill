@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
 """
 Created on %(date)s
 
 @author: %(username)s
 """
 from math import factorial as fac
-from collections import OrderedDict
 from itertools import combinations
 
 from numpy import divide
@@ -14,25 +12,33 @@ from numpy import divide
 class NebSel:
 
     def __init__(self, infill_steps_obj):
-        vars_list = ['curr_infill_stn',
-                     'curr_nrst_stns',
-                     'in_var_df',
-                     'n_min_nebs',
-                     'min_valid_vals',
-                     'force_infill_flag',
-                     'debug_mode_flag']
+
+        vars_list = [
+            'curr_infill_stn',
+            'curr_nrst_stns',
+            'in_var_df',
+            'n_min_nebs',
+            'min_valid_vals',
+            'force_infill_flag',
+            'debug_mode_flag']
 
         for _var in vars_list:
             setattr(self, _var, getattr(infill_steps_obj, _var))
         return
 
     def get_unique_stns_seqs(self, infill_dates):
-        # make a set of available stations so that if something changes
-        # we don't have to find the same solution again
+
+        '''
+        Make a set of available stations so that if something changes
+        we don't have to find the same solution again.
+        '''
+
         avail_stns_per_step_list = []
         sel_stns = [self.curr_infill_stn] + self.curr_nrst_stns
+
         for infill_date in infill_dates:
             _ = self.in_var_df.loc[infill_date, sel_stns].dropna()
+
             if self.curr_infill_stn not in _.index:
                 continue
 
@@ -56,22 +62,21 @@ class NebSel:
             _list.append(None)  # will hold best_stns here
             avail_stns_per_step_list.append(_list)
 
-        uniq_steps_ctr = 0
-        avail_stns_per_step_dict = OrderedDict()
+        avail_stns_per_step_dict = {}
         for _list in avail_stns_per_step_list:
             avail_stns_per_step_dict[_list[0]] = _list
-            if _list[2] is None:
-                uniq_steps_ctr += 1
 
         return avail_stns_per_step_dict
 
-    def get_best_stns(self,
-                      best_stns,
-                      infill_date,
-                      curr_var_df,
-                      avail_cols_raw,
-                      comb_idxs_dict,
-                      avail_stns_per_step_dict):
+    def get_best_stns(
+            self,
+            best_stns,
+            infill_date,
+            curr_var_df,
+            avail_cols_raw,
+            comb_idxs_dict,
+            avail_stns_per_step_dict):
+
         '''
         Select stations based on maximum number of common available steps
         while they are greater than min_valid_vals
@@ -79,6 +84,7 @@ class NebSel:
         Time to infill increases with increase in n_nrn_min and
         n_nrn_max if use_best_stns_flag is True
         '''
+
         max_n_combs = 2000
 
         # best_stns based on intersection of date indicies
@@ -88,15 +94,16 @@ class NebSel:
 
         if infill_date in list(avail_stns_per_step_dict.keys()):
             _ = avail_stns_per_step_dict[infill_date][3]
+
         else:
             _ = None
 
         if _ is not None:
             return _  # best_stns
 
-        for i in range(curr_var_df.shape[1] - 1,
-                       self.n_min_nebs - 1,
-                       -1):
+        for i in range(
+            curr_var_df.shape[1] - 1, self.n_min_nebs - 1, -1):
+
             if (not self.force_infill_flag) and (i < self.n_min_nebs):
                 break
 
@@ -131,14 +138,17 @@ class NebSel:
                     if idx is None:
                         _ = list(avail_stns_per_step_dict.keys())
                         step_idx = _.index(infill_date)
+
                         for _step in list(avail_stns_per_step_dict.keys()):
                             _ = avail_stns_per_step_dict[_step][2]
+
                             if step_idx == _:
                                 avail_stns_per_step_dict[_step][3] = best_stns
 
                 if self.debug_mode_flag:
                     print('Found best_stns:', best_stns)
                 return best_stns
+
         else:
             return best_stns
 

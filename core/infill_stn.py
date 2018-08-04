@@ -18,7 +18,6 @@ from numpy import (
     set_printoptions,
     where)
 import matplotlib.pyplot as plt
-# from memory_profiler import profile
 
 from pandas import (
     read_csv,
@@ -30,7 +29,7 @@ from .infill_steps import InfillSteps
 from .plot_infill import PlotInfill
 from .compare_infill import CompareInfill
 from .flag_susp import FlagSusp
-from ..misc.misc_ftns import pprt, as_err, full_tb
+from ..misc.misc_ftns import pprt, as_err, full_tb, get_lag_ser
 
 plt.ioff()
 set_printoptions(
@@ -45,6 +44,7 @@ seterr(all='ignore')
 class InfillStation:
 
     def __init__(self, norm_cop_obj):
+
         vars_list = list(vars(norm_cop_obj).keys())
 
         for _var in vars_list:
@@ -69,13 +69,28 @@ class InfillStation:
         self.rank_corr_stns_dict = None
         self.n_norm_symm_flds = None
         self.rank_corr_vals_ctr_df = None
+        self.rank_corrs_df = None
+        self.time_lags_df = None
         return
 
     def _infill_stn(
-            self, ii, infill_stn, in_var_df, in_var_df_orig, curr_nrst_stns):
+            self,
+            ii,
+            infill_stn,
+            in_var_df,
+            in_var_df_orig,
+            curr_nrst_stns,
+            time_lags_df):
+
         try:
             return self.__infill_stn(
-                ii, infill_stn, in_var_df, in_var_df_orig, curr_nrst_stns)
+                ii,
+                infill_stn,
+                in_var_df,
+                in_var_df_orig,
+                curr_nrst_stns,
+                time_lags_df)
+
         except:
             full_tb(exc_info(), self.dont_stop_flag)
             if not self.dont_stop_flag:
@@ -83,7 +98,24 @@ class InfillStation:
         return
 
     def __infill_stn(
-            self, ii, infill_stn, in_var_df, in_var_df_orig, curr_nrst_stns):
+            self,
+            ii,
+            infill_stn,
+            in_var_df,
+            in_var_df_orig,
+            curr_nrst_stns,
+            time_lags_df):
+
+        if self.max_time_lag_corr:
+
+            # can't mess with the original one
+            in_var_df = in_var_df.copy()
+
+            for stn in curr_nrst_stns:
+                _lag = time_lags_df[stn]
+                in_var_df[stn] = get_lag_ser(in_var_df[stn], _lag)
+
+            time_lags_df = None
 
         self.out_var_df = DataFrame(
             index=in_var_df.index, dtype=float, columns=[infill_stn])
@@ -92,9 +124,9 @@ class InfillStation:
             index=[infill_stn], columns=self._summary_cols, dtype=float)
 
         if self.flag_susp_flag:
-            self.flag_df = DataFrame(columns=[infill_stn],
-                                     index=self.infill_dates,
-                                     dtype=float)
+            self.flag_df = DataFrame(
+                columns=[infill_stn], index=self.infill_dates, dtype=float)
+
         if self.verbose:
             print('\n')
             pprt(nbh=4, msgs=[('Going through station %d of %d:  %s') %
@@ -474,18 +506,21 @@ class InfillStation:
 
             if (not no_out) and (not self.overwrite_flag):
                 update_summary_df_only = True
+
             else:
                 update_summary_df_only = False
 
             flag_susp_obj = FlagSusp(self)
-            args_tup = (act_var,
-                        out_conf_df,
-                        out_flag_susp_loc,
-                        update_summary_df_only)
+            args_tup = (
+                act_var,
+                out_conf_df,
+                out_flag_susp_loc,
+                update_summary_df_only)
 
             if use_mp and (not update_summary_df_only):
                 flag_susp_iter = self._norm_cop_pool.uimap(
                     flag_susp_obj.plot, (args_tup,))
+
             else:
                 _ = flag_susp_obj.plot(args_tup)
                 self.summary_df.update(_[0])
@@ -516,6 +551,7 @@ class InfillStation:
         return (self.summary_df, self.flag_df, self.out_var_df)
 
     def _infill(self, infill_dates):
+
         try:
             (out_conf_df, out_add_info_df) = (
                  self.infill_steps_obj.infill_steps(infill_dates))

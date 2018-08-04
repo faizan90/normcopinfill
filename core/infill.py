@@ -28,7 +28,6 @@ from ..checks.conf import ConfInfill
 from ..checks.bef_all import BefAll
 from ..nebors.nrst_nebs import NrstStns
 from ..nebors.rank_corr_nebs import RankCorrStns
-from ..nebors.rank_corr_nebs_time_lag import BestLagRankCorrStns
 from ..ecops.plot_ecops import ECops
 from ..misc.plot_stats import PlotStats
 from ..misc.avail_stns import AvailStns
@@ -855,10 +854,7 @@ class NormCopulaInfill:
         BefAll(self)
         assert self._bef_all_chked, 'Initiate \'BefAll\' first!'
 
-        if self.max_time_lag_corr:
-            BestLagRankCorrStns(self)
-        else:
-            RankCorrStns(self)
+        RankCorrStns(self)
         return
 
     def _get_neb_stns(self, infill_stn):
@@ -877,7 +873,6 @@ class NormCopulaInfill:
                                    self.nrst_stns_type))
         return list(curr_nrst_stns)
 
-#     @profile
     def infill(self):
         '''
         Perform the infilling based on given data
@@ -954,9 +949,15 @@ class NormCopulaInfill:
                 curr_var_df = self.in_var_df[[infill_stn] + curr_nebs]
                 curr_var_df_orig = self.in_var_df_orig[infill_stn].to_frame(
                     infill_stn)
+                curr_time_lags_ser = self.time_lags_df.loc[infill_stn]
 
                 args = (
-                    ii, infill_stn, curr_var_df, curr_var_df_orig, curr_nebs)
+                    ii,
+                    infill_stn,
+                    curr_var_df,
+                    curr_var_df_orig,
+                    curr_nebs,
+                    curr_time_lags_ser)
 
                 _all_res.append(infill_stn_obj._infill_stn(*args))
 
@@ -974,13 +975,17 @@ class NormCopulaInfill:
 
                 nebs = (nebs_dict[_] for _ in self.infill_stns)
 
+                time_lags_sers_gen = (
+                    self.time_lags_df.loc[_] for _ in self.infill_stns)
+
                 _all_res = list(self._norm_cop_pool.uimap(
                     infill_stn_obj._infill_stn,
                     iis,
                     self.infill_stns,
                     var_dfs_gen,
                     var_dfs_orig_gen,
-                    nebs))
+                    nebs,
+                    time_lags_sers_gen))
 
                 self._norm_cop_pool.clear()
 
@@ -1055,14 +1060,22 @@ class NormCopulaInfill:
         else:
             if self.debug_mode_flag:
                 self.ncpus = 1
+
                 if self.dont_stop_flag:
                     self.dont_stop_flag = False
+
                     if self.verbose:
                         print('INFO: \'dont_stop_flag\' set to False!')
+
             elif self.ncpus == 1:
                 pass
+
             elif not hasattr(self._norm_cop_pool, '_id'):
                 self._norm_cop_pool = mp_pool(nodes=self.ncpus)
+
+                if self.verbose:
+                    print('INFO: MP pool inititated!')
+
             else:
                 raise RuntimeError('Error in _get_ncpus!')
         return
@@ -1090,14 +1103,12 @@ class NormCopulaInfill:
 
             elif self.nrst_stns_type == 'symm':
                 if self.verbose:
-                    print('INFO: using RANKS with SYMMETRIES to get '
+                    print('INFO: Using RANKS with SYMMETRIES to get '
                           'neighboring stations')
 
             if not self._rank_corr_cmptd:
-                if self.max_time_lag_corr:
-                    BestLagRankCorrStns(self)
-                else:
-                    RankCorrStns(self)
+                RankCorrStns(self)
+
                 assert self._rank_corr_cmptd, (
                     'Call \'cmpt_plot_rank_corr_stns\' first!')
 
