@@ -12,7 +12,9 @@ from os.path import exists as os_exists, join as os_join
 from numpy import (
     intersect1d,
     seterr,
-    set_printoptions)
+    set_printoptions,
+    float32,
+    float16)
 from pathos.multiprocessing import ProcessPool as mp_pool
 import matplotlib.pyplot as plt
 
@@ -453,13 +455,21 @@ class NormCopulaInfill:
         print('INFO: Infilling started at:',
               datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-        self.in_var_df = read_csv(
-            self.in_var_file,
-            sep=self.sep,
-            index_col=0,
-            encoding='utf-8',
-            engine='python')
+        try:
+            self.in_var_df = read_csv(
+                self.in_var_file,
+                sep=self.sep,
+                index_col=0,
+                engine='c')
+        except:
+            print('WARNING: Reading in_var_file with engine=\'python\'!')
+            self.in_var_df = read_csv(
+                self.in_var_file,
+                sep=self.sep,
+                index_col=0,
+                engine='python')
 
+        self.in_var_df = self.in_var_df.astype(float16)
         self.in_var_df.index = to_datetime(
             self.in_var_df.index, format=self.time_fmt)
 
@@ -471,8 +481,6 @@ class NormCopulaInfill:
         self.in_var_df.columns = self.in_var_df.columns.map(str)
         self.in_var_df.columns = self.in_var_df.columns.map(str.strip)
 
-        self.in_var_df_orig = self.in_var_df.copy()
-
         if self.verbose:
             print('INFO: \'in_var_df\' original shape:', self.in_var_df.shape)
 
@@ -482,11 +490,19 @@ class NormCopulaInfill:
             print('INFO: \'in_var_df\' shape after dropping NaN steps:',
                   self.in_var_df.shape)
 
-        self.in_coords_df = read_csv(
-            self.in_coords_file,
-            sep=sep, index_col=0,
-            encoding='utf-8',
-            engine='python')
+        try:
+            self.in_coords_df = read_csv(
+                self.in_coords_file,
+                sep=sep,
+                index_col=0,
+                engine='c')
+        except:
+            print('WARNING: Reading in_coords_file with engine=\'python\'!')
+            self.in_coords_df = read_csv(
+                self.in_coords_file,
+                sep=sep,
+                index_col=0,
+                engine='python')
 
         assert self.in_coords_df.shape[0] > 0, (
             '\'in_coords_df\' has no records!')
@@ -504,12 +520,19 @@ class NormCopulaInfill:
         assert 'Y' in self.in_coords_df.columns, (
             'Column \'Y\' not in \'in_coords_df\'!')
 
-        self.in_coords_df = self.in_coords_df[['X', 'Y']]
+        if 'Z' in self.in_coords_df.columns:
+            _cols = ['X', 'Y', 'Z']
+        else:
+            _cols = ['X', 'Y']
+
+        self.in_coords_df = self.in_coords_df[_cols]
         self.in_coords_df.dropna(inplace=True)
 
         if self.verbose:
             print('INFO: \'in_coords_df\' original shape:', end=' ')
             print(self.in_coords_df.shape)
+
+        self.in_coords_df = self.in_coords_df.astype(float32)
 
         if skip_stns is not None:
             assert hasattr(skip_stns, '__iter__'), (
@@ -939,54 +962,34 @@ class NormCopulaInfill:
 
         infill_stn_obj = InfillStation(self)
 
+        # if we should make copy of in_var_df in InfillStation
         if ((self.ncpus == 1) or
-            self.debug_mode_flag or
             (not self.stn_based_mp_infill_flag)):
 
-            _all_res = []
-            for ii, infill_stn in enumerate(self.infill_stns):
-                curr_nebs = self._get_neb_stns(infill_stn)
-                curr_var_df = self.in_var_df[[infill_stn] + curr_nebs]
-                curr_var_df_orig = self.in_var_df_orig[infill_stn].to_frame(
-                    infill_stn)
-                curr_time_lags_ser = self.time_lags_df.loc[infill_stn]
+            _parent = True
 
-                args = (
-                    ii,
-                    infill_stn,
-                    curr_var_df,
-                    curr_var_df_orig,
-                    curr_nebs,
-                    curr_time_lags_ser)
+        else:
+            _parent = False
 
-                _all_res.append(infill_stn_obj._infill_stn(*args))
+        infill_gen = (
+            (ii,
+             _stn,
+             self.in_var_df[[_stn] + self._get_neb_stns(_stn)],
+             self.time_lags_df.loc[_stn],
+             _parent)
+
+            for ii, _stn in enumerate(self.infill_stns))
+
+        if ((self.ncpus == 1) or
+            (not self.stn_based_mp_infill_flag)):
+
+            _all_res = [
+                infill_stn_obj._infill_stn(args) for args in infill_gen]
 
         else:
             try:
-                iis = list(range(0, self.n_infill_stns))
-                nebs_dict = {_:self._get_neb_stns(_) for _ in self.infill_stns}
-
-                var_dfs_gen = (
-                self.in_var_df[[_] + nebs_dict[_]] for _ in self.infill_stns)
-
-                var_dfs_orig_gen = (
-                    self.in_var_df_orig[_].to_frame(_)
-                    for _ in self.infill_stns)
-
-                nebs = (nebs_dict[_] for _ in self.infill_stns)
-
-                time_lags_sers_gen = (
-                    self.time_lags_df.loc[_] for _ in self.infill_stns)
-
                 _all_res = list(self._norm_cop_pool.uimap(
-                    infill_stn_obj._infill_stn,
-                    iis,
-                    self.infill_stns,
-                    var_dfs_gen,
-                    var_dfs_orig_gen,
-                    nebs,
-                    time_lags_sers_gen))
-
+                    infill_stn_obj._infill_stn, infill_gen))
                 self._norm_cop_pool.clear()
 
             except:
@@ -1074,7 +1077,7 @@ class NormCopulaInfill:
                 self._norm_cop_pool = mp_pool(nodes=self.ncpus)
 
                 if self.verbose:
-                    print('INFO: MP pool inititated!')
+                    print('INFO: MP pool initialized!')
 
             else:
                 raise RuntimeError('Error in _get_ncpus!')
@@ -1163,7 +1166,7 @@ class NormCopulaInfill:
 
         self._get_ncpus()
 
-        self.out_var_df = self.in_var_df_orig.copy()
+        self.out_var_df = self.in_var_df.copy()
 
         self._av_vals_lab = 'Available values'
         self._miss_vals_lab = 'Missing values'
@@ -1210,7 +1213,7 @@ class NormCopulaInfill:
             self._scorr_lab]
 
         self.summary_df = DataFrame(
-            index=self.infill_stns, columns=self._summary_cols, dtype=float)
+            index=self.infill_stns, columns=self._summary_cols, dtype=float32)
 
         self._bef_infill_chked = True
         return

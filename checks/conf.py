@@ -10,7 +10,8 @@ from numpy import (
     where,
     any as np_any,
     ediff1d,
-    isclose)
+    isclose,
+    float16)
 
 from pandas import Series
 
@@ -142,7 +143,7 @@ class ConfInfill:
                      (str(_flag_val), str(self.conf_probs)))
 
         self.conf_ser = Series(
-            index=self.conf_heads, data=self.conf_probs, dtype=float)
+            index=self.conf_heads, data=self.conf_probs, dtype=float16)
 
         self._conf_ser_cmptd = True
         return

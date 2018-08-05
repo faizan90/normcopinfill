@@ -13,7 +13,8 @@ from numpy import (nan,
                    all as np_all,
                    isfinite,
                    any as np_any,
-                   isnan)
+                   isnan,
+                   float32)
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 from scipy.interpolate import interp1d
@@ -24,22 +25,25 @@ from ..cyth import norm_ppf_py_arr
 
 class StepTrans:
 
-    def __init__(self,
-                 infill_steps_obj,
-                 curr_var_df,
-                 curr_py_zeros_dict,
-                 curr_py_dels_dict,
-                 curr_val_cdf_ftns_dict,
-                 date_pref):
-        vars_list = ['infill_type',
-                     'var_le_trs',
-                     'var_ge_trs',
-                     '_rank_method',
-                     'curr_infill_stn',
-                     'out_fig_fmt',
-                     'stn_step_cdfs_dir',
-                     'out_fig_dpi',
-                     'cut_cdf_thresh']
+    def __init__(
+            self,
+            infill_steps_obj,
+            curr_var_df,
+            curr_py_zeros_dict,
+            curr_py_dels_dict,
+            curr_val_cdf_ftns_dict,
+            date_pref):
+
+        vars_list = [
+            'infill_type',
+            'var_le_trs',
+            'var_ge_trs',
+            '_rank_method',
+            'curr_infill_stn',
+            'out_fig_fmt',
+            'stn_step_cdfs_dir',
+            'out_fig_dpi',
+            'cut_cdf_thresh']
 
         for _var in vars_list:
             setattr(self, _var, getattr(infill_steps_obj, _var))
@@ -59,9 +63,10 @@ class StepTrans:
     def get_cdfs_probs(self):
 
         # create probability and standard normal value dfs
-        self.probs_df = DataFrame(index=self.curr_var_df.index,
-                                  columns=self.curr_var_df.columns,
-                                  dtype=float)
+        self.probs_df = DataFrame(
+            index=self.curr_var_df.index,
+            columns=self.curr_var_df.columns,
+            dtype=float32)
         self.norms_df = self.probs_df.copy()
 
         self.py_del = nan
@@ -133,10 +138,10 @@ class StepTrans:
                 self.py_del = thresh_prob
                 self.py_zero = zero_prob * 0.5
 
-            curr_val_cdf_df = DataFrame(index=self.curr_var_df.index,
-                                        columns=[self._probs_str,
-                                                 self._vals_str],
-                                        dtype=float)
+            curr_val_cdf_df = DataFrame(
+                index=self.curr_var_df.index,
+                columns=[self._probs_str, self._vals_str], dtype=float32)
+
             curr_val_cdf_df[self._probs_str] = self.probs_df[col].copy()
             curr_val_cdf_df[self._vals_str] = var_ser.copy()
 
@@ -150,8 +155,8 @@ class StepTrans:
             # TODO: have parameters for approximate minima and maxima.
             #       this is becoming a problem.
             curr_val_cdf_ftn = (
-                interp1d(curr_val_cdf_df[self._vals_str].values,
-                         curr_val_cdf_df[self._probs_str].values,
+                interp1d(curr_val_cdf_df[self._vals_str].values.astype(float),
+                         curr_val_cdf_df[self._probs_str].values.astype(float),
                          fill_value=(curr_min_prob, curr_max_prob),
                          bounds_error=False))
 

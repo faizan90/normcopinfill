@@ -62,9 +62,10 @@ class Summary:
                           g_2_r_cm,
                           clr_log_norm):
 
-        colors_df = DataFrame(index=curr_summary_df.index,
-                              columns=curr_summary_df.columns,
-                              dtype=object)
+        colors_df = DataFrame(
+            index=curr_summary_df.index,
+            columns=curr_summary_df.columns,
+            dtype=object)
 
         # ## available values
         avail_vals = curr_summary_df[self._av_vals_lab]

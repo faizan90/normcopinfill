@@ -16,13 +16,13 @@ from numpy import (
     sum as np_sum,
     abs as np_abs,
     argsort,
-    nan)
+    nan,
+    float32)
 
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 from scipy.stats import rankdata
 
-from ..misc.misc_ftns import pprt
 from ..cyth import (
     get_corrcoeff,
     get_kge_py,
@@ -423,29 +423,22 @@ class CompareInfill:
                 infill_var]
 
         if not self.update_summary_df_only:
-            if self.infill_dates.shape[0] < 365:
-                self._plot_comparison(
-                    out_conf_df,
-                    interp_data_idxs,
-                    alpha,
-                    lw,
-                    act_var,
-                    n_vals,
-                    bias,
-                    mae,
-                    rmse,
-                    nse,
-                    ln_nse,
-                    kge,
-                    correl_pe,
-                    correl_sp,
-                    out_compar_plot_loc)
-
-            else:
-                if self.verbose:
-                    pprt(['Too many values, not plotting the infill '
-                          'comparision!'],
-                         nbh=8)
+            self._plot_comparison(
+                out_conf_df,
+                interp_data_idxs,
+                alpha,
+                lw,
+                act_var,
+                n_vals,
+                bias,
+                mae,
+                rmse,
+                nse,
+                ln_nse,
+                kge,
+                correl_pe,
+                correl_sp,
+                out_compar_plot_loc)
 
             self._plot_infill_vs_obs_cdf_time_sers(
                 infill_probs,
@@ -511,7 +504,7 @@ class CompareInfill:
             self._scorr_lab]
 
         summ_df = DataFrame(
-            index=[self.curr_infill_stn], dtype=float, columns=summ_df_cols)
+            index=[self.curr_infill_stn], dtype=float32, columns=summ_df_cols)
 
         if plot_compare_cond:
             self._compar_ser(

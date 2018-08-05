@@ -10,10 +10,10 @@ from os.path import exists as os_exists, join as os_join
 
 from adjustText import adjust_text
 import matplotlib.pyplot as plt
-from numpy import vectorize
+from numpy import vectorize, float32
 from pandas import DataFrame
 
-from ..misc.misc_ftns import as_err
+from ..misc.misc_ftns import as_err, ret_mp_idxs
 from ..cyth import get_dist
 
 plt.ioff()
@@ -114,6 +114,7 @@ class NrstStns:
 
         if (os_exists(self._out_nrst_stns_pkl_file) and
             self.read_pickles_flag):
+
             self._load_pickle()
             return
 
@@ -145,8 +146,15 @@ class NrstStns:
         get_nrst_stns_obj = GetNrstStns(self, mng_list)
 
         if mp:
+
+            mp_idxs = ret_mp_idxs(len(self.infill_stns), self.ncpus)
+
+            mp_infill_stns = [
+                self.infill_stns[mp_idxs[i]: mp_idxs[i + 1]]
+                for i in range(mp_idxs.shape[0] - 1)]
+
             self._norm_cop_pool.map(
-                get_nrst_stns_obj._get_nrst_stn, self.infill_stns)
+                get_nrst_stns_obj._get_nrst_stns, mp_infill_stns)
 
             self._norm_cop_pool.clear()
 
@@ -156,8 +164,7 @@ class NrstStns:
             self.bad_stns_neighbors_count = list(mng_bad_stns_neighbors_count)
 
         else:
-            for infill_stn in self.infill_stns:
-                get_nrst_stns_obj._get_nrst_stn(infill_stn)
+            get_nrst_stns_obj._get_nrst_stns(self.infill_stns)
 
         for bad_stn in self.bad_stns_list:
             self.infill_stns = self.infill_stns.drop(bad_stn)
@@ -360,6 +367,18 @@ class GetNrstStns:
 
         return
 
+    def _get_nrst_stns(self, infill_stns):
+
+        for infill_stn in infill_stns:
+            self._get_nrst_stn(infill_stn)
+
+        self.in_coords_df = None
+        self.xs = None
+        self.ys = None
+        self.stns_valid_dates = None
+        self.infill_dates = None
+        return
+
     def _get_nrst_stn(self, infill_stn):
 
         curr_nebs_list = []
@@ -375,7 +394,7 @@ class GetNrstStns:
             index=self.in_coords_df.index,
             data=dists,
             columns=['dists'],
-            dtype=float)
+            dtype=float32)
 
         dists_df.sort_values('dists', axis=0, inplace=True)
 

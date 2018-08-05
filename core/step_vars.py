@@ -77,7 +77,10 @@ class StepVars:
 
                 cur_vals[i - 1] = _curr_var_val
 
-        assert np_all(isfinite(u_t)), as_err('NaNs in \'u_t\'!')
+        try:
+            assert np_all(isfinite(u_t)), as_err('NaNs in \'u_t\'!')
+        except:
+            print('Stop!')
         return cur_vals, u_t, val_cdf_ftn
 
 

@@ -4,7 +4,7 @@ Spyder Editor
 This is a temporary script file.
 """
 
-from numpy import divide, repeat, tile
+from numpy import divide, repeat, tile, float32
 from pandas import DataFrame, to_numeric
 import matplotlib.pyplot as plt
 
@@ -38,9 +38,10 @@ class PlotStats:
                       'skew',
                       'count']
 
-        self.stats_df = DataFrame(index=self.in_var_df.columns,
-                                  columns=stats_cols,
-                                  dtype=float)
+        self.stats_df = DataFrame(
+            index=self.in_var_df.columns,
+            columns=stats_cols,
+            dtype=float32)
 
         for i, stn in enumerate(self.stats_df.index):
             curr_ser = self.in_var_df[stn].dropna().copy()

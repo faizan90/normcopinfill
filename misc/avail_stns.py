@@ -5,6 +5,7 @@ Spyder Editor
 This is a temporary script file.
 """
 
+from numpy import float16
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
@@ -14,16 +15,17 @@ from ..misc.misc_ftns import as_err
 class AvailStns:
 
     def __init__(self, norm_cop_obj):
-        vars_list = ['in_var_df_orig',
-                     'out_var_df',
-                     'infill_stns',
-                     '_infilled',
-                     'out_stns_avail_fig',
-                     'out_fig_dpi',
-                     'fig_size_long',
-                     'out_stns_avail_file',
-                     'sep',
-                     'verbose']
+        vars_list = [
+            'in_var_df',
+            'out_var_df',
+            'infill_stns',
+            '_infilled',
+            'out_stns_avail_fig',
+            'out_fig_dpi',
+            'fig_size_long',
+            'out_stns_avail_file',
+            'sep',
+            'verbose']
 
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
@@ -41,10 +43,10 @@ class AvailStns:
 
         assert self._infilled, as_err('Call \'infill\' first!')
 
-        avail_nrst_stns_orig_ser = self.in_var_df_orig.count(axis=1)
+        avail_nrst_stns_orig_ser = self.in_var_df.count(axis=1)
 
         avail_nrst_stns_orig_ser_infilled = (
-            self.in_var_df_orig[self.infill_stns].count(axis=1))
+            self.in_var_df[self.infill_stns].count(axis=1))
 
         avail_nrst_stns_ser = self.out_var_df.count(axis=1)
 
@@ -93,9 +95,8 @@ class AvailStns:
         out_index = avail_nrst_stns_ser.index.union(
                     avail_nrst_stns_orig_ser.index)
 
-        fin_df = DataFrame(index=out_index,
-                           dtype=float,
-                           columns=_out_labs_list)
+        fin_df = DataFrame(
+            index=out_index, dtype=float16, columns=_out_labs_list)
 
         fin_df[_out_labs_list[0]] = avail_nrst_stns_orig_ser
         fin_df[_out_labs_list[1]] = avail_nrst_stns_ser

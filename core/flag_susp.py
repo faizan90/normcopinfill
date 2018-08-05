@@ -13,7 +13,8 @@ from numpy import (
     full,
     where,
     logical_and,
-    divide)
+    divide,
+    float32)
 
 import matplotlib.pyplot as plt
 from pandas import DataFrame
@@ -109,7 +110,7 @@ class FlagSusp:
         summ_df = DataFrame(
             index=[self.curr_infill_stn],
             columns=[self._flagged_lab],
-            dtype=float)
+            dtype=float32)
 
         n_out_bds = n_below_lower_lims + n_above_upper_lims
         n_tot = n_out_bds + n_within_lims

@@ -17,7 +17,8 @@ from numpy import (
     linalg,
     matmul,
     round as np_round,
-    ediff1d)
+    ediff1d,
+    float16)
 
 from scipy.interpolate import interp1d
 from pandas import DataFrame
@@ -45,11 +46,11 @@ class InfillSteps:
     def infill_steps(self, infill_dates):
 
         out_conf_df = DataFrame(
-            index=infill_dates, columns=self.conf_ser.index, dtype=float)
+            index=infill_dates, columns=self.conf_ser.index, dtype=float16)
 
         out_add_info_df = DataFrame(
             index=infill_dates,
-            dtype=float,
+            dtype=float16,
             columns=['infill_status',
                      'n_neighbors_raw',
                      'n_neighbors_fin',
@@ -156,6 +157,7 @@ class InfillSteps:
 
                     if self.dont_stop_flag:
                         continue
+
                     else:
                         raise Exception('Min nebs fail 1!')
 
@@ -250,12 +252,13 @@ class InfillSteps:
                     '\'curr_var_df\' has too few records (%d)!' %
                     curr_var_df.shape[0])
 
-                trans_obj = StepTrans(self,
-                                      curr_var_df,
-                                      curr_py_zeros_dict,
-                                      curr_py_dels_dict,
-                                      curr_val_cdf_ftns_dict,
-                                      date_pref)
+                trans_obj = StepTrans(
+                    self,
+                    curr_var_df,
+                    curr_py_zeros_dict,
+                    curr_py_dels_dict,
+                    curr_val_cdf_ftns_dict,
+                    date_pref)
 
                 norms_df, py_del, py_zero = trans_obj.get_cdfs_probs()
 

@@ -16,7 +16,9 @@ from numpy import (
     logical_not,
     seterr,
     set_printoptions,
-    where)
+    where,
+    float32,
+    float16)
 import matplotlib.pyplot as plt
 
 from pandas import (
@@ -58,7 +60,6 @@ class InfillStation:
         self.summary_df = None
         self.flag_df = None
 
-        self.in_var_df_orig = None
         self.in_coords_df = None
         self.xs = None
         self.ys = None
@@ -73,23 +74,21 @@ class InfillStation:
         self.time_lags_df = None
         return
 
-    def _infill_stn(
-            self,
-            ii,
-            infill_stn,
-            in_var_df,
-            in_var_df_orig,
-            curr_nrst_stns,
-            time_lags_df):
+    def _infill_stn(self, args):
+
+        (ii,
+         infill_stn,
+         in_var_df,
+         time_lags_df,
+         _parent) = args
 
         try:
             return self.__infill_stn(
                 ii,
                 infill_stn,
                 in_var_df,
-                in_var_df_orig,
-                curr_nrst_stns,
-                time_lags_df)
+                time_lags_df,
+                _parent)
 
         except:
             full_tb(exc_info(), self.dont_stop_flag)
@@ -102,14 +101,16 @@ class InfillStation:
             ii,
             infill_stn,
             in_var_df,
-            in_var_df_orig,
-            curr_nrst_stns,
-            time_lags_df):
+            time_lags_df,
+            _parent):
+
+        curr_nrst_stns = list(in_var_df.columns[1:])
 
         if self.max_time_lag_corr:
 
-            # can't mess with the original one
-            in_var_df = in_var_df.copy()
+            if _parent:
+                # can't mess with the original one
+                in_var_df = in_var_df.copy()
 
             for stn in curr_nrst_stns:
                 _lag = time_lags_df[stn]
@@ -118,14 +119,13 @@ class InfillStation:
             time_lags_df = None
 
         self.out_var_df = DataFrame(
-            index=in_var_df.index, dtype=float, columns=[infill_stn])
-        self.in_var_df_orig = in_var_df_orig
+            index=in_var_df.index, dtype=float16, columns=[infill_stn])
         self.summary_df = DataFrame(
-            index=[infill_stn], columns=self._summary_cols, dtype=float)
+            index=[infill_stn], columns=self._summary_cols, dtype=float32)
 
         if self.flag_susp_flag:
             self.flag_df = DataFrame(
-                columns=[infill_stn], index=self.infill_dates, dtype=float)
+                columns=[infill_stn], index=self.infill_dates, dtype=float16)
 
         if self.verbose:
             print('\n')
@@ -176,10 +176,10 @@ class InfillStation:
 
                 n_infilled_vals = out_conf_df.dropna().shape[0]
 
-                _idxs = isnan(self.in_var_df_orig.loc[
+                _idxs = isnan(self.in_var_df.loc[
                         self.infill_dates, self.curr_infill_stn])
 
-                _ser = self.in_var_df_orig.loc[
+                _ser = self.in_var_df.loc[
                     self.infill_dates, self.curr_infill_stn]
 
                 out_stn_ser = _ser.where(
@@ -325,7 +325,7 @@ class InfillStation:
                 sub_conf_df = sub_df[0]
                 sub_add_info_df = sub_df[1]
 
-                _ser = self.in_var_df_orig.loc[
+                _ser = self.in_var_df.loc[
                     sub_conf_df.index, self.curr_infill_stn]
 
                 _idxs = isnan(_ser)
@@ -430,19 +430,13 @@ class InfillStation:
             plt.close('all')
 
         # the original unfilled series of the infilled station
-        act_var = self.in_var_df_orig[infill_stn].loc[self.infill_dates].values
+        act_var = self.in_var_df.loc[self.infill_dates, infill_stn].values
 
         # plot the infilled series
         plot_infill_cond = self.plot_stn_infill_flag
 
         if not self.overwrite_flag:
             plot_infill_cond = (plot_infill_cond and no_out)
-
-        if (self.infill_dates.shape[0] > 365) and (plot_infill_cond):
-            if self.verbose:
-                pprt(['Too many values, not plotting the infilled series!'],
-                     nbh=8)
-            plot_infill_cond = False
 
         use_mp = not (
             self.debug_mode_flag or
@@ -472,6 +466,7 @@ class InfillStation:
 
             if (not no_out) and (not self.overwrite_flag):
                 update_summary_df_only = True
+
             else:
                 update_summary_df_only = False
 
@@ -566,10 +561,10 @@ class InfillStation:
 
             return (DataFrame(index=infill_dates,
                               columns=self.conf_ser.index,
-                              dtype=float),
+                              dtype=float16),
 
                     DataFrame(index=infill_dates,
-                              dtype=float,
+                              dtype=float16,
                               columns=['infill_status',
                                        'n_neighbors_raw',
                                        'n_neighbors_fin',
