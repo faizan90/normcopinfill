@@ -24,14 +24,14 @@ if __name__ == '__main__':
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'post_rank_corr_test_06'
+    out_dir = r'post_rank_corr_test_01'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
 
     # names of the stations to be infilled as a list
-    infill_stns = ['409', '411', '2446']
-#     infill_stns = 'all'
+#     infill_stns = ['409', '411', '2446']
+    infill_stns = 'all'
 
     # names of the stations that should not be used in the process
     drop_stns = ['417', '24701', '45409', '76159', '1438', '2465']  # [] #
@@ -131,11 +131,11 @@ if __name__ == '__main__':
 #     infill_cop.max_time_lag_corr = 1
 #     infill_cop.cut_cdf_thresh = 0.5
 
-#     _beg = timeit.default_timer()
-#     infill_cop.cmpt_plot_nrst_stns()
-#     _end = timeit.default_timer()
-#     _tot = (_end - _beg)
-#     print('Took %0.4f secs!' % _tot)
+    _beg = timeit.default_timer()
+    infill_cop.cmpt_plot_nrst_stns()
+    _end = timeit.default_timer()
+    _tot = (_end - _beg)
+    print('Took %0.4f secs!' % _tot)
 #
 #     _beg = timeit.default_timer()
 #     infill_cop.cmpt_plot_rank_corr_stns()
@@ -146,9 +146,9 @@ if __name__ == '__main__':
 #     infill_cop.cmpt_plot_symm_stns()
 #     infill_cop.plot_stats()
 #     infill_cop.plot_ecops()
-    infill_cop.infill()
-    infill_cop.cmpt_plot_avail_stns()
-    infill_cop.plot_summary()
+#     infill_cop.infill()
+#     infill_cop.cmpt_plot_avail_stns()
+#     infill_cop.plot_summary()
 
     stop = timeit.default_timer()  # Ending time
     print('\n\a\a\a Done with everything on %s. Total run time was about %0.4f seconds \a\a\a' % (time.asctime(), stop - start))

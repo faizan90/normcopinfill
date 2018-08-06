@@ -108,6 +108,32 @@ class NrstStns:
         self._got_nrst_stns_flag = True
         return
 
+    def _set_best_ncpus(self, mp_infill_stns, get_nrst_stns_obj):
+
+        from timeit import default_timer
+
+        # in this process
+        bt_sp = default_timer()
+        get_nrst_stns_obj._get_nrst_stns(mp_infill_stns)
+        et_sp = default_timer()
+
+        # in another process
+        bt_mp = default_timer()
+        self._norm_cop_pool.map(
+            get_nrst_stns_obj._get_nrst_stns, [mp_infill_stns])
+        et_mp = default_timer()
+
+        pkl_plus_proc_t = et_mp - bt_mp
+        just_proc_t = et_sp - bt_sp
+
+        pkl_time = pkl_plus_proc_t - just_proc_t
+
+        print('pkl_plus_proc_t:', pkl_plus_proc_t)
+        print('just_proc_t:', just_proc_t)
+        print('pkl_time:', pkl_time)
+
+        return
+
     def get_nrst_stns(self):
         '''Get the neighbors
         '''
@@ -146,12 +172,14 @@ class NrstStns:
         get_nrst_stns_obj = GetNrstStns(self, mng_list)
 
         if mp:
-
             mp_idxs = ret_mp_idxs(len(self.infill_stns), self.ncpus)
 
             mp_infill_stns = [
                 self.infill_stns[mp_idxs[i]: mp_idxs[i + 1]]
                 for i in range(mp_idxs.shape[0] - 1)]
+
+            self._set_best_ncpus(mp_infill_stns[0], get_nrst_stns_obj)
+            raise Exception
 
             self._norm_cop_pool.map(
                 get_nrst_stns_obj._get_nrst_stns, mp_infill_stns)
@@ -372,11 +400,12 @@ class GetNrstStns:
         for infill_stn in infill_stns:
             self._get_nrst_stn(infill_stn)
 
-        self.in_coords_df = None
-        self.xs = None
-        self.ys = None
-        self.stns_valid_dates = None
-        self.infill_dates = None
+#         if self.mp:
+#             self.in_coords_df = None
+#             self.xs = None
+#             self.ys = None
+#             self.stns_valid_dates = None
+#             self.infill_dates = None
         return
 
     def _get_nrst_stn(self, infill_stn):
