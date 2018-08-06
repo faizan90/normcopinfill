@@ -5,7 +5,7 @@ Spyder Editor
 This is a temporary script file.
 """
 
-from numpy import float16
+from numpy import float32
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
@@ -96,7 +96,7 @@ class AvailStns:
                     avail_nrst_stns_orig_ser.index)
 
         fin_df = DataFrame(
-            index=out_index, dtype=float16, columns=_out_labs_list)
+            index=out_index, dtype=float32, columns=_out_labs_list)
 
         fin_df[_out_labs_list[0]] = avail_nrst_stns_orig_ser
         fin_df[_out_labs_list[1]] = avail_nrst_stns_ser

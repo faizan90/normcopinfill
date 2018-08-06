@@ -13,8 +13,7 @@ from numpy import (
     intersect1d,
     seterr,
     set_printoptions,
-    float32,
-    float16)
+    float32)
 from pathos.multiprocessing import ProcessPool as mp_pool
 import matplotlib.pyplot as plt
 
@@ -469,7 +468,7 @@ class NormCopulaInfill:
                 index_col=0,
                 engine='python')
 
-        self.in_var_df = self.in_var_df.astype(float16)
+        self.in_var_df = self.in_var_df.astype(float32)
         self.in_var_df.index = to_datetime(
             self.in_var_df.index, format=self.time_fmt)
 

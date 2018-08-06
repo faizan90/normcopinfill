@@ -119,13 +119,13 @@ class InfillStation:
             time_lags_df = None
 
         self.out_var_df = DataFrame(
-            index=in_var_df.index, dtype=float16, columns=[infill_stn])
+            index=in_var_df.index, dtype=float32, columns=[infill_stn])
         self.summary_df = DataFrame(
             index=[infill_stn], columns=self._summary_cols, dtype=float32)
 
         if self.flag_susp_flag:
             self.flag_df = DataFrame(
-                columns=[infill_stn], index=self.infill_dates, dtype=float16)
+                columns=[infill_stn], index=self.infill_dates, dtype=float32)
 
         if self.verbose:
             print('\n')
@@ -561,10 +561,10 @@ class InfillStation:
 
             return (DataFrame(index=infill_dates,
                               columns=self.conf_ser.index,
-                              dtype=float16),
+                              dtype=float32),
 
                     DataFrame(index=infill_dates,
-                              dtype=float16,
+                              dtype=float32,
                               columns=['infill_status',
                                        'n_neighbors_raw',
                                        'n_neighbors_fin',

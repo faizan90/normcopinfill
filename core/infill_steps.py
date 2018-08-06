@@ -18,7 +18,7 @@ from numpy import (
     matmul,
     round as np_round,
     ediff1d,
-    float16)
+    float32)
 
 from scipy.interpolate import interp1d
 from pandas import DataFrame
@@ -46,11 +46,11 @@ class InfillSteps:
     def infill_steps(self, infill_dates):
 
         out_conf_df = DataFrame(
-            index=infill_dates, columns=self.conf_ser.index, dtype=float16)
+            index=infill_dates, columns=self.conf_ser.index, dtype=float32)
 
         out_add_info_df = DataFrame(
             index=infill_dates,
-            dtype=float16,
+            dtype=float32,
             columns=['infill_status',
                      'n_neighbors_raw',
                      'n_neighbors_fin',
