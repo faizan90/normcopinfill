@@ -84,6 +84,9 @@ class NrstStns:
             self.plot_nrst_stns()
             assert self._plotted_nrst_stns_flag
 
+        if self._norm_cop_pool is not None:
+            self._norm_cop_pool.clear()
+
         setattr(norm_cop_obj, '_dist_cmptd', True)
         setattr(norm_cop_obj, 'in_var_df', self.in_var_df)
         setattr(norm_cop_obj, 'infill_stns', self.infill_stns)
@@ -106,32 +109,6 @@ class NrstStns:
         nrst_stns_pickle_cur.close()
 
         self._got_nrst_stns_flag = True
-        return
-
-    def _set_best_ncpus(self, mp_infill_stns, get_nrst_stns_obj):
-
-        from timeit import default_timer
-
-        # in this process
-        bt_sp = default_timer()
-        get_nrst_stns_obj._get_nrst_stns(mp_infill_stns)
-        et_sp = default_timer()
-
-        # in another process
-        bt_mp = default_timer()
-        self._norm_cop_pool.map(
-            get_nrst_stns_obj._get_nrst_stns, [mp_infill_stns])
-        et_mp = default_timer()
-
-        pkl_plus_proc_t = et_mp - bt_mp
-        just_proc_t = et_sp - bt_sp
-
-        pkl_time = pkl_plus_proc_t - just_proc_t
-
-        print('pkl_plus_proc_t:', pkl_plus_proc_t)
-        print('just_proc_t:', just_proc_t)
-        print('pkl_time:', pkl_time)
-
         return
 
     def get_nrst_stns(self):
@@ -177,9 +154,6 @@ class NrstStns:
             mp_infill_stns = [
                 self.infill_stns[mp_idxs[i]: mp_idxs[i + 1]]
                 for i in range(mp_idxs.shape[0] - 1)]
-
-            self._set_best_ncpus(mp_infill_stns[0], get_nrst_stns_obj)
-            raise Exception
 
             self._norm_cop_pool.map(
                 get_nrst_stns_obj._get_nrst_stns, mp_infill_stns)

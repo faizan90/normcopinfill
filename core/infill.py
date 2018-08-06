@@ -407,6 +407,7 @@ class NormCopulaInfill:
 
     '''
 
+#     @profile
     def __init__(
             self,
             in_var_file,
