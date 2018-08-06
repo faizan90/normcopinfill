@@ -17,8 +17,7 @@ from numpy import (
     seterr,
     set_printoptions,
     where,
-    float32,
-    float16)
+    float32)
 import matplotlib.pyplot as plt
 
 from pandas import (
@@ -271,11 +270,11 @@ class InfillStation:
             out_conf_df = DataFrame(
                 index=self.infill_dates,
                 columns=self.conf_ser.index,
-                dtype=float)
+                dtype=float32)
 
             out_add_info_df = DataFrame(
                 index=self.infill_dates,
-                dtype=float,
+                dtype=float32,
                 columns=['infill_status',
                          'n_neighbors_raw',
                          'n_neighbors_fin',

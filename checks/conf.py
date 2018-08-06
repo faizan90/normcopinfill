@@ -76,7 +76,7 @@ class ConfInfill:
                               'non-unicode: %s' % str(self.conf_heads)))
 
         try:
-            self.flag_probs = array(self.flag_probs, dtype=float)
+            self.flag_probs = array(self.flag_probs, dtype=float32)
         except:
             raise ValueError(('Some or all \'_flag_probs\' are '
                               'non-float: %s' % str(self.flag_probs)))

@@ -1058,7 +1058,7 @@ class NormCopulaInfill:
         '''
 
         if self._norm_cop_pool is not None:
-            self._norm_cop_pool.clear()
+            self._norm_cop_pool.restart(True)
 
         else:
             if self.debug_mode_flag:

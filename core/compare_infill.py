@@ -351,12 +351,12 @@ class CompareInfill:
             alpha):
 
         # compare the observed and infill bounds and plot
-        orig_vals = act_var[not_interp_data_idxs]
+        orig_vals = act_var[not_interp_data_idxs].astype(float)
 
         infill_vals = out_conf_df[self.fin_conf_head]
 
         infill_vals = infill_vals.loc[self.infill_dates].values
-        infill_vals = infill_vals[not_interp_data_idxs]
+        infill_vals = infill_vals[not_interp_data_idxs].astype(float)
 
         n_vals = orig_vals.shape[0]
 

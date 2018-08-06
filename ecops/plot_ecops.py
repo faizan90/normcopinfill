@@ -11,7 +11,6 @@ from os.path import exists as os_exists, join as os_join
 from numpy import linspace, mgrid, round as np_round, where, nanmax, nan
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from memory_profiler import profile
 
 from ..nebors.nrst_nebs import NrstStns
 from ..nebors.rank_corr_nebs import RankCorrStns
@@ -28,7 +27,6 @@ plt.ioff()
 
 class ECops:
 
-    @profile
     def __init__(self, norm_cop_obj):
 
         vars_list_1 = [
@@ -81,8 +79,9 @@ class ECops:
                     vars_list_2.append('time_lags_df')
 
         else:
-            assert False, as_err('Incorrect \'nrst_stns_type\': %s' %
-                                 str(self.nrst_stns_type))
+            assert False, as_err(
+                'Incorrect \'nrst_stns_type\': %s' %
+                str(self.nrst_stns_type))
 
         for _var in vars_list_2:
             setattr(self, _var, getattr(norm_cop_obj, _var))

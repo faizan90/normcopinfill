@@ -85,7 +85,7 @@ class NrstStns:
             assert self._plotted_nrst_stns_flag
 
         if self._norm_cop_pool is not None:
-            self._norm_cop_pool.clear()
+            norm_cop_obj._norm_cop_pool.clear()
 
         setattr(norm_cop_obj, '_dist_cmptd', True)
         setattr(norm_cop_obj, 'in_var_df', self.in_var_df)

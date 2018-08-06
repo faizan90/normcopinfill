@@ -62,6 +62,8 @@ class FlagSusp:
             if self.conf_ser[_conf_head] in self.flag_probs:
                 _conf_head_list.append(_conf_head)
 
+        assert  _conf_head_list, 'No flag_probs in conf_ser!'
+
         conf_var_vals_lo = (
             out_conf_df[_conf_head_list[0]].loc[self.infill_dates].values)
         conf_var_vals_hi = (
