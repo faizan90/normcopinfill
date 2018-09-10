@@ -655,8 +655,9 @@ class NormCopulaInfill:
 
         if self.infill_stns == 'all':
             self.infill_stns = self.in_var_df.columns
+
         else:
-            self.infill_stns = Index(self.infill_stns, dtype=object)
+            self.infill_stns = Index(self.infill_stns, dtype=str)
 
             _ = ~self.infill_stns.duplicated(keep='last')
             self.infill_stns = self.infill_stns[_]
