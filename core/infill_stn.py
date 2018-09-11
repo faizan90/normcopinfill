@@ -199,6 +199,7 @@ class InfillStation:
 
         if self.compare_infill_flag:
             nan_idxs = list(range(self.infill_dates.shape[0]))
+
         else:
             nan_idxs = where(isnan(self.in_var_df.loc[
                 self.infill_dates, self.curr_infill_stn].values))[0]
@@ -282,7 +283,9 @@ class InfillStation:
 
             if ((n_nan_idxs > self.thresh_mp_steps) and
                 not self.stn_based_mp_infill_flag):
+
                 use_mp_infill = True
+
             else:
                 use_mp_infill = False
 
@@ -299,9 +302,11 @@ class InfillStation:
                 n_sub_dates = 0
                 sub_infill_dates_list = []
                 for idx in range(self.ncpus):
-                    sub_dates = self.infill_dates[
-                            nan_idxs[idxs[idx]:idxs[idx + 1]]]
+                    sub_dates = (
+                        self.infill_dates[nan_idxs[idxs[idx]:idxs[idx + 1]]])
+
                     sub_infill_dates_list.append(sub_dates)
+
                     n_sub_dates += sub_dates.shape[0]
 
                 assert n_sub_dates == n_nan_idxs, (
