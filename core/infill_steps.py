@@ -18,7 +18,8 @@ from numpy import (
     matmul,
     round as np_round,
     ediff1d,
-    float32)
+    float32,
+    float64)
 
 from scipy.interpolate import interp1d
 from pandas import DataFrame
@@ -268,7 +269,7 @@ class InfillSteps:
                 assert not np_any(isnan(norms_df.values)), as_err(
                     'NaNs in \'norms_df\' on %s!' % date_pref)
 
-                full_corrs_arr = fill_correl_mat(norms_df.values)
+                full_corrs_arr = fill_correl_mat(norms_df.values.astype(float64))
 
                 _nans_in_corrs = np_all(isfinite(full_corrs_arr))
                 if not _nans_in_corrs:

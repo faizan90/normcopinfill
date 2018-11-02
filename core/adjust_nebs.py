@@ -33,7 +33,7 @@ class AdjustNebs:
             curr_var_df):
 
         temp_full_corrs_arr = full_corrs_arr.copy()
-        temp_full_corrs_arr[temp_full_corrs_arr > self.max_corr] = 1.0
+        temp_full_corrs_arr[temp_full_corrs_arr >= self.max_corr] = 1.0
         temp_curr_stns = norms_df.columns.tolist()
         del_rows = []
         too_hi_corr_stns = []

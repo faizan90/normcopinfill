@@ -359,6 +359,7 @@ class RankCorrStns:
                     i_all_stns.append(i_stn)
 
                 i_nrst_stns_dict[i_stn] = self.nrst_stns_dict[i_stn]
+
                 self.poss_n_corrs += len(i_nrst_stns_dict[i_stn])
 
                 for j_stn in self.nrst_stns_dict[i_stn]:
