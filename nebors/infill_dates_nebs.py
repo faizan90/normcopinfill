@@ -3,9 +3,10 @@ Created on Nov 11, 2018
 
 @author: Faizan
 '''
+import timeit
 from itertools import combinations
 
-from numpy import intersect1d, zeros_like
+from numpy import intersect1d, where, zeros_like
 from pandas import Series, to_datetime, Timedelta, Timestamp
 
 TD = Timedelta('1s')  # time delta
@@ -24,6 +25,8 @@ class InfillDatesNeborsSets:
             'take_min_stns_flag',
             'compare_infill_flag',
             'infill_dates']
+
+        beg_time = timeit.default_timer()
 
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
@@ -58,7 +61,12 @@ class InfillDatesNeborsSets:
 
         self.infill_stn_dates_nebs_sets_dict = {}  # filled by _make_sets
 
+        print('\nStn: %s' % self.curr_infill_stn)
         self._make_sets()
+        end_time = timeit.default_timer()
+
+        print('Took %0.4f secs in InfillDatesNeborsSets!' % (
+            end_time - beg_time))
         return
 
     def _make_sets(self):
@@ -98,6 +106,9 @@ class InfillDatesNeborsSets:
             combs = combinations(self.curr_nrst_stns, n_nebs)
 
             for comb in combs:
+                if rem_dates <= 0:
+                    break
+
                 cmn_dates = infill_stn_idx
                 for stn in comb:
                     cmn_dates = intersect1d(
@@ -110,10 +121,8 @@ class InfillDatesNeborsSets:
                 if cmn_dates.shape[0] <= min_valid_vals:
                     break
 
-                if rem_dates <= 0:
-                    break
-
-                itsct_idxs = (~can_infill_ser).index
+                can_idxs = where(~can_infill_ser.values)[0]
+                itsct_idxs = can_infill_ser.iloc[can_idxs].index
 
                 for stn in comb:
                     itsct_idxs = intersect1d(
@@ -137,8 +146,10 @@ class InfillDatesNeborsSets:
                 rem_dates -= set_dates.shape[0]
 
                 set_ctr += 1
+                print('comb:', comb, cmn_dates.shape[0], set_dates.shape[0])
 
-        self.infill_stn_dates_nebs_sets_dict['rem_dates'] = rem_dates
+        print('rem_dates: %d, n_sets: %d' % (rem_dates, set_ctr))
+#         self.infill_stn_dates_nebs_sets_dict['rem_dates'] = rem_dates
         assert set_ctr, 'No sets created!'
         return
 

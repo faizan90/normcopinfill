@@ -76,19 +76,15 @@ class InfillStation:
 
     def _infill_stn(self, args):
 
-        (ii,
-         infill_stn,
-         in_var_df,
-         time_lags_df,
-         _parent) = args
+#         (ii,
+#          infill_stn,
+#          in_var_df,
+#          time_lags_df,
+#          nebs_sets_dict,
+#          _parent) = args
 
         try:
-            return self.__infill_stn(
-                ii,
-                infill_stn,
-                in_var_df,
-                time_lags_df,
-                _parent)
+            return self.__infill_stn(*args)
 
         except:
             full_tb(exc_info(), self.dont_stop_flag)
@@ -102,6 +98,7 @@ class InfillStation:
             infill_stn,
             in_var_df,
             time_lags_df,
+            nebs_sets_dict,
             _parent):
 
         curr_nrst_stns = list(in_var_df.columns[1:])
@@ -297,9 +294,13 @@ class InfillStation:
                 (not use_mp_infill) or
                 self.debug_mode_flag):
 
-                sub_dfs = [self._infill(self.infill_dates[nan_idxs])]
+                sub_dfs = [
+                    self._infill(set_tuple)
+                    for set_tuple in nebs_sets_dict.values()]
 
             else:
+                raise NotImplementedError
+
                 n_sub_dates = 0
                 sub_infill_dates_list = []
                 for idx in range(self.ncpus):
@@ -550,11 +551,11 @@ class InfillStation:
 
         return (self.summary_df, self.flag_df, self.out_var_df)
 
-    def _infill(self, infill_dates):
+    def _infill(self, set_tuple):
 
         try:
             (out_conf_df, out_add_info_df) = (
-                 self.infill_steps_obj.infill_steps(infill_dates))
+                 self.infill_steps_obj.infill_steps(set_tuple))
 
             return out_conf_df, out_add_info_df
 
@@ -563,6 +564,8 @@ class InfillStation:
             full_tb(exc_info(), self.dont_stop_flag)
             if not self.dont_stop_flag:
                 raise Exception('_infill failed!')
+
+            infill_dates = set_tuple[0]
 
             return (DataFrame(index=infill_dates,
                               columns=self.conf_ser.index,

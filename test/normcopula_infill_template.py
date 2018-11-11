@@ -68,7 +68,7 @@ if __name__ == '__main__':
         # it serves as buffer i.e. may be on some days fewer stations
         # are available so n_nrn_max ensures that we have at least
         # n_nrn_min stations
-    n_nrn_max = 10
+    n_nrn_max = 20
 
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 #     infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
 #     infill_cop.overwrite_flag = False
 #     infill_cop.read_pickles_flag = True
-#     infill_cop.use_best_stns_flag = False
+    infill_cop.use_best_stns_flag = False
 #     infill_cop.dont_stop_flag = False
 #     infill_cop.plot_long_term_corrs_flag = True
 #     infill_cop.save_step_vars_flag = True
@@ -128,7 +128,7 @@ if __name__ == '__main__':
 #     infill_cop.nrst_stns_type = 'dist'
     infill_cop.nrst_stns_type = 'rank'
 
-    infill_cop.min_corr = 0.9
+    infill_cop.min_corr = 0.7
 #     infill_cop.max_time_lag_corr = 1
 #     infill_cop.cut_cdf_thresh = 0.5
 

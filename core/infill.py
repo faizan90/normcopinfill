@@ -990,9 +990,10 @@ class NormCopulaInfill:
             dates_nebs_sets = InfillDatesNeborsSets(
                 self.in_var_df[[_stn] + self._get_neb_stns(_stn)], self)
 
-            self.infill_stns_dates_nebs_sets[_stn] = dates_nebs_sets.infill_stn_dates_nebs_sets_dict
+            self.infill_stns_dates_nebs_sets[_stn] = (
+                dates_nebs_sets.infill_stn_dates_nebs_sets_dict)
 
-        raise Exception
+#         raise Exception
 
         infill_stn_obj = InfillStation(self)
 
@@ -1001,6 +1002,7 @@ class NormCopulaInfill:
              _stn,
              self.in_var_df[[_stn] + self._get_neb_stns(_stn)],
              self.time_lags_df.loc[_stn],
+             self.infill_stns_dates_nebs_sets[_stn],
              _parent)
 
             for ii, _stn in enumerate(self.infill_stns))

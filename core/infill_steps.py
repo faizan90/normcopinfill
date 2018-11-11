@@ -44,7 +44,10 @@ class InfillSteps:
             setattr(self, _var, getattr(norm_cop_obj, _var))
         return
 
-    def infill_steps(self, infill_dates):
+    def infill_steps(self, set_tuple):
+
+        infill_dates = set_tuple[0]
+        self.curr_nrst_stns = list(set_tuple[1])
 
         out_conf_df = DataFrame(
             index=infill_dates, columns=self.conf_ser.index, dtype=float32)
