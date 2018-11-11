@@ -122,6 +122,7 @@ class NebSel:
                 for j in range(1, len(curr_nebs)):
                     fin_idxs = fin_idxs.intersection(
                             comb_idxs_dict[curr_nebs[j]])
+
                     if len(fin_idxs) < self.min_valid_vals:
                         invalid_comb = True
                         break

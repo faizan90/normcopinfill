@@ -25,14 +25,14 @@ if __name__ == '__main__':
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'test_inv_bug_03_5nebs'
+    out_dir = r'test_new_nebs_sel'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
 
     # names of the stations to be infilled as a list
-#     infill_stns = ['2471']
-    infill_stns = 'all'
+    infill_stns = ['2471']
+#     infill_stns = 'all'
 
     # names of the stations that should not be used in the process
     drop_stns = ['417', '24701', '45409', '76159', '1438', '2465']  # [] #
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
         # achieve fastest speeds
-    ncpus = 7
+    ncpus = 1
 
     # the seperator used in the input files
         # it is also used in the output
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 #     infill_cop.read_pickles_flag = True
 #     infill_cop.use_best_stns_flag = False
 #     infill_cop.dont_stop_flag = False
-    infill_cop.plot_long_term_corrs_flag = True
+#     infill_cop.plot_long_term_corrs_flag = True
 #     infill_cop.save_step_vars_flag = True
 #     infill_cop.plot_rand_flag = True
 #     infill_cop.stn_based_mp_infill_flag = False

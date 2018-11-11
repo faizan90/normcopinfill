@@ -22,13 +22,16 @@ from pandas import (
     read_csv,
     to_datetime,
     DataFrame,
-    Index)
+    Index,
+    Timedelta,
+    Timestamp)
 
 from .infill_stn import InfillStation
 from ..checks.conf import ConfInfill
 from ..checks.bef_all import BefAll
 from ..nebors.nrst_nebs import NrstStns
 from ..nebors.rank_corr_nebs import RankCorrStns
+from ..nebors.infill_dates_nebs import InfillDatesNeborsSets
 from ..ecops.plot_ecops import ECops
 from ..misc.plot_stats import PlotStats
 from ..misc.avail_stns import AvailStns
@@ -44,6 +47,9 @@ set_printoptions(
     formatter={'float': '{:0.6f}'.format})
 
 seterr(all='ignore')
+
+TD = Timedelta('1s')  # time delta
+MIN_T = Timestamp("1970-01-01")  # reference time for counting
 
 __all__ = ['NormCopulaInfill']
 
@@ -485,6 +491,10 @@ class NormCopulaInfill:
             print('INFO: \'in_var_df\' original shape:', self.in_var_df.shape)
 
         self.in_var_df.dropna(axis=0, how='all', inplace=True)
+
+        num_date_idx = (self.in_var_df.index - MIN_T) // TD
+        assert all((num_date_idx[1:] - num_date_idx[:-1]) > 0), (
+            'Time in \'in_var_df\' not strictly ascending!')
 
         if self.verbose:
             print('INFO: \'in_var_df\' shape after dropping NaN steps:',
@@ -965,8 +975,6 @@ class NormCopulaInfill:
         if not os_exists(self.summary_dir):
             os_mkdir(self.summary_dir)
 
-        infill_stn_obj = InfillStation(self)
-
         # if we should make copy of in_var_df in InfillStation
         if ((self.ncpus == 1) or
             (not self.stn_based_mp_infill_flag)):
@@ -975,6 +983,18 @@ class NormCopulaInfill:
 
         else:
             _parent = False
+
+        self.infill_stns_dates_nebs_sets = {}
+
+        for _stn in self.infill_stns:
+            dates_nebs_sets = InfillDatesNeborsSets(
+                self.in_var_df[[_stn] + self._get_neb_stns(_stn)], self)
+
+            self.infill_stns_dates_nebs_sets[_stn] = dates_nebs_sets.infill_stn_dates_nebs_sets_dict
+
+        raise Exception
+
+        infill_stn_obj = InfillStation(self)
 
         infill_gen = (
             (ii,

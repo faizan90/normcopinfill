@@ -71,6 +71,7 @@ class InfillStation:
         self.rank_corr_vals_ctr_df = None
         self.rank_corrs_df = None
         self.time_lags_df = None
+        self.infill_stns_dates_nebs_sets = None
         return
 
     def _infill_stn(self, args):
