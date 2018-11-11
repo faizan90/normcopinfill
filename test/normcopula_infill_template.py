@@ -20,17 +20,19 @@ if __name__ == '__main__':
     in_var_file = os.path.join(r'final_q_data_combined_Apr2017',
                                r'neckar_q_data_combined_Apr2017.csv')
 
+#     in_var_file = r'neckar_daily_discharge_1961_2015.csv'
+
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'post_make_eff_test_01'
+    out_dir = r'test_inv_bug_03_5nebs'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
 
     # names of the stations to be infilled as a list
-    infill_stns = ['409', '411', '2446']
-#     infill_stns = 'all'
+#     infill_stns = ['2471']
+    infill_stns = 'all'
 
     # names of the stations that should not be used in the process
     drop_stns = ['417', '24701', '45409', '76159', '1438', '2465']  # [] #
@@ -42,7 +44,7 @@ if __name__ == '__main__':
     infill_date_str = 'slice'
 
     # the time period for which it should infill, its type depends on infill_date_str
-    censor_period = ['1961-01-01', '1963-12-31']
+    censor_period = ['1963-02-01', '1963-03-31']
 
     # the number of minimum days/steps that every station should have prior to infilling
         # so that it is used in the process, stations with steps less than this are
@@ -59,14 +61,14 @@ if __name__ == '__main__':
         # while using the normal copula, n_nrn_min stations are used
         # this behavior can be changed if the parameter 'take_min_stns'
         # of the NormCopulaInfill class is set to True
-    n_nrn_min = 1
+    n_nrn_min = 5
 
     # maximum number of neighboring stations to use for infilling
         # it should be greater than n_nrn_min
         # it serves as buffer i.e. may be on some days fewer stations
         # are available so n_nrn_max ensures that we have at least
         # n_nrn_min stations
-    n_nrn_max = 5
+    n_nrn_max = 10
 
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
@@ -107,19 +109,19 @@ if __name__ == '__main__':
 #     infill_cop.debug_mode_flag = True
 #     infill_cop.plot_diag_flag = True
 #     infill_cop.plot_step_cdf_pdf_flag = True
-    infill_cop.compare_infill_flag = True
-    infill_cop.flag_susp_flag = True
+#     infill_cop.compare_infill_flag = True
+#     infill_cop.flag_susp_flag = True
 #     infill_cop.force_infill_flag = False  # force infill if avail_cols < n_nrst_stns_min
 #     infill_cop.plot_neighbors_flag = True
 #     infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
 #     infill_cop.overwrite_flag = False
-    infill_cop.read_pickles_flag = True
+#     infill_cop.read_pickles_flag = True
 #     infill_cop.use_best_stns_flag = False
-    infill_cop.dont_stop_flag = False
-#     infill_cop.plot_long_term_corrs_flag = True
+#     infill_cop.dont_stop_flag = False
+    infill_cop.plot_long_term_corrs_flag = True
 #     infill_cop.save_step_vars_flag = True
 #     infill_cop.plot_rand_flag = True
-    infill_cop.stn_based_mp_infill_flag = False
+#     infill_cop.stn_based_mp_infill_flag = False
     infill_cop.plot_used_stns_flag = True
     infill_cop.plot_stn_infill_flag = True
 
@@ -146,12 +148,11 @@ if __name__ == '__main__':
 #
 #     time.sleep(10)
 
-#     infill_cop.cmpt_plot_symm_stns()
 #     infill_cop.plot_stats()
 #     infill_cop.plot_ecops()
-#     infill_cop.infill()
-#     infill_cop.cmpt_plot_avail_stns()
-#     infill_cop.plot_summary()
+    infill_cop.infill()
+    infill_cop.cmpt_plot_avail_stns()
+    infill_cop.plot_summary()
 
     stop = timeit.default_timer()  # Ending time
     print('\n\a\a\a Done with everything on %s. Total run time was about %0.4f seconds \a\a\a' % (time.asctime(), stop - start))

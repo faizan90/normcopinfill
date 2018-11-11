@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 from adjustText import adjust_text
 from pandas import DataFrame, Series
 
-from .nrst_nebs import NrstStns
+# from .nrst_nebs import NrstStns
 from ..misc.misc_ftns import (
     get_norm_rand_symms, get_lag_ser, as_err, ret_mp_idxs)
 from ..cyth import get_asymms_sample, get_corrcoeff
@@ -77,6 +77,8 @@ class RankCorrStns:
 
 #         self.in_var_df = self.in_var_df.copy()
 
+        assert self._dist_cmptd, 'Call NrstStns first!'
+
         self.drop_infill_stns = []
         self.bad_stns_list = []
         self.bad_stns_neighbors_count = []
@@ -91,12 +93,6 @@ class RankCorrStns:
 
         if not os_exists(self.pkls_dir):
             os_mkdir(self.pkls_dir)
-
-        if not self._dist_cmptd:
-            NrstStns(norm_cop_obj)
-            setattr(self, 'in_var_df', getattr(norm_cop_obj, 'in_var_df'))
-            setattr(self, 'infill_stns', getattr(norm_cop_obj, 'infill_stns'))
-            setattr(norm_cop_obj, '_dist_cmptd', True)
 
         if self.max_time_lag_corr:
             self.in_var_df = self.in_var_df.reindex(self.full_date_index)

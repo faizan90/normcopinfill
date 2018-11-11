@@ -224,11 +224,12 @@ class InfillSteps:
                            'more than once:'), msg)
                     print('\'curr_var_df.columns:\'\n', curr_var_df.columns)
 
-                    raise Exception('Multiple occurence of infill_stn!')
+                    raise Exception('Multiple occurences of infill_stn!')
 
                 if (curr_var_df.shape[1] - 1) < self.n_min_nebs:
                     if ((not self.force_infill_flag) or
                         ((curr_var_df.shape[1] - 1) == 0)):
+
                         bad_comb = True
 
                         if self.save_step_vars_flag:
@@ -238,16 +239,17 @@ class InfillSteps:
                         if self.debug_mode_flag:
                             print('(2) Too few neighbors!')
 
-                    if self.dont_stop_flag:
-                        continue
+                        if self.dont_stop_flag:
+                            continue
 
-                    else:
-                        raise Exception('Min nebs fail 2!')
+                        else:
+                            raise Exception('Min nebs fail 2!')
 
-                assert curr_var_df.shape[1] > self.n_min_nebs, as_err(
-                    ('\'curr_var_df\' has too few neighboring '
-                     'stations (%d) in it!' %
-                    curr_var_df.shape[1]))
+                if not self.force_infill_flag:
+                    assert curr_var_df.shape[1] > self.n_min_nebs, as_err(
+                        ('\'curr_var_df\' has too few neighboring '
+                         'stations (%d) in it!' %
+                        curr_var_df.shape[1]))
 
                 assert curr_var_df.shape[0] >= self.min_valid_vals, as_err(
                     '\'curr_var_df\' has too few records (%d)!' %
@@ -269,7 +271,8 @@ class InfillSteps:
                 assert not np_any(isnan(norms_df.values)), as_err(
                     'NaNs in \'norms_df\' on %s!' % date_pref)
 
-                full_corrs_arr = fill_correl_mat(norms_df.values.astype(float64))
+                full_corrs_arr = fill_correl_mat(
+                    norms_df.values.astype(float64))
 
                 _nans_in_corrs = np_all(isfinite(full_corrs_arr))
                 if not _nans_in_corrs:
@@ -318,6 +321,7 @@ class InfillSteps:
 
                     if self.dont_stop_flag:
                         continue
+
                     else:
                         raise Exception('cov_vec is empty!')
 
@@ -396,9 +400,11 @@ class InfillSteps:
                 if self.debug_mode_flag:
                     print('bad_comb is False!')
 
-            assert curr_var_df.shape[1] > self.n_min_nebs, as_err(
+            if not self.force_infill_flag:
+                assert curr_var_df.shape[1] > self.n_min_nebs, as_err(
                 ('\'curr_var_df\' has too few neighboring '
                  'stations (%d) in it!') % curr_var_df.shape[1])
+
             assert curr_var_df.shape[0] >= self.min_valid_vals, as_err(
                 '\'curr_var_df\' has too few records (%d)!' %
                 curr_var_df.shape[0])
@@ -409,11 +415,11 @@ class InfillSteps:
 
             pre_avail_stns = [self.curr_infill_stn] + avail_cols_raw
 
-            # another check to insure neighbors are selected correctly
+            # another check to ensure neighbors are selected correctly
             _ = list(curr_val_cdf_ftns_dict.keys())
             assert len(_) == len(avail_cols_fin) + 1, as_err(
                 ('\'curr_val_cdf_ftns_dict\' has incorrect '
-                 'number of keys!' +
+                 'number of keys! ' +
                  str(list(curr_val_cdf_ftns_dict.keys())) +
                  str(list(avail_cols_fin))))
 

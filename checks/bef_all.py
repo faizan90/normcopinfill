@@ -15,6 +15,11 @@ class BefAll:
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
 
+        if self.debug_mode_flag and (norm_cop_obj.ncpus > 1):
+            print('INFO:\'ncpus\' set from %d to 1!' % self.ncpus)
+            norm_cop_obj.ncpus = 1
+            self.ncpus = 1
+
         self.before_all_checks()
 
         setattr(norm_cop_obj, '_bef_all_chked',
@@ -22,6 +27,7 @@ class BefAll:
         return
 
     def before_all_checks(self):
+
         assert isinstance(self.n_discret, int), '\'n_discret\' is non-integer!'
         assert isinstance(self.n_round, int), '\'n_round\' is non-integer!'
         assert isinstance(self.cop_bins, int), '\'cop_bins\' is non-integer!'

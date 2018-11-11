@@ -878,6 +878,8 @@ class NormCopulaInfill:
         BefAll(self)
         assert self._bef_all_chked, 'Initiate \'BefAll\' first!'
 
+        NrstStns(self)
+
         RankCorrStns(self)
         return
 
@@ -893,8 +895,9 @@ class NormCopulaInfill:
             curr_nrst_stns = self.rank_corr_stns_dict[infill_stn]
 
         else:
-            raise Exception(as_err('Incorrect \'nrst_stns_type\': %s!' %
-                                   self.nrst_stns_type))
+            raise Exception(
+                as_err('Incorrect \'nrst_stns_type\': %s!' %
+                       self.nrst_stns_type))
         return list(curr_nrst_stns)
 
     def infill(self):
@@ -904,6 +907,7 @@ class NormCopulaInfill:
 
         if not self._bef_infill_chked:
             self._before_infill_checks()
+
         assert self._bef_infill_chked, (
             as_err('Call \'_before_infill_checks\' first!'))
 
