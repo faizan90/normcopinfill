@@ -4,6 +4,7 @@ Created on Nov 11, 2018
 @author: Faizan
 '''
 import timeit
+from math import ceil
 from itertools import combinations
 
 from numpy import intersect1d, where, zeros_like
@@ -78,11 +79,7 @@ class InfillDatesNeborsSets:
             index=self.infill_dates,
             data=zeros_like(self.infill_dates, dtype=bool))
 
-        if self.force_infill_flag:
-            n_min_nebs = 1
-
-        else:
-            n_min_nebs = self.n_min_nebs
+        n_min_nebs = self.n_min_nebs
 
         if self.take_min_stns_flag:
             n_max_nebs = n_min_nebs
@@ -92,6 +89,9 @@ class InfillDatesNeborsSets:
 
         n_min_nebs = min(n_min_nebs, self.curr_nrst_stns.shape[0])
         n_max_nebs = min(n_max_nebs, self.curr_nrst_stns.shape[0])
+
+        if self.force_infill_flag:
+            n_min_nebs = 1
 
         rem_dates = can_infill_ser.shape[0]
         min_valid_vals = self.min_valid_vals
@@ -154,13 +154,35 @@ class InfillDatesNeborsSets:
 
         print('rem_dates: %d, n_sets: %d, n_combs: %d' % (
             rem_dates, set_ctr, combs_ctr))
-#         self.raw_infill_stn_dates_nebs_sets_dict['rem_dates'] = rem_dates
-        assert set_ctr, 'No sets created!'
+
+        if not set_ctr:
+            print('No sets created!')
 
         self._spread_load()
         return
 
     def _spread_load(self):
+
+#         nvals_to_infill = 0
+#
+#         raw_dict = self.raw_infill_stn_dates_nebs_sets_dict
+#         spread_dict = {}
+#
+#
+#         for tup in raw_dict:
+#             nvals_to_infill += raw_dict[tup][0]
+#
+#         # make new sets such that they are multiples of ncpus
+#         dates_per_grp = ceil(nvals_to_infill / self.ncpus)
+#
+#         spread_grps_strs = ['grp%d' % i for i in range(self.ncpus)]
+#
+#         grp_ctr = 0
+#         for tup in raw_dict:
+#             ntup_vals = raw_dict[tup][0]
+#
+#             if ntup_vals > dates_per_grp:
+#                 spread_grps_strs
 
         self.infill_stn_dates_nebs_sets_dict = (
             self.raw_infill_stn_dates_nebs_sets_dict)

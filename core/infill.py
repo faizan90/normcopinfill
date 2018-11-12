@@ -295,9 +295,6 @@ class NormCopulaInfill:
         correlation for a given infill station. Valid only if nrst_stns_type is
         \'rank\' of \'symm\'.
         Default is False.
-    save_step_vars_flag: bool
-        Save values of several parameters for each step during infilling.
-        Default is False.
     stn_based_mp_infill_flag: bool
         Choose how multiprocessing is used to infill. If True, each station is
         infilled by a single process i.e. simulataneous infilling of many
@@ -797,7 +794,6 @@ class NormCopulaInfill:
         self.read_pickles_flag = False
         self.dont_stop_flag = True
         self.plot_long_term_corrs_flag = False
-        self.save_step_vars_flag = False
         self.plot_rand_flag = False
         self.stn_based_mp_infill_flag = True
         self.plot_used_stns_flag = False
@@ -941,7 +937,6 @@ class NormCopulaInfill:
             pprt(['plot_long_term_corrs_flag:',
                   self.plot_long_term_corrs_flag],
                  nbh=4)
-            pprt(['save_step_vars_flag:', self.save_step_vars_flag], nbh=4)
             pprt(['plot_rand_flag:', self.plot_rand_flag], nbh=4)
 
             print('\n')
@@ -969,9 +964,7 @@ class NormCopulaInfill:
             os_mkdir(self.summary_dir)
 
         # if we should make copy of in_var_df in InfillStation
-        if ((self.ncpus == 1) or
-            (not self.stn_based_mp_infill_flag)):
-
+        if (self.ncpus == 1) or (not self.stn_based_mp_infill_flag):
             _parent = True
 
         else:
@@ -985,8 +978,6 @@ class NormCopulaInfill:
 
             self.infill_stns_dates_nebs_sets[_stn] = (
                 dates_nebs_sets.infill_stn_dates_nebs_sets_dict)
-
-#         raise Exception
 
         infill_stn_obj = InfillStation(self)
 
@@ -1113,7 +1104,6 @@ class NormCopulaInfill:
             self.force_infill_flag = True
             self.plot_step_cdf_pdf_flag = True
             self.flag_susp_flag = True
-            self.save_step_vars_flag = True
 
         if not self._dist_cmptd:
             NrstStns(self)

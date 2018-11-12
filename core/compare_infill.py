@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 from scipy.stats import rankdata
 
+from ..misc.misc_ftns import pprt
 from ..cyth import (
     get_corrcoeff,
     get_kge_py,
@@ -517,6 +518,11 @@ class CompareInfill:
                 summ_df,
                 lw,
                 alpha)
+
+        else:
+            if self.verbose:
+                pprt(['No comparison plots...'], nbh=8)
+
         return summ_df
 
 

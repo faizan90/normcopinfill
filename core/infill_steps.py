@@ -4,14 +4,10 @@ Created on %(date)s
 
 @author: %(username)s
 """
-from pickle import dump
-from os.path import join as os_join
-
 from numpy import (
     nan,
     where,
     all as np_all,
-    isfinite,
     any as np_any,
     isnan,
     linalg,
@@ -22,7 +18,7 @@ from numpy import (
     float64)
 
 from scipy.interpolate import interp1d
-from pandas import DataFrame, Index
+from pandas import DataFrame
 
 from .adjust_nebs import AdjustNebs
 from .transform import StepTrans
@@ -48,9 +44,13 @@ class InfillSteps:
         self.curr_nrst_stns = None
 
         infill_dates = set_tuple[0]
-        curr_nrst_stns = Index(list(set_tuple[1]))
+        curr_nrst_stns = list(set_tuple[1])
 
-        curr_var_df = self.in_var_df
+        all_stns = [self.curr_infill_stn] + list(curr_nrst_stns)
+
+        curr_var_df = self.in_var_df.loc[:, all_stns].dropna()
+
+        conf_probs = self.conf_ser.values
 
         out_conf_df = DataFrame(
             index=infill_dates, columns=self.conf_ser.index, dtype=float32)
@@ -58,13 +58,10 @@ class InfillSteps:
         out_add_info_df = DataFrame(
             index=infill_dates,
             dtype=float32,
-            columns=['infill_status',
-                     'n_neighbors_raw',
-                     'n_neighbors_fin',
-                     'act_val_prob',
-                     'n_recs'])
+            columns=[
+                'infill_status', 'n_neighbors', 'act_val_prob', 'n_recs'])
 
-        out_add_info_df.iloc[:, :] = [False, 0, 0, nan, nan]
+        out_add_info_df.iloc[:, :] = [False, 0, nan, nan]
 
         too_hi_corr_stns_list = []
 
@@ -130,8 +127,16 @@ class InfillSteps:
         for stn in too_hi_corr_stns_list:
             del curr_val_cdf_ftns_dict[stn]
 
+            all_stns.remove(stn)
+
             norms_df.drop(stn, axis=1, inplace=True)
             curr_var_df.drop(stn, axis=1, inplace=True)
+
+        out_add_info_df.loc[:, 'n_recs'] = curr_var_df.shape[0]
+
+        if self.plot_diag_flag:
+            plot_cond_ftns_obj.plot_corr_mat(
+                full_corrs_arr, curr_var_df, date_pref)
 
         norm_cov_mat = full_corrs_arr[1:, 1:]
         cov_vec = full_corrs_arr[1:, 0]
@@ -236,12 +241,8 @@ class InfillSteps:
             if not isnan(self.in_var_df.loc[
                 infill_date, self.curr_infill_stn]):
 
-                if not self.compare_infill_flag:
-
-                    if self.debug_mode_flag:
-                        print('Value exists!')
-
-                    continue
+                if self.debug_mode_flag:
+                    print('Value exists!')
 
             if self.infill_type == 'precipitation':
                 curr_vals = self.in_var_df.loc[
@@ -249,18 +250,17 @@ class InfillSteps:
 
                 if np_all(curr_vals == self.var_le_trs):
                     out_conf_df.loc[infill_date] = self.var_le_trs
-                    out_add_info_df.loc[infill_date, 'infill_status'] = True
+                    out_add_info_df.loc[
+                        infill_date, ['infill_status', 'n_neighbors']] = [
+                            True, len(curr_nrst_stns)]
 
                     if self.debug_mode_flag:
                         print(('All values are less than or equal to %0.2f!' %
                                self.var_le_trs))
                     continue
 
-            out_add_info_df.loc[infill_date, 'n_neighbors_fin'] = (
+            out_add_info_df.loc[infill_date, 'n_neighbors'] = (
                 len(curr_nrst_stns))
-
-            out_add_info_df.loc[
-                infill_date, 'n_neighbors_raw'] = len(curr_nrst_stns)
 
             if self.infill_type == 'precipitation':
                 (fin_val_ppf_ftn_adj,
@@ -287,14 +287,14 @@ class InfillSteps:
                      val_cdf_ftn, mu_t, sig_sq_t)
 
             if fin_val_ppf_ftn_adj is None:
-                pprt([(('WARNING: fin_val_ppf_ftn_adj is None on (%s, %s)!') %
-                       (str(infill_date),
-                        str(self.curr_infill_stn)))],
-                     nbh=8,
-                     nah=8)
+                pprt([((
+                    'WARNING: fin_val_ppf_ftn_adj is None on (%s, %s)!') %
+                    (str(infill_date), str(self.curr_infill_stn)))],
+                    nbh=8,
+                    nah=8)
+
                 continue
 
-            conf_probs = self.conf_ser.values
             conf_vals = fin_val_ppf_ftn_adj(conf_probs)
             conf_grads = fin_val_grad_ftn(conf_vals)
             out_conf_df.loc[infill_date] = np_round(conf_vals, self.n_round)
@@ -304,17 +304,17 @@ class InfillSteps:
 
             if np_any(descend_idxs):
                 print('\n')
+
                 pprt([(('WARNING: '
                         'Interpolated \'var_vals\' on %s at '
                         'station: %s not in  ascending order!') %
-                       (str(infill_date),
-                        str(self.curr_infill_stn)))],
+                       (str(infill_date), str(self.curr_infill_stn)))],
                      nbh=8,
                      nah=8)
+
                 pprt([self.conf_heads, list(conf_vals)], nbh=8)
                 pprt(['\'gy\':\n', list(gy_arr_adj)], nbh=8)
-                pprt(['\'theoretical_var_vals\':\n',
-                      list(val_arr_adj)],
+                pprt(['\'theoretical_var_vals\':\n', list(val_arr_adj)],
                      nbh=8)
 
                 raise Exception(
@@ -334,8 +334,8 @@ class InfillSteps:
                         self.adj_prob_bounds[+0], self.adj_prob_bounds[-1]))
 
                 out_add_info_df.loc[infill_date, 'act_val_prob'] = (
-                    fin_val_cdf_ftn_adj(
-                        self.in_var_df.loc[infill_date, self.curr_infill_stn]))
+                    fin_val_cdf_ftn_adj(self.in_var_df.loc[
+                        infill_date, self.curr_infill_stn]))
 
             if self.plot_step_cdf_pdf_flag:
                 plot_cond_ftns_obj.plot_cond_cdf_pdf(
@@ -348,10 +348,6 @@ class InfillSteps:
                     py_del,
                     pdf_arr_adj,
                     conf_grads)
-
-            if self.plot_diag_flag:
-                plot_cond_ftns_obj.plot_corr_mat(
-                    full_corrs_arr, curr_var_df, date_pref)
 
             if self.debug_mode_flag:
                 print('Infilled on %s!' % date_pref)

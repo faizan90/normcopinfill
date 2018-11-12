@@ -76,18 +76,12 @@ class InfillStation:
 
     def _infill_stn(self, args):
 
-#         (ii,
-#          infill_stn,
-#          in_var_df,
-#          time_lags_df,
-#          nebs_sets_dict,
-#          _parent) = args
-
         try:
             return self.__infill_stn(*args)
 
         except:
             full_tb(exc_info(), self.dont_stop_flag)
+
             if not self.dont_stop_flag:
                 raise Exception('Stop!')
         return
@@ -117,6 +111,7 @@ class InfillStation:
 
         self.out_var_df = DataFrame(
             index=in_var_df.index, dtype=float32, columns=[infill_stn])
+
         self.summary_df = DataFrame(
             index=[infill_stn], columns=self._summary_cols, dtype=float32)
 
@@ -134,243 +129,149 @@ class InfillStation:
         self.curr_infill_stn = infill_stn
 
         self.stn_out_dir = os_join(self.indiv_stn_outs_dir, infill_stn)
-        out_conf_df_file = (
-            os_join(self.stn_out_dir,
-                    'stn_%s_infill_conf_vals_df.csv' % infill_stn))
+
+        out_conf_df_file = os_join(
+            self.stn_out_dir, 'stn_%s_infill_conf_vals_df.csv' % infill_stn)
+
         out_add_info_file = os_join(
             self.stn_out_dir, 'add_info_df_stn_%s.csv' % infill_stn)
-
-        # load infill
-        no_out = True
-        n_infilled_vals = 0
-        if ((not self.overwrite_flag) and
-            os_exists(out_conf_df_file) and
-            os_exists(out_add_info_file)):
-
-            if self.verbose:
-                pprt(['Output exists already. Not overwriting.'], nbh=8)
-
-            try:
-                out_conf_df = read_csv(
-                    out_conf_df_file,
-                    sep=str(self.sep),
-                    encoding='utf-8',
-                    index_col=0,
-                    engine='python')
-
-                out_conf_df.index = to_datetime(
-                    out_conf_df.index, format=self.time_fmt)
-
-                out_add_info_df = read_csv(
-                    out_add_info_file,
-                    sep=str(self.sep),
-                    encoding='utf-8',
-                    index_col=0,
-                    engine='python')
-
-                out_add_info_df.index = to_datetime(
-                    out_add_info_df.index, format=self.time_fmt)
-
-                n_infilled_vals = out_conf_df.dropna().shape[0]
-
-                _idxs = isnan(self.in_var_df.loc[
-                        self.infill_dates, self.curr_infill_stn])
-
-                _ser = self.in_var_df.loc[
-                    self.infill_dates, self.curr_infill_stn]
-
-                out_stn_ser = _ser.where(
-                    logical_not(_idxs),
-                    out_conf_df[self.fin_conf_head],
-                    axis=0)
-
-                self.out_var_df.loc[out_conf_df.index] = out_stn_ser
-
-                no_out = False
-            except Exception as msg:
-                raise Exception(('Error while trying to read and '
-                                 'update values from the existing '
-                                 'dataframe:\n' + msg))
 
         self.summary_df.loc[self.curr_infill_stn, self._av_vals_lab] = (
             self.in_var_df[self.curr_infill_stn].dropna().shape[0])
 
-        if self.compare_infill_flag:
-            nan_idxs = list(range(self.infill_dates.shape[0]))
-
-        else:
-            nan_idxs = where(isnan(self.in_var_df.loc[
-                self.infill_dates, self.curr_infill_stn].values))[0]
-
-        n_nan_idxs = len(nan_idxs)
-        if (n_infilled_vals < n_nan_idxs and (not no_out)):
-            # it can happen that not all steps were infilled
-            if self.verbose:
-                pprt(['Existing output has insufficient infilled values!'],
-                     nbh=8)
-            no_out = True
+        nvals_to_infill = 0
+        for tup in nebs_sets_dict:
+            nvals_to_infill += nebs_sets_dict[tup][0].shape[0]
 
         self.summary_df.loc[
-            self.curr_infill_stn, self._miss_vals_lab] = n_nan_idxs
+            self.curr_infill_stn, self._miss_vals_lab] = nvals_to_infill
 
-        if (self.overwrite_flag or no_out):
-            if (n_nan_idxs == 0) and (not self.compare_infill_flag):
-                return
+        if not nvals_to_infill:
+            return
 
-            # mkdirs
-            dir_list = [self.stn_out_dir]
+        # mkdirs
+        dir_list = [self.stn_out_dir]
 
-            self.stn_infill_cdfs_dir = os_join(
-                self.stn_out_dir, 'stn_infill_cdfs')
+        self.stn_infill_cdfs_dir = os_join(
+            self.stn_out_dir, 'stn_infill_cdfs')
 
-            self.stn_infill_pdfs_dir = os_join(
-                self.stn_out_dir, 'stn_infill_pdfs')
+        self.stn_infill_pdfs_dir = os_join(
+            self.stn_out_dir, 'stn_infill_pdfs')
 
-            self.stn_step_cdfs_dir = os_join(
-                self.stn_out_dir, 'stn_step_cdfs')
+        self.stn_step_cdfs_dir = os_join(
+            self.stn_out_dir, 'stn_step_cdfs')
 
-            self.stn_step_corrs_dir = os_join(
-                self.stn_out_dir, 'stn_step_corrs')
+        self.stn_step_corrs_dir = os_join(
+            self.stn_out_dir, 'stn_step_corrs')
 
-            self.stn_step_vars_dir = os_join(
-                self.stn_out_dir, 'stn_step_vars')
+        if self.plot_step_cdf_pdf_flag:
+            dir_list.extend([
+                self.stn_infill_cdfs_dir, self.stn_infill_pdfs_dir])
 
-            if self.plot_step_cdf_pdf_flag:
-                dir_list.extend([
-                    self.stn_infill_cdfs_dir, self.stn_infill_pdfs_dir])
+        if self.plot_diag_flag:
+            dir_list.extend([
+                self.stn_step_cdfs_dir, self.stn_step_corrs_dir])
 
-            if self.plot_diag_flag:
-                dir_list.extend([
-                    self.stn_step_cdfs_dir, self.stn_step_corrs_dir])
+        for _dir in dir_list:
+            if not os_exists(_dir):
+                os_mkdir(_dir)
 
-            if self.save_step_vars_flag:
-                dir_list.extend([self.stn_step_vars_dir])
+        if self.verbose:
+            infill_start = timeit.default_timer()
+            pprt(['%d steps to infill' % nvals_to_infill], nbh=8)
+            pprt(['Neighbors are:'], nbh=8)
 
-            for _dir in dir_list:
-                if not os_exists(_dir):
-                    os_mkdir(_dir)
+            for i_msg in range(0, len(self.curr_nrst_stns), 3):
+                pprt(self.curr_nrst_stns[i_msg:(i_msg + 3)], nbh=12)
 
-            idxs = linspace(
-                0,
-                n_nan_idxs,
-                self.ncpus + 1,
-                endpoint=True,
-                dtype='int64')
+        # initiate infill
+        out_conf_df = DataFrame(
+            index=self.infill_dates,
+            columns=self.conf_ser.index,
+            dtype=float32)
 
-            if self.verbose:
-                infill_start = timeit.default_timer()
-                pprt(['%d steps to infill' % n_nan_idxs], nbh=8)
-                pprt(['Neighbors are:'], nbh=8)
+        out_add_info_df = DataFrame(
+            index=self.infill_dates,
+            dtype=float32,
+            columns=['infill_status',
+                     'n_neighbors',
+                     'act_val_prob',
+                     'n_recs'])
 
-                for i_msg in range(0, len(self.curr_nrst_stns), 3):
-                    pprt(self.curr_nrst_stns[i_msg:(i_msg + 3)], nbh=12)
+        if ((nvals_to_infill > self.thresh_mp_steps) and
+            not self.stn_based_mp_infill_flag):
 
-            # initiate infill
-            out_conf_df = DataFrame(
-                index=self.infill_dates,
-                columns=self.conf_ser.index,
-                dtype=float32)
+            use_mp_infill = True
 
-            out_add_info_df = DataFrame(
-                index=self.infill_dates,
-                dtype=float32,
-                columns=['infill_status',
-                         'n_neighbors_raw',
-                         'n_neighbors_fin',
-                         'act_val_prob'])
+        else:
+            use_mp_infill = False
 
-            if ((n_nan_idxs > self.thresh_mp_steps) and
-                not self.stn_based_mp_infill_flag):
+        self.infill_steps_obj = InfillSteps(self)
 
-                use_mp_infill = True
+        if ((self.ncpus == 1) or
+            (not use_mp_infill) or
+            self.debug_mode_flag):
 
-            else:
-                use_mp_infill = False
+            sub_dfs = [
+                self._infill(set_tuple)
+                for set_tuple in nebs_sets_dict.values()]
 
-            self.infill_steps_obj = InfillSteps(self)
+        else:
+            try:
+                sub_dfs = list(self._norm_cop_pool.uimap(
+                    self._infill, nebs_sets_dict.values()))
 
-            if ((idxs.shape[0] == 1) or
-                (self.ncpus == 1) or
-                (not use_mp_infill) or
-                self.debug_mode_flag):
+                self._norm_cop_pool.clear()
 
-                sub_dfs = [
-                    self._infill(set_tuple)
-                    for set_tuple in nebs_sets_dict.values()]
+            except Exception as msg:
+                self._norm_cop_pool.close()
+                self._norm_cop_pool.join()
+                raise Exception('MP failed 1: %s!' % msg)
 
-            else:
-                raise NotImplementedError
+        for sub_df in sub_dfs:
+            sub_conf_df = sub_df[0]
+            sub_add_info_df = sub_df[1]
 
-                n_sub_dates = 0
-                sub_infill_dates_list = []
-                for idx in range(self.ncpus):
-                    sub_dates = (
-                        self.infill_dates[nan_idxs[idxs[idx]:idxs[idx + 1]]])
+            _ser = self.in_var_df.loc[
+                sub_conf_df.index, self.curr_infill_stn]
 
-                    sub_infill_dates_list.append(sub_dates)
+            _idxs = isnan(_ser)
+            _idxs = logical_not(_idxs)
 
-                    n_sub_dates += sub_dates.shape[0]
+            sub_stn_ser = (_ser.where(
+                _idxs,
+                sub_conf_df[self.fin_conf_head],
+                axis=0)).copy()
 
-                assert n_sub_dates == n_nan_idxs, (
-                    as_err(('\'n_sub_dates\' (%d) and '
-                            '\'self.infill_dates\' '
-                            '(%d) of unequal length!') %
-                           (n_sub_dates, self.infill_dates.shape[0])))
+            self.out_var_df.update(sub_stn_ser)
 
-                try:
-                    sub_dfs = list(self._norm_cop_pool.uimap(
-                        self._infill, sub_infill_dates_list))
-                    self._norm_cop_pool.clear()
+            out_conf_df.update(sub_conf_df)
+            out_add_info_df.update(sub_add_info_df)
 
-                except Exception as msg:
-                    self._norm_cop_pool.close()
-                    self._norm_cop_pool.join()
-                    raise Exception('MP failed 1: %s!' % msg)
+        n_infilled_vals = out_conf_df.dropna().shape[0]
 
-            for sub_df in sub_dfs:
-                sub_conf_df = sub_df[0]
-                sub_add_info_df = sub_df[1]
+        if self.verbose:
+            pprt([('%d steps out of %d infilled' %
+                   (n_infilled_vals, nvals_to_infill))],
+                 nbh=8)
 
-                _ser = self.in_var_df.loc[
-                    sub_conf_df.index, self.curr_infill_stn]
+            infill_stop = timeit.default_timer()
+            fin_secs = infill_stop - infill_start
 
-                _idxs = isnan(_ser)
-                _idxs = logical_not(_idxs)
+            _ = divide(fin_secs, max(1, n_infilled_vals))
+            pprt([(('Took %0.3f secs, %0.3e secs per '
+                    'step') % (fin_secs, _))],
+                 nbh=8)
 
-                sub_stn_ser = (_ser.where(
-                    _idxs,
-                    sub_conf_df[self.fin_conf_head],
-                    axis=0)).copy()
+        # ## prepare output
+        out_conf_df = out_conf_df.apply(lambda x: to_numeric(x))
+        out_conf_df.to_csv(
+            out_conf_df_file,
+            sep=str(self.sep),
+            encoding='utf-8')
 
-                self.out_var_df.update(sub_stn_ser)
-
-                out_conf_df.update(sub_conf_df)
-                out_add_info_df.update(sub_add_info_df)
-
-            n_infilled_vals = out_conf_df.dropna().shape[0]
-
-            if self.verbose:
-                pprt([('%d steps out of %d infilled' %
-                       (n_infilled_vals, n_nan_idxs))],
-                     nbh=8)
-
-                infill_stop = timeit.default_timer()
-                fin_secs = infill_stop - infill_start
-
-                _ = divide(fin_secs, max(1, n_infilled_vals))
-                pprt([(('Took %0.3f secs, %0.3e secs per '
-                        'step') % (fin_secs, _))],
-                     nbh=8)
-
-            # ## prepare output
-            out_conf_df = out_conf_df.apply(lambda x: to_numeric(x))
-            out_conf_df.to_csv(
-                out_conf_df_file,
-                sep=str(self.sep),
-                encoding='utf-8')
-
-            out_add_info_df.to_csv(
-                out_add_info_file, sep=str(self.sep), encoding='utf-8')
+        out_add_info_df.to_csv(
+            out_add_info_file, sep=str(self.sep), encoding='utf-8')
 
         self.summary_df.loc[
             self.curr_infill_stn, self._infilled_vals_lab] = n_infilled_vals
@@ -379,7 +280,7 @@ class InfillStation:
         self.summary_df.loc[
             self.curr_infill_stn, self._max_avail_nebs_lab] = _
 
-        _ = round(out_add_info_df['n_neighbors_fin'].dropna().mean(), 1)
+        _ = round(out_add_info_df['n_neighbors'].dropna().mean(), 1)
         self.summary_df.loc[
             self.curr_infill_stn, self._avg_avail_nebs_lab] = _
 
@@ -393,28 +294,15 @@ class InfillStation:
 
         if self.plot_used_stns_flag and (
             self.overwrite_flag or
-            no_out or
             (not os_exists(nebs_used_per_step_file))):
-
-            lw = 0.8
-            alpha = 0.7
 
             plt.figure(figsize=self.fig_size_long)
             infill_ax = plt.subplot(111)
 
             infill_ax.plot(
                 self.infill_dates,
-                out_add_info_df['n_neighbors_raw'].values,
-                label='n_neighbors_raw',
-                c='r',
-                alpha=alpha,
-                lw=lw + 0.5,
-                ls='-')
-
-            infill_ax.plot(
-                self.infill_dates,
-                out_add_info_df['n_neighbors_fin'].values,
-                label='n_neighbors_fin',
+                out_add_info_df['n_neighbors'].values,
+                label='n_neighbors',
                 c='b',
                 marker='o',
                 lw=0,
@@ -442,7 +330,7 @@ class InfillStation:
         plot_infill_cond = self.plot_stn_infill_flag
 
         if not self.overwrite_flag:
-            plot_infill_cond = (plot_infill_cond and no_out)
+            plot_infill_cond = plot_infill_cond
 
         use_mp = not (
             self.debug_mode_flag or
@@ -470,7 +358,7 @@ class InfillStation:
             if self.verbose:
                 pprt(['Plotting infill comparison...'], nbh=8)
 
-            if (not no_out) and (not self.overwrite_flag):
+            if not self.overwrite_flag:
                 update_summary_df_only = True
 
             else:
@@ -490,6 +378,7 @@ class InfillStation:
             if use_mp and (not update_summary_df_only):
                 compare_iter = self._norm_cop_pool.uimap(
                     compare_obj.plot_all, (args_tup,))
+
             else:
                 self.summary_df.update(compare_obj.plot_all(args_tup))
 
@@ -505,7 +394,7 @@ class InfillStation:
             if self.verbose:
                 pprt(['Plotting infill flags...'], nbh=8)
 
-            if (not no_out) and (not self.overwrite_flag):
+            if not self.overwrite_flag:
                 update_summary_df_only = True
 
             else:
