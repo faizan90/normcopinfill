@@ -28,8 +28,7 @@ class AdjustNebs:
             norms_df,
             too_hi_corr_stns_list,
             curr_val_cdf_ftns_dict,
-            avail_cols_raw,
-            avail_cols_fin,
+            curr_nrst_stns,
             curr_var_df):
 
         temp_full_corrs_arr = full_corrs_arr.copy()
@@ -55,11 +54,8 @@ class AdjustNebs:
                 if too_hi_corr_stn in curr_val_cdf_ftns_dict:
                     del curr_val_cdf_ftns_dict[too_hi_corr_stn]
 
-                if too_hi_corr_stn in avail_cols_raw:
-                    avail_cols_raw.remove(too_hi_corr_stn)
-
-                if too_hi_corr_stn in avail_cols_fin:
-                    avail_cols_fin.remove(too_hi_corr_stn)
+                if too_hi_corr_stn in curr_nrst_stns:
+                    curr_nrst_stns.remove(too_hi_corr_stn)
 
                 if too_hi_corr_stn in curr_var_df.columns:
                     curr_var_df.drop(

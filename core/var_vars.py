@@ -44,8 +44,7 @@ class DiscContVars:
                       py_del,
                       infill_date,
                       curr_var_df,
-                      py_zero,
-                      step_vars_dict):
+                      py_zero):
 
         if curr_max_var_val > self.var_ge_trs:
             val_arr = val_cdf_ftn.x[val_cdf_ftn.x >= self.var_ge_trs]
@@ -91,10 +90,6 @@ class DiscContVars:
             assert not isnan(gy_arr[i]), as_err(
                 '\'gy\' is nan (val: %0.2e)!' % val)
 
-        if self.save_step_vars_flag:
-            step_vars_dict['gy_arr_raw'] = gy_arr
-            step_vars_dict['val_arr_raw'] = val_arr
-
         probs_idxs = gy_arr > self.adj_prob_bounds[0]
         probs_idxs = logical_and(probs_idxs,
                                  gy_arr < self.adj_prob_bounds[1])
@@ -110,10 +105,6 @@ class DiscContVars:
             'Increase discretization!')
         assert gy_arr.shape[0] == val_arr.shape[0], as_err(
             'Unequal shapes of probs and vals!')
-
-        if self.save_step_vars_flag:
-            step_vars_dict['gy_arr_fin'] = gy_arr
-            step_vars_dict['val_arr_fin'] = val_arr
 
         if gy_arr.shape[0] <= 1:
             # all probs are zero or one, hope so
@@ -218,11 +209,6 @@ class DiscContVars:
                 assert not isnan(pdf_arr_adj[i]), as_err(
                     '\'pdf\' is nan (val: %0.2e)!' % val_adj)
 
-            if self.save_step_vars_flag:
-                step_vars_dict['gy_arr_adj_raw'] = gy_arr_adj
-                step_vars_dict['val_arr_adj_raw'] = val_arr_adj
-                step_vars_dict['pdf_arr_adj_raw'] = pdf_arr_adj
-
             adj_probs_idxs = gy_arr_adj >= self.adj_prob_bounds[0]
             adj_probs_idxs = logical_and(
                              adj_probs_idxs,
@@ -238,11 +224,6 @@ class DiscContVars:
                 'unequal shapes of probs and vals!')
             assert pdf_arr_adj.shape[0] == val_arr_adj.shape[0], as_err(
                 'unequal shapes of densities and vals!')
-
-            if self.save_step_vars_flag:
-                step_vars_dict['gy_arr_adj_fin'] = gy_arr_adj
-                step_vars_dict['val_arr_adj_fin'] = val_arr_adj
-                step_vars_dict['pdf_arr_adj_fin'] = pdf_arr_adj
 
             fin_val_ppf_ftn_adj = interp1d(gy_arr_adj,
                                            val_arr_adj,
@@ -263,8 +244,7 @@ class DiscContVars:
     def get_cont_vars(self,
                       val_cdf_ftn,
                       mu_t,
-                      sig_sq_t,
-                      step_vars_dict):
+                      sig_sq_t):
 
         val_arr = val_cdf_ftn.x
         probs_arr = val_cdf_ftn.y
@@ -275,9 +255,6 @@ class DiscContVars:
             gy_arr[i] = norm_cdf_py(divide(_, sig_sq_t ** 0.5))
             assert not isnan(gy_arr[i]), as_err(
                 '\'gy\' is NaN (prob:%0.2e)!' % prob)
-
-        if self.save_step_vars_flag:
-            step_vars_dict['gy_arr_raw'] = gy_arr
 
         # do the interpolation again with adjusted bounds
         adj_probs_idxs = gy_arr > self.adj_prob_bounds[0]
@@ -347,11 +324,6 @@ class DiscContVars:
                 z_scor = divide((norm_ppf_py(adj_prob) - mu_t), sig_sq_t ** 0.5)
                 gy_arr_adj[i] = norm_cdf_py(z_scor)
                 pdf_arr_adj[i] = norm_pdf_py(z_scor)
-
-            if self.save_step_vars_flag:
-                step_vars_dict['gy_arr_adj_fin'] = gy_arr_adj
-                step_vars_dict['val_arr_adj_fin'] = val_arr_adj
-                step_vars_dict['pdf_arr_adj_fin'] = pdf_arr_adj
 
             fin_val_ppf_ftn_adj = interp1d(gy_arr_adj,
                                            val_arr_adj,

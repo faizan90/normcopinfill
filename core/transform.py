@@ -128,6 +128,7 @@ class StepTrans:
             self.probs_df[col] = probs_ser
             assert not np_any(isnan(probs_ser)), as_err(
                 'NaNs in \'probs_ser\' on %s' % self.date_pref)
+
             self.norms_df[col] = norm_ppf_py_arr(probs_ser.values)
 
             assert np_all(isfinite(self.norms_df[col].values)), as_err(
@@ -135,6 +136,7 @@ class StepTrans:
 
             if ((col == self.curr_infill_stn) and
                 (self.infill_type == 'precipitation')):
+
                 self.py_del = thresh_prob
                 self.py_zero = zero_prob * 0.5
 

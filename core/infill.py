@@ -287,11 +287,6 @@ class NormCopulaInfill:
         calculating the neighboring stations again. Valid only if
         nrst_stns_type is \'rank\' or \'symm\'.
         Default is False.
-    use_best_stns_flag: bool
-        Find a combination of stations that have the maximum number of stations
-        available with values >= min_valid_vals while infilling a given
-        station.
-        Default is True.
     dont_stop_flag: bool
         Continue infilling even if an error occurs at a given step.
         Default is True.
@@ -800,7 +795,6 @@ class NormCopulaInfill:
         self.take_min_stns_flag = False
         self.overwrite_flag = True
         self.read_pickles_flag = False
-        self.use_best_stns_flag = True
         self.dont_stop_flag = True
         self.plot_long_term_corrs_flag = False
         self.save_step_vars_flag = False
@@ -943,7 +937,6 @@ class NormCopulaInfill:
             pprt(['take_min_stns_flag:', self.take_min_stns_flag], nbh=4)
             pprt(['overwrite_flag:', self.overwrite_flag], nbh=4)
             pprt(['read_pickles_flag:', self.read_pickles_flag], nbh=4)
-            pprt(['use_best_stns_flag:', self.use_best_stns_flag], nbh=4)
             pprt(['dont_stop_flag:', self.dont_stop_flag], nbh=4)
             pprt(['plot_long_term_corrs_flag:',
                   self.plot_long_term_corrs_flag],

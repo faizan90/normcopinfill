@@ -41,7 +41,6 @@ class StepVars:
         for i, col in enumerate(curr_var_df.columns):
             # get u_t values or the interp ftns in case of infill_stn
             if i == 0:
-                val_cdf_ftn = curr_val_cdf_ftns_dict[col]
                 continue
 
             _curr_var_val = self.in_var_df.loc[infill_date, col]
@@ -77,11 +76,9 @@ class StepVars:
 
                 cur_vals[i - 1] = _curr_var_val
 
-        try:
-            assert np_all(isfinite(u_t)), as_err('NaNs in \'u_t\'!')
-        except:
-            print('Stop!')
-        return cur_vals, u_t, val_cdf_ftn
+        assert np_all(isfinite(u_t)), as_err('NaNs in \'u_t\'!')
+
+        return u_t
 
 
 if __name__ == '__main__':

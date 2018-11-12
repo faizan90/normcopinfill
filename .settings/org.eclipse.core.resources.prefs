@@ -5,7 +5,6 @@ encoding//core/adjust_nebs.py=utf-8
 encoding//core/compare_infill.py=utf-8
 encoding//core/flag_susp.py=utf-8
 encoding//core/infill_steps.py=utf-8
-encoding//core/neb_sel.py=utf-8
 encoding//core/plot_cond_ftns.py=utf-8
 encoding//core/plot_infill.py=utf-8
 encoding//core/step_vars.py=utf-8

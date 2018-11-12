@@ -59,6 +59,7 @@ class InfillDatesNeborsSets:
         self.infill_stn_idx = (
             self.in_var_df.loc[:, self.curr_infill_stn].dropna().index)
 
+        self.raw_infill_stn_dates_nebs_sets_dict = {}  # filled by _make_sets
         self.infill_stn_dates_nebs_sets_dict = {}  # filled by _make_sets
 
         print('\nStn: %s' % self.curr_infill_stn)
@@ -98,6 +99,7 @@ class InfillDatesNeborsSets:
         infill_stn_idx = self.infill_stn_idx
 
         set_ctr = 0
+        combs_ctr = 0
         for n_nebs in range(n_max_nebs, n_min_nebs - 1, -1):
 
             if rem_dates <= 0:
@@ -106,6 +108,8 @@ class InfillDatesNeborsSets:
             combs = combinations(self.curr_nrst_stns, n_nebs)
 
             for comb in combs:
+                combs_ctr += 1
+
                 if rem_dates <= 0:
                     break
 
@@ -141,16 +145,25 @@ class InfillDatesNeborsSets:
                 set_dates = to_datetime(itsct_idxs, unit='s')
 
                 set_tuple = (set_dates, comb)
-                self.infill_stn_dates_nebs_sets_dict[set_str] = set_tuple
+                self.raw_infill_stn_dates_nebs_sets_dict[set_str] = set_tuple
 
                 rem_dates -= set_dates.shape[0]
 
                 set_ctr += 1
                 print('comb:', comb, cmn_dates.shape[0], set_dates.shape[0])
 
-        print('rem_dates: %d, n_sets: %d' % (rem_dates, set_ctr))
-#         self.infill_stn_dates_nebs_sets_dict['rem_dates'] = rem_dates
+        print('rem_dates: %d, n_sets: %d, n_combs: %d' % (
+            rem_dates, set_ctr, combs_ctr))
+#         self.raw_infill_stn_dates_nebs_sets_dict['rem_dates'] = rem_dates
         assert set_ctr, 'No sets created!'
+
+        self._spread_load()
+        return
+
+    def _spread_load(self):
+
+        self.infill_stn_dates_nebs_sets_dict = (
+            self.raw_infill_stn_dates_nebs_sets_dict)
         return
 
     def _get_stn_valid_idxs(self):
