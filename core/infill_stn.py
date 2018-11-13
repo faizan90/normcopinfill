@@ -12,17 +12,14 @@ from numpy import (
     any as np_any,
     divide,
     isnan,
-    linspace,
     logical_not,
     seterr,
     set_printoptions,
-    where,
     float32)
 import matplotlib.pyplot as plt
 
 from pandas import (
-    read_csv,
-    to_datetime,
+    concat,
     to_numeric,
     DataFrame)
 
@@ -30,7 +27,7 @@ from .infill_steps import InfillSteps
 from .plot_infill import PlotInfill
 from .compare_infill import CompareInfill
 from .flag_susp import FlagSusp
-from ..misc.misc_ftns import pprt, as_err, full_tb, get_lag_ser
+from ..misc.misc_ftns import pprt, full_tb, get_lag_ser
 
 plt.ioff()
 set_printoptions(
@@ -140,8 +137,9 @@ class InfillStation:
             self.in_var_df[self.curr_infill_stn].dropna().shape[0])
 
         nvals_to_infill = 0
-        for tup in nebs_sets_dict:
-            nvals_to_infill += nebs_sets_dict[tup][0].shape[0]
+        for grp in nebs_sets_dict:
+            for tup in nebs_sets_dict[grp]:
+                nvals_to_infill += tup[0].shape[0]
 
         self.summary_df.loc[
             self.curr_infill_stn, self._miss_vals_lab] = nvals_to_infill
@@ -193,10 +191,8 @@ class InfillStation:
         out_add_info_df = DataFrame(
             index=self.infill_dates,
             dtype=float32,
-            columns=['infill_status',
-                     'n_neighbors',
-                     'act_val_prob',
-                     'n_recs'])
+            columns=[
+                'infill_status', 'n_neighbors', 'act_val_prob', 'n_recs'])
 
         if ((nvals_to_infill > self.thresh_mp_steps) and
             not self.stn_based_mp_infill_flag):
@@ -250,6 +246,8 @@ class InfillStation:
 
         n_infilled_vals = out_conf_df.dropna().shape[0]
 
+        assert n_infilled_vals == nvals_to_infill
+
         if self.verbose:
             pprt([('%d steps out of %d infilled' %
                    (n_infilled_vals, nvals_to_infill))],
@@ -269,6 +267,10 @@ class InfillStation:
             out_conf_df_file,
             sep=str(self.sep),
             encoding='utf-8')
+
+        out_add_info_df['n_neighbors'].fillna(0, inplace=True)
+        out_add_info_df['infill_status'].fillna(False, inplace=True)
+        out_add_info_df['n_recs'].fillna(0, inplace=True)
 
         out_add_info_df.to_csv(
             out_add_info_file, sep=str(self.sep), encoding='utf-8')
@@ -440,30 +442,35 @@ class InfillStation:
 
         return (self.summary_df, self.flag_df, self.out_var_df)
 
-    def _infill(self, set_tuple):
+    def _infill(self, set_tuples):
 
         try:
-            (out_conf_df, out_add_info_df) = (
-                 self.infill_steps_obj.infill_steps(set_tuple))
+
+            if len(set_tuples) > 1:
+                conf_dfs = []
+                add_info_dfs = []
+
+                for set_tuple in set_tuples:
+                    conf_df, add_info_df = (
+                         self.infill_steps_obj.infill_steps(set_tuple))
+
+                    conf_dfs.append(conf_df)
+                    add_info_dfs.append(add_info_df)
+
+                out_conf_df = concat(conf_dfs)
+                out_add_info_df = concat(add_info_dfs)
+
+            else:
+                out_conf_df, out_add_info_df = (
+                     self.infill_steps_obj.infill_steps(set_tuples[0]))
 
             return out_conf_df, out_add_info_df
 
         except:
             plt.close('all')
             full_tb(exc_info(), self.dont_stop_flag)
+
             if not self.dont_stop_flag:
                 raise Exception('_infill failed!')
 
-            infill_dates = set_tuple[0]
-
-            return (DataFrame(index=infill_dates,
-                              columns=self.conf_ser.index,
-                              dtype=float32),
-
-                    DataFrame(index=infill_dates,
-                              dtype=float32,
-                              columns=['infill_status',
-                                       'n_neighbors_raw',
-                                       'n_neighbors_fin',
-                                       'act_val_prob']))
         return
