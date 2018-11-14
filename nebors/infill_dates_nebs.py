@@ -84,7 +84,11 @@ class InfillDatesNeborsSets:
         '''
         - Make all possible combinations of nebors.
         - Start with the biggest combination possible.
+<<<<<<< HEAD
         - Choose steps on which the nebors are active
+=======
+        - Choose steps on which nebors are active
+>>>>>>> refs/remotes/origin/eff_nebors_cmpt
         - Put the time(s) and nebor(s) in a tuple.
         - Do till no more nebors combination or no more infill_dates left.
         '''
@@ -269,6 +273,7 @@ class InfillDatesNeborsSets:
         assert tot_grpd_vals == nvals_to_infill
 
         assert not raw_dict
+        print('ngrps:', len(grps_dict))
         self.infill_stn_dates_nebs_sets_dict = grps_dict
         return
 
