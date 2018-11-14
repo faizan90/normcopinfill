@@ -5,9 +5,11 @@ Created on Nov 11, 2018
 '''
 import timeit
 from math import ceil
+from copy import deepcopy
+from random import shuffle
 from itertools import combinations
 
-from numpy import intersect1d, where, zeros_like
+from numpy import intersect1d, where, unique, zeros_like
 from pandas import Series, to_datetime, Timedelta, Timestamp
 
 TD = Timedelta('1s')  # time delta
@@ -15,6 +17,8 @@ MIN_T = Timestamp("1970-01-01")  # reference time for counting
 
 
 class InfillDatesNeborsSets:
+
+    '''Make sets of steps on which a set of nebors is active'''
 
     def __init__(self, sub_in_var_df, norm_cop_obj):
 
@@ -25,7 +29,11 @@ class InfillDatesNeborsSets:
             'force_infill_flag',
             'take_min_stns_flag',
             'compare_infill_flag',
-            'infill_dates']
+            'infill_dates',
+            'ncpus',
+            'thresh_mp_steps',
+            'stn_based_mp_infill_flag',
+            'debug_mode_flag']
 
         beg_time = timeit.default_timer()
 
@@ -34,8 +42,6 @@ class InfillDatesNeborsSets:
 
         self.in_var_df = sub_in_var_df
         self.curr_infill_stn = sub_in_var_df.columns[0]
-        # FIXME: arrange nrst_stns such that while making combinations,
-        # stns with hi_corr come first
         self.curr_nrst_stns = sub_in_var_df.columns[1:]
 
         # hashing speeds are faster for integers
@@ -60,11 +66,13 @@ class InfillDatesNeborsSets:
         self.infill_stn_idx = (
             self.in_var_df.loc[:, self.curr_infill_stn].dropna().index)
 
-        self.raw_infill_stn_dates_nebs_sets_dict = {}  # filled by _make_sets
-        self.infill_stn_dates_nebs_sets_dict = {}  # filled by _make_sets
+        self.raw_infill_stn_dates_nebs_sets_dict = {}
+        self.infill_stn_dates_nebs_sets_dict = {}
 
         print('\nStn: %s' % self.curr_infill_stn)
+
         self._make_sets()
+
         end_time = timeit.default_timer()
 
         print('Took %0.4f secs in InfillDatesNeborsSets!' % (
@@ -72,6 +80,14 @@ class InfillDatesNeborsSets:
         return
 
     def _make_sets(self):
+
+        '''
+        - Make all possible combinations of nebors.
+        - Start with the biggest combination possible.
+        - Choose steps on which the nebors are active
+        - Put the time(s) and nebor(s) in a tuple.
+        - Do till no more nebors combination or no more infill_dates left.
+        '''
 
         stn_valid_idxs_dict = self._get_stn_valid_idxs()
 
@@ -158,34 +174,102 @@ class InfillDatesNeborsSets:
         if not set_ctr:
             print('No sets created!')
 
-        self._spread_load()
+        self._distribute_load()
         return
 
-    def _spread_load(self):
+    def _distribute_load(self):
 
-#         nvals_to_infill = 0
-#
-#         raw_dict = self.raw_infill_stn_dates_nebs_sets_dict
-#         spread_dict = {}
-#
-#
-#         for tup in raw_dict:
-#             nvals_to_infill += raw_dict[tup][0]
-#
-#         # make new sets such that they are multiples of ncpus
-#         dates_per_grp = ceil(nvals_to_infill / self.ncpus)
-#
-#         spread_grps_strs = ['grp%d' % i for i in range(self.ncpus)]
-#
-#         grp_ctr = 0
-#         for tup in raw_dict:
-#             ntup_vals = raw_dict[tup][0]
-#
-#             if ntup_vals > dates_per_grp:
-#                 spread_grps_strs
+        '''After finding optimal combination of nebors and time steps,
+        Divide them into groups such that each thread will have an equal
+        number of steps to work with in case of MP.
+        '''
 
-        self.infill_stn_dates_nebs_sets_dict = (
-            self.raw_infill_stn_dates_nebs_sets_dict)
+        nvals_to_infill = 0
+
+        raw_dict = self.raw_infill_stn_dates_nebs_sets_dict
+        n_raw_tups = len(raw_dict)
+
+        for tup in raw_dict:
+            nvals_to_infill += raw_dict[tup][0].shape[0]
+
+        if ((nvals_to_infill > self.thresh_mp_steps) and
+            not self.stn_based_mp_infill_flag):
+
+            use_mp_infill = True
+
+        else:
+            use_mp_infill = False
+
+        if ((self.ncpus == 1) or
+            (not use_mp_infill) or
+            self.debug_mode_flag):
+
+            steps_pr_grp = nvals_to_infill
+            grps_dict = {'grp%d' % i: {} for i in range(1)}
+
+            new_sets_order = list(range(n_raw_tups))
+
+        else:
+            steps_pr_grp = ceil(nvals_to_infill / self.ncpus)
+            grps_dict = {'grp%d' % i: {} for i in range(self.ncpus)}
+
+            new_sets_order = InfillDatesNeborsSets._get_new_order(
+                raw_dict, steps_pr_grp, self.ncpus, n_raw_tups)
+
+        # just in case
+        assert unique(new_sets_order).shape[0] == n_raw_tups
+
+        tot_grpd_vals = 0
+        strt_set_idx = 0
+
+        for grp in grps_dict:
+            steps_in_grp = 0
+            sets_list = []
+
+            for i in range(strt_set_idx, n_raw_tups):
+                set_key = 'set%d' % new_sets_order[i]
+
+                tup = raw_dict[set_key]
+                nvals = tup[0].shape[0]
+
+                if (steps_in_grp + nvals) > steps_pr_grp:
+
+                    vals_to_take = steps_pr_grp - steps_in_grp
+
+                    sets_list.append((tup[0][:vals_to_take], tup[1]))
+
+                    raw_dict[set_key] = (
+                        tup[0][vals_to_take:], tup[1])
+
+                    tot_grpd_vals += vals_to_take
+                    break
+
+                else:
+
+                    sets_list.append(tup)
+
+                    del raw_dict[set_key]
+                    strt_set_idx = i + 1
+
+                    tot_grpd_vals += tup[0].shape[0]
+                    steps_in_grp += tup[0].shape[0]
+
+            nsteps = 0
+            for tup in sets_list:
+                nsteps += tup[0].shape[0]
+
+            assert nsteps <= steps_pr_grp
+
+            if sets_list:
+                grps_dict[grp] = sets_list
+
+            else:
+                raise Exception('Empty sets_list?')
+
+        assert tot_grpd_vals == nvals_to_infill
+
+        assert not raw_dict
+        self.infill_stn_dates_nebs_sets_dict = grps_dict
         return
 
     def _get_stn_valid_idxs(self):
@@ -196,3 +280,89 @@ class InfillDatesNeborsSets:
             out_dict[stn] = stn_index
 
         return out_dict
+
+    @staticmethod
+    def _get_new_order(raw_dict, steps_pr_grp, ncpus, n_raw_tups):
+
+        '''Find such a combinations of infill_dates and nrst_stns such that
+        each group get steps_pr_grp and about equal number of nrst_stns sets.
+
+        Test random combinations.
+        '''
+
+        rand_sets_order = list(range(n_raw_tups))
+        new_set_order = deepcopy(rand_sets_order)
+
+        obj_max = max(rand_sets_order)
+
+        max_iters = n_raw_tups ** 2
+        max_usuc_iters = n_raw_tups ** 1.5
+        nusuc_iters = 0
+
+        for i in range(max_iters):
+
+            tot_grpd_vals = 0
+            strt_set_idx = 0
+
+            set_ctrs = []
+
+            raw_ctr_dict = {}
+            for key in raw_dict:
+                val = raw_dict[key]
+                raw_ctr_dict[key] = (val[0].shape[0], val[1])
+
+            for _ in range(ncpus):
+                steps_in_grp = 0
+                sets_list = []
+
+                for i in range(strt_set_idx, n_raw_tups):
+                    set_key = 'set%d' % rand_sets_order[i]
+
+                    tup = raw_ctr_dict[set_key]
+                    nvals = tup[0]
+
+                    if (steps_in_grp + nvals) > steps_pr_grp:
+
+                        vals_to_take = steps_pr_grp - steps_in_grp
+
+                        sets_list.append((vals_to_take, tup[1]))
+
+                        raw_ctr_dict[set_key] = (
+                            tup[0] - vals_to_take, tup[1])
+
+                        tot_grpd_vals += vals_to_take
+                        break
+
+                    else:
+
+                        sets_list.append(tup)
+
+                        strt_set_idx = i + 1
+
+                        tot_grpd_vals += tup[0]
+                        steps_in_grp += tup[0]
+
+                nsteps = 0
+                for tup in sets_list:
+                    nsteps += tup[0]
+
+                assert nsteps <= steps_pr_grp
+
+                set_ctrs.append(len(sets_list))
+
+            ctrs_max = max(set_ctrs)
+            if ctrs_max < obj_max:
+                obj_max = ctrs_max
+                nusuc_iters = 0
+
+                new_set_order = deepcopy(rand_sets_order)
+
+            else:
+                nusuc_iters += 1
+
+            shuffle(rand_sets_order)
+
+            if nusuc_iters >= max_usuc_iters:
+                break
+
+        return new_set_order

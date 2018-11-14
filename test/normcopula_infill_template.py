@@ -25,13 +25,13 @@ if __name__ == '__main__':
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'test_new_nebs_sel_02'
+    out_dir = r'test_new_nebs_sel_03'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
 
     # names of the stations to be infilled as a list
-    infill_stns = ['2471', '411']
+    infill_stns = ['2471']  # , '411']
 #     infill_stns = 'all'
 
     # names of the stations that should not be used in the process
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     infill_date_str = 'slice'
 
     # the time period for which it should infill, its type depends on infill_date_str
-    censor_period = ['1950-01-31', '1990-12-31']
+    censor_period = ['1985-01-31', '1990-12-31']
 #     censor_period = ['1963-01-31', '1963-03-31']
 
     # the number of minimum days/steps that every station should have prior to infilling
@@ -69,12 +69,12 @@ if __name__ == '__main__':
         # it serves as buffer i.e. may be on some days fewer stations
         # are available so n_nrn_max ensures that we have at least
         # n_nrn_min stations
-    n_nrn_max = 20
+    n_nrn_max = 10
 
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
         # achieve fastest speeds
-    ncpus = 4
+    ncpus = 7
 
     # the seperator used in the input files
         # it is also used in the output
@@ -114,13 +114,13 @@ if __name__ == '__main__':
     infill_cop.flag_susp_flag = True
 #     infill_cop.force_infill_flag = False  # force infill if avail_cols < n_nrst_stns_min
 #     infill_cop.plot_neighbors_flag = True
-    infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
+#     infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
 #     infill_cop.overwrite_flag = False
 #     infill_cop.read_pickles_flag = True
 #     infill_cop.dont_stop_flag = False
 #     infill_cop.plot_long_term_corrs_flag = True
 #     infill_cop.plot_rand_flag = True
-    infill_cop.stn_based_mp_infill_flag = False
+    infill_cop.stn_based_mp_infill_flag = False  # when ncpus >= infill_stns
     infill_cop.plot_used_stns_flag = True
     infill_cop.plot_stn_infill_flag = True
 
