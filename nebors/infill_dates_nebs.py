@@ -20,7 +20,7 @@ class InfillDatesNeborsSets:
 
     '''Make sets of steps on which a set of nebors is active'''
 
-    def __init__(self, sub_in_var_df, norm_cop_obj):
+    def __init__(self, norm_cop_obj):
 
         vars_list = [
             'n_min_nebs',
@@ -29,42 +29,38 @@ class InfillDatesNeborsSets:
             'force_infill_flag',
             'take_min_stns_flag',
             'compare_infill_flag',
-            'infill_dates',
             'ncpus',
             'thresh_mp_steps',
             'stn_based_mp_infill_flag',
             'debug_mode_flag']
 
-        beg_time = timeit.default_timer()
-
         for _var in vars_list:
             setattr(self, _var, getattr(norm_cop_obj, _var))
+        return
 
-        self.in_var_df = sub_in_var_df
-        self.curr_infill_stn = sub_in_var_df.columns[0]
-        self.curr_nrst_stns = sub_in_var_df.columns[1:]
+    def get_sets(self, args):
 
-        # hashing speeds are faster for integers
-        old_var_index = self.in_var_df.index
-        new_var_index = (old_var_index - MIN_T) // TD
+        (stns,
+         stn_avail_dates_dict,
+         infill_dates) = args
 
-        if self.compare_infill_flag:
-            new_infill_index = (self.infill_dates - MIN_T) // TD
+        beg_time = timeit.default_timer()
 
-        else:
-            ser = self.in_var_df.loc[
-                self.infill_dates, self.curr_infill_stn]
+        self.curr_infill_stn = stns[0]
+        self.curr_nrst_stns = stns[1:]
 
-            nan_idxs = ser.isna().values
+        stn_avail_int_date_dict = {}
+        for stn in stns:
+            # hashing speeds are faster for integers
+            stn_avail_int_date_dict[stn] = (
+                stn_avail_dates_dict[stn] - MIN_T) // TD
 
-            old_infill_index = ser[nan_idxs].index
-            new_infill_index = (old_infill_index - MIN_T) // TD
+        self.stn_avail_int_date_dict = stn_avail_int_date_dict
 
-        self.in_var_df.index = new_var_index
-        self.infill_dates = new_infill_index
+        self.infill_dates = (infill_dates - MIN_T) // TD
 
-        self.infill_stn_idx = (
-            self.in_var_df.loc[:, self.curr_infill_stn].dropna().index)
+        self.infill_stn_idx = self.stn_avail_int_date_dict[
+            self.curr_infill_stn]
 
         self.raw_infill_stn_dates_nebs_sets_dict = {}
         self.infill_stn_dates_nebs_sets_dict = {}
@@ -77,23 +73,20 @@ class InfillDatesNeborsSets:
 
         print('Took %0.4f secs in InfillDatesNeborsSets!' % (
             end_time - beg_time))
-        return
+
+        return self.curr_infill_stn, self.infill_stn_dates_nebs_sets_dict
 
     def _make_sets(self):
 
         '''
         - Make all possible combinations of nebors.
         - Start with the biggest combination possible.
-<<<<<<< HEAD
         - Choose steps on which the nebors are active
-=======
-        - Choose steps on which nebors are active
->>>>>>> refs/remotes/origin/eff_nebors_cmpt
         - Put the time(s) and nebor(s) in a tuple.
         - Do till no more nebors combination or no more infill_dates left.
         '''
 
-        stn_valid_idxs_dict = self._get_stn_valid_idxs()
+        stn_valid_idxs_dict = self.stn_avail_int_date_dict
 
         can_infill_ser = Series(
             index=self.infill_dates,
@@ -107,8 +100,8 @@ class InfillDatesNeborsSets:
         else:
             n_max_nebs = self.n_max_nebs
 
-        n_min_nebs = min(n_min_nebs, self.curr_nrst_stns.shape[0])
-        n_max_nebs = min(n_max_nebs, self.curr_nrst_stns.shape[0])
+        n_min_nebs = min(n_min_nebs, len(self.curr_nrst_stns))
+        n_max_nebs = min(n_max_nebs, len(self.curr_nrst_stns))
 
         if self.force_infill_flag:
             n_min_nebs = 1
@@ -172,13 +165,15 @@ class InfillDatesNeborsSets:
                 set_ctr += 1
                 print('comb:', comb, cmn_dates.shape[0], set_dates.shape[0])
 
-        print('rem_dates: %d, n_sets: %d, n_combs: %d' % (
-            rem_dates, set_ctr, combs_ctr))
+#         print('rem_dates: %d, n_sets: %d, n_combs: %d' % (
+#             rem_dates, set_ctr, combs_ctr))
 
         if not set_ctr:
-            print('No sets created!')
+            pass
+#             print('No sets created!')
 
-        self._distribute_load()
+        else:
+            self._distribute_load()
         return
 
     def _distribute_load(self):
@@ -274,17 +269,9 @@ class InfillDatesNeborsSets:
 
         assert not raw_dict
         print('ngrps:', len(grps_dict))
+
         self.infill_stn_dates_nebs_sets_dict = grps_dict
         return
-
-    def _get_stn_valid_idxs(self):
-
-        out_dict = {}
-        for stn in self.curr_nrst_stns:
-            stn_index = self.in_var_df.loc[:, stn].dropna().index
-            out_dict[stn] = stn_index
-
-        return out_dict
 
     @staticmethod
     def _get_new_order(raw_dict, steps_pr_grp, ncpus, n_raw_tups):

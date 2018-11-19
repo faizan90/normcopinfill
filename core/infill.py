@@ -972,12 +972,48 @@ class NormCopulaInfill:
 
         self.infill_stns_dates_nebs_sets = {}
 
-        for _stn in self.infill_stns:
-            dates_nebs_sets = InfillDatesNeborsSets(
-                self.in_var_df[[_stn] + self._get_neb_stns(_stn)], self)
+        infill_dates_nebs_sets = InfillDatesNeborsSets(self)
 
-            self.infill_stns_dates_nebs_sets[_stn] = (
-                dates_nebs_sets.infill_stn_dates_nebs_sets_dict)
+        dates_nebs_args = []
+        for _stn in self.infill_stns:
+            dates_nebs_arg = []
+
+            all_stns = [_stn] + self._get_neb_stns(_stn)
+
+            avail_dates_dict = {}
+            for neb in all_stns:
+                avail_dates_dict[neb] = self.in_var_df[neb].dropna().index
+
+            dates_nebs_arg.extend([all_stns, avail_dates_dict])
+
+            if self.compare_infill_flag:
+                dates_nebs_arg.append(self.infill_dates)
+
+            else:
+                dates_nebs_arg.append(self.in_var_df.loc[
+                    self.infill_dates, _stn].dropna().index)
+
+            dates_nebs_args.append(dates_nebs_arg)
+
+        if self.ncpus == 1:
+            dates_nebs_sets_res = [
+                infill_dates_nebs_sets.get_sets(args)
+                for args in dates_nebs_args]
+
+        else:
+            try:
+                dates_nebs_sets_res = list(self._norm_cop_pool.uimap(
+                    infill_dates_nebs_sets.get_sets, dates_nebs_args))
+                self._norm_cop_pool.clear()
+
+            except:
+                self._norm_cop_pool.close()
+                self._norm_cop_pool.join()
+                raise Exception('MP failed 2!')
+
+        for dates_nebs_sets in dates_nebs_sets_res:
+            self.infill_stns_dates_nebs_sets[dates_nebs_sets[0]] = (
+                dates_nebs_sets[1])
 
         infill_stn_obj = InfillStation(self)
 

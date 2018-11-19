@@ -25,7 +25,7 @@ if __name__ == '__main__':
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'test_new_nebs_sel_03'
+    out_dir = r'test_new_nebs_sel_04'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
@@ -110,8 +110,8 @@ if __name__ == '__main__':
 #     infill_cop.debug_mode_flag = True
 #     infill_cop.plot_diag_flag = True
 #     infill_cop.plot_step_cdf_pdf_flag = True
-    infill_cop.compare_infill_flag = True
-    infill_cop.flag_susp_flag = True
+#     infill_cop.compare_infill_flag = True
+#     infill_cop.flag_susp_flag = True
 #     infill_cop.force_infill_flag = False  # force infill if avail_cols < n_nrst_stns_min
 #     infill_cop.plot_neighbors_flag = True
 #     infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
