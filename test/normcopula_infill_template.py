@@ -153,6 +153,8 @@ if __name__ == '__main__':
     infill_cop.cmpt_plot_avail_stns()
     infill_cop.plot_summary()
 
+    infill_cop.log_link.stop()
+
     stop = timeit.default_timer()  # Ending time
     print('\n\a\a\a Done with everything on %s. Total run time was about %0.4f seconds \a\a\a' % (time.asctime(), stop - start))
 

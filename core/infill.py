@@ -459,8 +459,9 @@ class NormCopulaInfill:
                 sep=self.sep,
                 index_col=0,
                 engine='c')
+
         except:
-            print('WARNING: Reading in_var_file with engine=\'python\'!')
+            print('INFO: Reading in_var_file with engine=\'python\'!')
             self.in_var_df = read_csv(
                 self.in_var_file,
                 sep=self.sep,
