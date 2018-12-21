@@ -25,7 +25,7 @@ if __name__ == '__main__':
     in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'test_inv_bug_03_5nebs'
+    out_dir = r'test_infill_01'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 #     infill_cop.read_pickles_flag = True
 #     infill_cop.use_best_stns_flag = False
 #     infill_cop.dont_stop_flag = False
-    infill_cop.plot_long_term_corrs_flag = True
+#     infill_cop.plot_long_term_corrs_flag = True
 #     infill_cop.save_step_vars_flag = True
 #     infill_cop.plot_rand_flag = True
 #     infill_cop.stn_based_mp_infill_flag = False
@@ -128,7 +128,7 @@ if __name__ == '__main__':
 #     infill_cop.nrst_stns_type = 'dist'
     infill_cop.nrst_stns_type = 'rank'
 
-    infill_cop.min_corr = 0.9
+    infill_cop.min_corr = 0.8
 #     infill_cop.max_time_lag_corr = 1
 #     infill_cop.cut_cdf_thresh = 0.5
 
