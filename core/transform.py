@@ -43,7 +43,8 @@ class StepTrans:
             'out_fig_fmt',
             'stn_step_cdfs_dir',
             'out_fig_dpi',
-            'cut_cdf_thresh']
+            'cut_cdf_thresh',
+            'in_var_df']
 
         for _var in vars_list:
             setattr(self, _var, getattr(infill_steps_obj, _var))
@@ -57,7 +58,6 @@ class StepTrans:
         self.curr_py_dels_dict = curr_py_dels_dict
         self.curr_val_cdf_ftns_dict = curr_val_cdf_ftns_dict
         self.date_pref = date_pref
-
         return
 
     def get_cdfs_probs(self):
@@ -81,8 +81,21 @@ class StepTrans:
             if self.infill_type == 'precipitation':
                 # get probability of zero and below threshold
                 zero_idxs = where(var_ser.values == self.var_le_trs)[0]
+
                 zero_prob = divide(float(zero_idxs.shape[0]),
                                    var_ser.shape[0])
+
+                if not zero_idxs.sum():
+                    n_le_vals = (
+                        self.in_var_df[col].values == self.var_le_trs).sum()
+                    n_valid_vals = self.in_var_df[col].dropna().shape[0]
+
+                    # Sometimes, var_le_trs is not there in the curr_var_df
+                    # but only in in_var_df on other steps.
+                    # I am assuming that this happens rarely.
+                    # it can be problamatic if the var_le_trs values happen
+                    # more on the steps that have to be infilled.
+                    zero_prob = n_le_vals / n_valid_vals
 
                 thresh_idxs = where(
                               logical_and(var_ser.values > self.var_le_trs,

@@ -60,11 +60,12 @@ class StepVars:
                     else:
                         wt = 0.0
 
-                    _ = curr_py_zeros_dict[col]
-                    u_t[i - 1] = norm_ppf_py(_ * (1.0 + wt))
+                    u_t[i - 1] = norm_ppf_py(
+                        curr_py_zeros_dict[col] * (1.0 + wt))
 
                 elif ((_curr_var_val > self.var_le_trs) and
                       (_curr_var_val <= self.var_ge_trs)):
+
                     u_t[i - 1] = norm_ppf_py(curr_py_dels_dict[col])
 
                 else:
@@ -77,10 +78,9 @@ class StepVars:
 
                 cur_vals[i - 1] = _curr_var_val
 
-        try:
-            assert np_all(isfinite(u_t)), as_err('NaNs in \'u_t\'!')
-        except:
-            print('Stop!')
+        assert np_all(isfinite(u_t)), as_err(
+            'Invalid values in \'u_t\'! ' + str(u_t))
+
         return cur_vals, u_t, val_cdf_ftn
 
 

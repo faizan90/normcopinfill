@@ -431,6 +431,7 @@ class InfillSteps:
                  curr_py_dels_dict)
 
             mu_t = matmul(cov_vec.T, matmul(inv_norm_cov_mat, u_t))
+
             assert not isnan(mu_t), as_err('\'mu_t\' is NaN!')
 
             if self.save_step_vars_flag:
@@ -474,7 +475,8 @@ class InfillSteps:
                      val_cdf_ftn,
                      mu_t,
                      sig_sq_t,
-                     step_vars_dict)
+                     step_vars_dict,
+                     infill_date)
 
             if fin_val_ppf_ftn_adj is None:
                 pprt([(('WARNING: fin_val_ppf_ftn_adj is None on (%s, %s)!') %
@@ -518,8 +520,8 @@ class InfillSteps:
                                        str(infill_date)))
                 print('\n')
 
-            if not isnan(self.in_var_df.loc[
-                infill_date, self.curr_infill_stn]):
+            if not isnan(
+                self.in_var_df.loc[infill_date, self.curr_infill_stn]):
 
                 fin_val_cdf_ftn_adj = interp1d(
                     val_arr_adj,
