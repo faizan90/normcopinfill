@@ -340,10 +340,10 @@ class InfillStation:
                     sub_conf_df[self.fin_conf_head],
                     axis=0)).copy()
 
-                self.out_var_df.update(sub_stn_ser)
+                self.out_var_df.update(sub_stn_ser, overwrite=False)
 
-                out_conf_df.update(sub_conf_df)
-                out_add_info_df.update(sub_add_info_df)
+                out_conf_df.update(sub_conf_df, overwrite=False)
+                out_add_info_df.update(sub_add_info_df, overwrite=False)
 
             n_infilled_vals = out_conf_df.dropna().shape[0]
 
@@ -489,7 +489,8 @@ class InfillStation:
                 compare_iter = self._norm_cop_pool.uimap(
                     compare_obj.plot_all, (args_tup,))
             else:
-                self.summary_df.update(compare_obj.plot_all(args_tup))
+                self.summary_df.update(
+                    compare_obj.plot_all(args_tup), overwrite=False)
 
         else:
             if self.verbose:
@@ -522,8 +523,8 @@ class InfillStation:
 
             else:
                 _ = flag_susp_obj.plot(args_tup)
-                self.summary_df.update(_[0])
-                self.flag_df.update(_[1])
+                self.summary_df.update(_[0], overwrite=False)
+                self.flag_df.update(_[1], overwrite=False)
 
         else:
             if self.verbose:
@@ -540,12 +541,12 @@ class InfillStation:
 
         # these iters are here to make use of mp
         if compare_iter:
-            self.summary_df.update(list(compare_iter)[0])
+            self.summary_df.update(list(compare_iter)[0], overwrite=False)
 
         if flag_susp_iter:
             _ = list(flag_susp_iter)[0]
-            self.summary_df.update(_[0])
-            self.flag_df.update(_[1])
+            self.summary_df.update(_[0], overwrite=False)
+            self.flag_df.update(_[1], overwrite=False)
 
         return (self.summary_df, self.flag_df, self.out_var_df)
 

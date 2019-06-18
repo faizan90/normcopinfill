@@ -418,11 +418,11 @@ class RankCorrStns:
                     rank_corr_obj._get_rank_corrs_ctr_df(mp_var_list))
 
         for i, mp_res in enumerate(mp_ress):
-            self.rank_corrs_df.update(mp_res[0])
-            self.rank_corr_vals_ctr_df.update(mp_res[1])
+            self.rank_corrs_df.update(mp_res[0], overwrite=False)
+            self.rank_corr_vals_ctr_df.update(mp_res[1], overwrite=False)
 
             if self.max_time_lag_corr:
-                self.time_lags_df.update(mp_res[2])
+                self.time_lags_df.update(mp_res[2], overwrite=False)
 
             mp_ress[i] = None
 

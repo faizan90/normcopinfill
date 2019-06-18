@@ -5,7 +5,16 @@ Spyder Editor
 This is a temporary script file.
 """
 
-from numpy import ceil, divide, unique, linspace, array, isnan, fabs, where
+from numpy import (
+    ceil,
+    divide,
+    unique,
+    linspace,
+    array,
+    isnan,
+    fabs,
+    where,
+    round as np_round)
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.colors import LinearSegmentedColormap
@@ -68,7 +77,7 @@ class Summary:
             dtype=object)
 
         # ## available values
-        avail_vals = curr_summary_df[self._av_vals_lab]
+        avail_vals = curr_summary_df[self._av_vals_lab].copy()
         n_max_available = avail_vals.max(skipna=True)
         n_min_available = avail_vals.min(skipna=True)
 
@@ -79,6 +88,10 @@ class Summary:
         if n_max_available == n_min_available:
             n_min_available = 0.0
         avail_vals[isnan(avail_vals)] = n_min_available
+
+        curr_summary_df.loc[
+            isnan(avail_vals), self._av_vals_lab] = n_min_available
+
         _avail_vals_rats = divide((avail_vals.values -
                                    n_min_available),
                                   (n_max_available -
@@ -88,12 +101,16 @@ class Summary:
             colors_df.loc[stn, self._av_vals_lab] = available_val_clrs[i]
 
         # ## missing values
-        miss_vals = curr_summary_df[self._miss_vals_lab]
+        miss_vals = curr_summary_df[self._miss_vals_lab].copy()
         n_max_missing = max(1, miss_vals.max(skipna=True))
         n_min_missing = miss_vals.min(skipna=True)
         if n_max_missing == n_min_missing:
             n_min_missing = 0.0
         miss_vals[isnan(miss_vals)] = n_min_missing
+
+        curr_summary_df.loc[
+            isnan(miss_vals), self._miss_vals_lab] = n_min_missing
+
         _miss_val_rats = divide((miss_vals.values - n_min_missing),
                                 (n_max_missing - n_min_missing))
 
@@ -259,7 +276,13 @@ class Summary:
         col_labs = curr_summary_df.index
         row_labs = curr_summary_df.columns
 
-        table_text_list = curr_summary_df.values.T
+        table_text_list = np_round(curr_summary_df.values.T.astype(float), 3)
+        table_text_list = table_text_list.astype(str)
+
+        for i in range(table_text_list.shape[0]):
+            for j in range(table_text_list.shape[1]):
+                if table_text_list[i, j].endswith('.0'):
+                    table_text_list[i, j] = table_text_list[i, j][:-2]
 
         row_colors = [[0.75] * 4] * row_labs.shape[0]
         col_colors = [[0.75] * 4] * col_labs.shape[0]

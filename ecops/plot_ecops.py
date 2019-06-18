@@ -322,6 +322,7 @@ class ECops:
             ecop_raw_ax.cla()
             ecop_grid_ax.cla()
             leg_ax.cla()
+            cax.cla()
         return
 
     def _plot_ecops(self, infill_stns):
