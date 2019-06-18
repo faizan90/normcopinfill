@@ -318,7 +318,11 @@ class ECops:
                     infill_stn, other_stn, self.out_fig_fmt)
             out_ecop_fig_loc = os_join(self.ecops_dir, out_ecop_fig_name)
 
-            plt.savefig(out_ecop_fig_loc, dpi=self.out_fig_dpi)
+            plt.savefig(
+                out_ecop_fig_loc,
+                dpi=self.out_fig_dpi,
+                bbox_inches='tight')
+
             ecop_raw_ax.cla()
             ecop_grid_ax.cla()
             leg_ax.cla()

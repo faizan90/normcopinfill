@@ -153,7 +153,12 @@ class FlagSusp:
             plt.suptitle(('Data quality flags for station: %s\n' %
                           self.curr_infill_stn + flag_str))
             plt.grid()
-            plt.savefig(out_flag_susp_loc, dpi=self.out_fig_dpi)
+
+            plt.savefig(
+                out_flag_susp_loc,
+                dpi=self.out_fig_dpi,
+                bbox_inches='tight')
+
             plt.close('all')
         return summ_df, _flag_ser
 

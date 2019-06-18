@@ -129,7 +129,10 @@ class CompareInfill:
         infill_ax.set_xlim(self.infill_dates[0], self.infill_dates[-1])
         plt.grid()
         plt.legend(framealpha=0.5, loc=0)
-        plt.savefig(out_compar_plot_loc, dpi=self.out_fig_dpi)
+        plt.savefig(
+            out_compar_plot_loc,
+            dpi=self.out_fig_dpi,
+            bbox_inches='tight')
         plt.close('all')
         return
 
@@ -176,7 +179,12 @@ class CompareInfill:
         plt.grid()
         _ = out_compar_plot_loc[:-(len(self.out_fig_fmt) + 1)]
         out_freq_compare_loc = _ + '_time_cdf.' + self.out_fig_fmt
-        plt.savefig(out_freq_compare_loc, dpi=self.out_fig_dpi)
+
+        plt.savefig(
+            out_freq_compare_loc,
+            dpi=self.out_fig_dpi,
+            bbox_inches='tight')
+
         plt.close('all')
         return
 
@@ -282,7 +290,12 @@ class CompareInfill:
 
             _ = out_compar_plot_loc[:-(len(self.out_fig_fmt) + 1)]
             out_freq_compare_loc = _ + '_obs_probs_cdf.' + self.out_fig_fmt
-            plt.savefig(out_freq_compare_loc, dpi=self.out_fig_dpi)
+
+            plt.savefig(
+                out_freq_compare_loc,
+                dpi=self.out_fig_dpi,
+                bbox_inches='tight')
+
             plt.close('all')
         return summ_df
 
@@ -334,7 +347,12 @@ class CompareInfill:
         plt.legend()
         _ = out_compar_plot_loc[:-(len(self.out_fig_fmt) + 1)]
         out_cdf_compare_loc = _ + '_hists.' + self.out_fig_fmt
-        plt.savefig(out_cdf_compare_loc, dpi=self.out_fig_dpi)
+
+        plt.savefig(
+            out_cdf_compare_loc,
+            dpi=self.out_fig_dpi,
+            bbox_inches='tight')
+
         plt.close('all')
         return
 
