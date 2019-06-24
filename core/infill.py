@@ -1012,10 +1012,10 @@ class NormCopulaInfill:
                       30 * '#', '\n', 30 * '#')
                 continue
 
-            self.summary_df.update(_res[0], overwrite=False)
+            self.summary_df.update(_res[0], overwrite=True)
 
             if self.flag_df is not None:
-                self.flag_df.update(_res[1], overwrite=False)
+                self.flag_df.update(_res[1], overwrite=True)
 
             self.out_var_df.update(_res[2], overwrite=False)
 
