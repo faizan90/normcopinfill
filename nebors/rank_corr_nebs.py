@@ -21,7 +21,6 @@ import matplotlib.pyplot as plt
 from adjustText import adjust_text
 from pandas import DataFrame, Series
 
-# from .nrst_nebs import NrstStns
 from ..misc.misc_ftns import (
     get_norm_rand_symms, get_lag_ser, as_err, ret_mp_idxs)
 from ..cyth import get_asymms_sample, get_corrcoeff
@@ -508,7 +507,7 @@ class RankCorrStns:
          out_fig_dpi,
          lags) = args
 
-        tick_font_size = 5
+        tick_font_size = 7
         n_nebs = len(nebs)
 
         hi_corr_stns_ax = plt.subplot(111)
@@ -557,15 +556,14 @@ class RankCorrStns:
 
         adjust_text(plt_texts, only_move={'points': 'y', 'text': 'y'})
         hi_corr_stns_ax.grid()
-        hi_corr_stns_ax.set_xlabel('Eastings', size=tick_font_size)
-        hi_corr_stns_ax.set_ylabel('Northings', size=tick_font_size)
+        hi_corr_stns_ax.set_xlabel('Eastings')
+        hi_corr_stns_ax.set_ylabel('Northings')
         hi_corr_stns_ax.legend(framealpha=0.5, loc=0)
 
         hi_corr_stns_ax.set_xlim(0.999 * xs.min(), 1.001 * xs.max())
         hi_corr_stns_ax.set_ylim(0.999 * ys.min(), 1.001 * ys.max())
 
-        plt.setp(hi_corr_stns_ax.get_xticklabels(), size=tick_font_size)
-        plt.setp(hi_corr_stns_ax.get_yticklabels(), size=tick_font_size)
+        plt.setp(hi_corr_stns_ax.get_xticklabels(), rotation=90)
 
         plt.savefig(
             os_join(out_rank_corr_plots_dir,
@@ -588,7 +586,7 @@ class RankCorrStns:
          lags) = args
 
         # TODO: have 15 stns at max on a row
-        tick_font_size = 6
+        tick_font_size = 8
 
         corrs_ctr_ser[isnan(corrs_ctr_ser)] = 0
 
@@ -613,7 +611,8 @@ class RankCorrStns:
                         int(lags[neb])),
                     va='center',
                     ha='center',
-                    fontsize=tick_font_size)
+                    fontsize=tick_font_size,
+                    rotate=45)
 
             else:
                 corrs_ax.text(
@@ -623,7 +622,8 @@ class RankCorrStns:
                         corrs_ser[neb], int(corrs_ctr_ser[neb])),
                     va='center',
                     ha='center',
-                    fontsize=tick_font_size)
+                    fontsize=tick_font_size,
+                    rotate=45)
 
         corrs_ax.set_yticks([])
         corrs_ax.set_yticklabels([])

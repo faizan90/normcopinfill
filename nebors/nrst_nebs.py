@@ -276,7 +276,7 @@ class NrstStns:
          out_nebor_plots_dir,
          out_fig_dpi) = args
 
-        tick_font_size = 5
+        tick_font_size = 7
         n_nebs = len(nebs)
 
         nrst_stns_ax = plt.subplot(111)
@@ -316,15 +316,14 @@ class NrstStns:
 
         adjust_text(plt_texts, only_move={'points': 'y', 'text': 'y'})
         nrst_stns_ax.grid()
-        nrst_stns_ax.set_xlabel('Eastings', size=tick_font_size)
-        nrst_stns_ax.set_ylabel('Northings', size=tick_font_size)
+        nrst_stns_ax.set_xlabel('Eastings')
+        nrst_stns_ax.set_ylabel('Northings')
         nrst_stns_ax.legend(framealpha=0.5, loc=0)
 
         nrst_stns_ax.set_xlim(0.995 * xs.min(), 1.005 * xs.max())
         nrst_stns_ax.set_ylim(0.995 * ys.min(), 1.005 * ys.max())
 
-        plt.setp(nrst_stns_ax.get_xticklabels(), size=tick_font_size)
-        plt.setp(nrst_stns_ax.get_yticklabels(), size=tick_font_size)
+        plt.setp(nrst_stns_ax.get_xticklabels(), rotation=90)
 
         plt.savefig(
             os_join(out_nebor_plots_dir, '%s_neibor_stns.png' % infill_stn),

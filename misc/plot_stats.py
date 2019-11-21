@@ -62,14 +62,14 @@ class PlotStats:
 
         self.stats_df = self.stats_df.apply(lambda x: to_numeric(x))
 
-        tick_font_size = 5
+        tick_font_size = 6
         stats_arr = self.stats_df.values
         n_stns = stats_arr.shape[0]
         n_cols = stats_arr.shape[1]
 
-        _, stats_ax = plt.subplots(1,
-                                     1,
-                                     figsize=(0.45 * n_stns, 0.8 * n_cols))
+        _, stats_ax = plt.subplots(
+            1, 1, figsize=(0.45 * n_stns, 0.8 * n_cols))
+
         stats_ax.matshow(stats_arr.T,
                          cmap=plt.get_cmap('Blues'),
                          vmin=0,
@@ -83,7 +83,8 @@ class PlotStats:
                           ('%0.2f' % stats_arr[s[0], s[1]]).rstrip('0'),
                           va='center',
                           ha='center',
-                          fontsize=tick_font_size)
+                          fontsize=tick_font_size,
+                          rotation=45)
 
         stats_ax.set_xticks(list(range(0, n_stns)))
         stats_ax.set_xticklabels(self.stats_df.index)

@@ -132,22 +132,8 @@ if __name__ == '__main__':
 #     infill_cop.max_time_lag_corr = 1
 #     infill_cop.cut_cdf_thresh = 0.5
 
-#     _beg = timeit.default_timer()
 #     infill_cop.cmpt_plot_nrst_stns()
-#     _end = timeit.default_timer()
-#     _tot = (_end - _beg)
-#     print('Took %0.4f secs!' % _tot)
-#
-#     time.sleep(10)
-#
-#     _beg = timeit.default_timer()
 #     infill_cop.cmpt_plot_rank_corr_stns()
-#     _end = timeit.default_timer()
-#     _tot = (_end - _beg)
-#     print('Took %0.4f secs!' % _tot)
-#
-#     time.sleep(10)
-
 #     infill_cop.plot_stats()
 #     infill_cop.plot_ecops()
     infill_cop.infill()

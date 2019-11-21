@@ -125,7 +125,7 @@ class CompareInfill:
                       (nse, ln_nse, kge))
         title_str += (('Pearson correlation: %0.2f, Spearman correlation: '
                        '%0.2f)') % (correl_pe, correl_sp))
-        plt.suptitle(title_str)
+        plt.suptitle(title_str, y=1.005)
         infill_ax.set_xlim(self.infill_dates[0], self.infill_dates[-1])
         plt.grid()
         plt.legend(framealpha=0.5, loc=0)
@@ -148,14 +148,12 @@ class CompareInfill:
         plt.figure(figsize=(6, 5.5))
         infill_ax = plt.subplot(111)
 
-        infill_ax.plot(
+        infill_ax.scatter(
             infill_probs,
             orig_probs,
             alpha=alpha,
-            lw=lw,
-            ls='-',
             marker='o',
-            ms=lw)
+            s=lw)
 
         infill_ax.plot(
             orig_probs,
@@ -286,7 +284,7 @@ class CompareInfill:
                           (vals_wtn_rng, 100 * (1.0 - self.ks_alpha)))
             title_str += (('\nOut of %d, %d values below and %d above '
                            'limits') % (n_vals, n_ks_fl_l, n_ks_fu_g))
-            plt.suptitle(title_str)
+            plt.suptitle(title_str, y=1.05)
 
             _ = out_compar_plot_loc[:-(len(self.out_fig_fmt) + 1)]
             out_freq_compare_loc = _ + '_obs_probs_cdf.' + self.out_fig_fmt
@@ -494,7 +492,7 @@ class CompareInfill:
          out_add_info_df,
          self.update_summary_df_only) = args
 
-        lw, alpha = 0.8, 0.7
+        lw, alpha = 1.4, 0.7
 
         interp_data_idxs = logical_or(
             isnan(act_var),

@@ -347,7 +347,7 @@ class Summary:
 
         clr_alpha = 0.4
         n_segs = 100
-        font_size = 6
+        font_size = 8
         max_columns_per_fig = 15
 
         cmap_name = 'my_clr_list'

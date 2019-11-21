@@ -201,7 +201,7 @@ class ECops:
             ecop_raw_ax.set_xlim(0, 1)
             ecop_raw_ax.set_ylim(0, 1)
             ecop_raw_ax.grid()
-            ecop_raw_ax.set_title('Empirical Copula - Scatter')
+            ecop_raw_ax.set_title('Empirical Copula - Scatter', size=12)
 
             # Empirical copula - gridded
             cop_dict = bi_var_copula(prob_i, prob_j, self.cop_bins)
@@ -251,12 +251,16 @@ class ECops:
 
             emp_title_str = ''
             emp_title_str += 'Empirical copula - Gridded'
-            emp_title_str += ('\n(asymm_1: %1.1E, asymm_2: %1.1E)' %
-                              (emp_asymm_1, emp_asymm_2))
-            emp_title_str += ('\n(asymm_1: %s, asymm_2: %s)' %
-                              (asymm_1_str, asymm_2_str))
 
-            ecop_grid_ax.set_title(emp_title_str)
+            emp_title_str += (
+                '\n(asymm_1: %1.1E, asymm_2: %1.1E)' %
+                (emp_asymm_1, emp_asymm_2))
+
+            emp_title_str += (
+                '\n(asymm_1: %s, asymm_2: %s)' %
+                (asymm_1_str, asymm_2_str))
+
+            ecop_grid_ax.set_title(emp_title_str, size=12)
 
             # Corresponding gaussian grid
             # TODO: adjust for precipitation case i.e. 0 and 1 ppt
@@ -282,13 +286,16 @@ class ECops:
 
             gau_title_str = ''
             gau_title_str += 'Gaussian copula'
-            gau_title_str += (('\n(min asymm_1: %1.1E, '
-                               'max asymm_1: %1.1E)') % (
-                                   min_asymm_1, max_asymm_1))
-            gau_title_str += (('\n(min asymm_2: %1.1E, '
-                               'max asymm_2: %1.1E)') % (
-                                   min_asymm_2, max_asymm_2))
-            gau_cop_ax.set_title(gau_title_str)
+
+            gau_title_str += (
+                ('\nasymm_1 (min, max): %1.1E, %1.1E') %
+                (min_asymm_1, max_asymm_1))
+
+            gau_title_str += (
+                ('\nasymm_2 (min, max): %1.1E, %1.1E') %
+                (min_asymm_2, max_asymm_2))
+
+            gau_cop_ax.set_title(gau_title_str, size=12)
 
             leg_ax.set_axis_off()
             cb = plt.colorbar(_cb, cax=cax)
@@ -310,9 +317,10 @@ class ECops:
                           (prob_i.shape[0], correl, self.cop_bins))
             title_str += ('\n(rho: %0.3f, tau: %0.3f, lag: %d)' % (
                 correl, tau, curr_lag))
-            plt.suptitle(title_str)
 
-            plt.subplots_adjust(hspace=0.15, wspace=1.5, top=0.75)
+            plt.suptitle(title_str, y=1.005)
+
+            plt.subplots_adjust(hspace=0.15, wspace=1.2, top=0.75)
 
             out_ecop_fig_name = 'ecop_%s_vs_%s.%s' % (
                     infill_stn, other_stn, self.out_fig_fmt)
