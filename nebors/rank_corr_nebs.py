@@ -612,7 +612,7 @@ class RankCorrStns:
                     va='center',
                     ha='center',
                     fontsize=tick_font_size,
-                    rotate=45)
+                    rotation=45)
 
             else:
                 corrs_ax.text(
@@ -623,7 +623,7 @@ class RankCorrStns:
                     va='center',
                     ha='center',
                     fontsize=tick_font_size,
-                    rotate=45)
+                    rotation=45)
 
         corrs_ax.set_yticks([])
         corrs_ax.set_yticklabels([])

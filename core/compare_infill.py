@@ -29,6 +29,24 @@ from ..cyth import (
     get_ns_py,
     get_ln_ns_py)
 
+ROUNDING_PREC = 4  # correct till this many decimal places
+
+
+def get_rounded_value(value):
+
+    value_str = str(value)
+
+    bef_dec, aft_dec = value_str.split('.')
+
+    if len(bef_dec) >= ROUNDING_PREC:
+        value = float(bef_dec)
+
+    else:
+        rem_len = ROUNDING_PREC - len(bef_dec)
+        value = float(f'{bef_dec}.{aft_dec[:rem_len]}')
+
+    return value
+
 
 class CompareInfill:
 
@@ -378,9 +396,11 @@ class CompareInfill:
 
         diff = orig_vals - infill_vals
 
-        bias = round(divide(np_sum(diff), n_vals), self.n_round)
-        mae = round(divide(np_sum(np_abs(diff)), n_vals), self.n_round)
-        rmse = round((divide(np_sum(diff ** 2), n_vals)) ** 0.5, self.n_round)
+        bias = get_rounded_value(divide(np_sum(diff), n_vals))
+
+        mae = get_rounded_value(divide(np_sum(np_abs(diff)), n_vals))
+
+        rmse = get_rounded_value((divide(np_sum(diff ** 2), n_vals)) ** 0.5)
 
         orig_probs = divide(rankdata(orig_vals), (n_vals + 1.))
         orig_probs_sort_idxs = argsort(orig_probs)
@@ -401,10 +421,13 @@ class CompareInfill:
         correl_sp = round(get_corrcoeff(orig_probs, infill_probs),
                           self.n_round)
 
-        obs_mean = round(orig_vals.mean(), self.n_round)
-        infill_mean = round(infill_vals.mean(), self.n_round)
-        obs_var = round(orig_vals.var(), self.n_round)
-        infill_var = round(infill_vals.var(), self.n_round)
+        obs_mean = get_rounded_value(orig_vals.mean())
+
+        infill_mean = get_rounded_value(infill_vals.mean())
+
+        obs_var = get_rounded_value(orig_vals.var())
+
+        infill_var = get_rounded_value(infill_vals.var())
 
         summ_df.loc[
             self.curr_infill_stn,
