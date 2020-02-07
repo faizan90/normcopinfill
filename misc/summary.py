@@ -366,11 +366,11 @@ class Summary:
         n_stns = self.summary_df.shape[0]
 
         if n_stns > max_columns_per_fig:
-            n_figs = ceil(divide(n_stns, float(max_columns_per_fig)))
-            cols_per_fig_idxs = unique(linspace(0,
-                                                n_stns,
-                                                n_figs + 1,
-                                                dtype=int))
+            n_figs = int(ceil(divide(n_stns, float(max_columns_per_fig))))
+
+            cols_per_fig_idxs = unique(
+                linspace(0, n_stns, n_figs + 1, dtype=int))
+
         else:
             cols_per_fig_idxs = array([0, n_stns])
 

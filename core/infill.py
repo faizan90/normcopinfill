@@ -870,7 +870,14 @@ class NormCopulaInfill:
         BefAll(self)
         assert self._bef_all_chked, 'Initiate \'BefAll\' first!'
 
+        old_plt_flag = self.plot_neighbors_flag
+
+        self.plot_neighbors_flag = True
+
         NrstStns(self)
+
+        self.plot_neighbors_flag = old_plt_flag
+
         return
 
     def cmpt_plot_rank_corr_stns(self):
@@ -878,9 +885,17 @@ class NormCopulaInfill:
         BefAll(self)
         assert self._bef_all_chked, 'Initiate \'BefAll\' first!'
 
-        NrstStns(self)
+        old_plt_flag = self.plot_neighbors_flag
+
+        self.plot_neighbors_flag = True
+
+        if not self._dist_cmptd:
+            NrstStns(self)
+            assert self._dist_cmptd, 'Call \'cmpt_plot_nrst_stns\' first!'
 
         RankCorrStns(self)
+
+        self.plot_neighbors_flag = old_plt_flag
         return
 
     def _get_neb_stns(self, infill_stn):

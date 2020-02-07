@@ -231,6 +231,9 @@ class CompareInfill:
         ks_d_stat = (divide((-0.5 * mlog(self.ks_alpha * 0.5)),
                             obs_probs.shape[0])) ** 0.5
 
+        ks_d_stat *= (
+            ((obs_probs.shape[0] * 2) / (obs_probs.shape[0] ** 2)) ** 0.5)
+
         ks_fl = obs_probs_probs - ks_d_stat
         ks_fl[ks_fl < 0] = 0
 

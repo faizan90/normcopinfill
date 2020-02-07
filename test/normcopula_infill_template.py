@@ -17,15 +17,15 @@ if __name__ == '__main__':
     main_dir = r'P:\Synchronize\IWS\Discharge_data_longer_series'
 
     # location of input variable and coordinates files
-    in_var_file = os.path.join(r'final_q_data_combined_Apr2017',
-                               r'neckar_q_data_combined_Apr2017.csv')
+    in_var_file = os.path.join(r'final_q_data_combined_20180713',
+                               r'neckar_q_data_combined_20180713.csv')
 
 #     in_var_file = r'neckar_daily_discharge_1961_2015.csv'
 
-    in_coords_file = r'stn_coords/upper_neckar_cats_coords_Apr2017_combined.csv'
+    in_coords_file = r'stn_coords/neckar_cats_coords_20180713_combined_for_infill.csv'
 
     # output directory, everything is saved inside this
-    out_dir = r'test_infill_01'
+    out_dir = r'test_infill_03'
 
     # time format in in_var_file
     time_fmt = '%Y-%m-%d'
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         # while using the normal copula, n_nrn_min stations are used
         # this behavior can be changed if the parameter 'take_min_stns'
         # of the NormCopulaInfill class is set to True
-    n_nrn_min = 5
+    n_nrn_min = 2
 
     # maximum number of neighboring stations to use for infilling
         # it should be greater than n_nrn_min
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     # number of processes to initiate
         # should be equal to the number of cores at maximum to
         # achieve fastest speeds
-    ncpus = 7
+    ncpus = 14
 
     # the seperator used in the input files
         # it is also used in the output
@@ -109,16 +109,16 @@ if __name__ == '__main__':
 #     infill_cop.debug_mode_flag = True
 #     infill_cop.plot_diag_flag = True
 #     infill_cop.plot_step_cdf_pdf_flag = True
-#     infill_cop.compare_infill_flag = True
-#     infill_cop.flag_susp_flag = True
+    infill_cop.compare_infill_flag = True
+    infill_cop.flag_susp_flag = True
 #     infill_cop.force_infill_flag = False  # force infill if avail_cols < n_nrst_stns_min
 #     infill_cop.plot_neighbors_flag = True
-#     infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
+    infill_cop.take_min_stns_flag = True  # to take n_nrst_stns_min stns or all available
 #     infill_cop.overwrite_flag = False
 #     infill_cop.read_pickles_flag = True
 #     infill_cop.use_best_stns_flag = False
 #     infill_cop.dont_stop_flag = False
-#     infill_cop.plot_long_term_corrs_flag = True
+    infill_cop.plot_long_term_corrs_flag = True
 #     infill_cop.save_step_vars_flag = True
 #     infill_cop.plot_rand_flag = True
 #     infill_cop.stn_based_mp_infill_flag = False
@@ -132,13 +132,13 @@ if __name__ == '__main__':
 #     infill_cop.max_time_lag_corr = 1
 #     infill_cop.cut_cdf_thresh = 0.5
 
-#     infill_cop.cmpt_plot_nrst_stns()
-#     infill_cop.cmpt_plot_rank_corr_stns()
+    infill_cop.cmpt_plot_nrst_stns()
+    infill_cop.cmpt_plot_rank_corr_stns()
 #     infill_cop.plot_stats()
-#     infill_cop.plot_ecops()
-    infill_cop.infill()
-    infill_cop.cmpt_plot_avail_stns()
-    infill_cop.plot_summary()
+# #     infill_cop.plot_ecops()
+#     infill_cop.infill()
+#     infill_cop.cmpt_plot_avail_stns()
+#     infill_cop.plot_summary()
 
     stop = timeit.default_timer()  # Ending time
     print('\n\a\a\a Done with everything on %s. Total run time was about %0.4f seconds \a\a\a' % (time.asctime(), stop - start))
