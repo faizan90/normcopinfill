@@ -334,6 +334,7 @@ class Summary:
         out_fig = self.out_summary_fig + '_%0.2d' % (stn_idx + 1)
         plt.savefig(out_fig, dpi=self.out_fig_dpi, bbox_inches='tight')
         plt.close()
+        return
 
     def plot_summary(self):
         '''
