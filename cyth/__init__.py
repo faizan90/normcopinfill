@@ -2,6 +2,9 @@
 @author: Faizan-Uni-Stuttgart
 
 '''
+# Uncomment to compile the pyx files.
+# import pyximport
+# pyximport.install(pyximport=True)
 
 from .normcop_cyftns import (
     get_dist,
