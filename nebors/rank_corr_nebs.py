@@ -707,11 +707,11 @@ class RankCorr:
 
         ser_i = self.in_var_df[i_stn]
 
-        corrs_ser = self.rank_corrs_df.loc[i_stn]
-        ctrs_ser = self.rank_corr_vals_ctr_df.loc[i_stn]
+        # corrs_ser = self.rank_corrs_df.loc[i_stn]
+        # ctrs_ser = self.rank_corr_vals_ctr_df.loc[i_stn]
 
-        if self.max_time_lag_corr:
-            lag_ser = self.time_lags_df.loc[i_stn, :]
+        # if self.max_time_lag_corr:
+        #     lag_ser = self.time_lags_df.loc[i_stn,:]
 
         assert len(ser_i.shape) == 1, as_err(
             'ser_i has more than one column!')
@@ -773,14 +773,21 @@ class RankCorr:
                     max_ct = ij_df.shape[0]
                     best_lag = curr_time_lag
 
+                # print(i_stn, j_stn, correl)
+
             if not max_ct:
                 max_correl = nan
 
-            corrs_ser[j_stn] = max_correl
-            ctrs_ser[j_stn] = max_ct
+            # corrs_ser[j_stn] = max_correl
+            # ctrs_ser[j_stn] = max_ct
+
+            self.rank_corrs_df.loc[i_stn, j_stn] = max_correl
+            self.rank_corr_vals_ctr_df.loc[i_stn, j_stn] = max_ct
 
             if self.max_time_lag_corr:
-                lag_ser[j_stn] = best_lag
+                # lag_ser[j_stn] = best_lag
+                self.time_lags_df.loc[i_stn, j_stn] = best_lag
+
         return
 
     def _get_symm_corr(self, prob_ser_i, prob_ser_j, correl):
