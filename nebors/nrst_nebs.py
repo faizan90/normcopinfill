@@ -305,9 +305,11 @@ class NrstStns:
                 fontsize=tick_font_size)
             plt_texts.append(_txt_obj)
 
+        assert len(infill_x) == len(infill_y) == 1
+
         _txt_obj = nrst_stns_ax.text(
-            infill_x,
-            infill_y,
+            infill_x[0],
+            infill_y[0],
             infill_stn,
             va='top',
             ha='left',

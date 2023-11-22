@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from pandas import (
     date_range,
     read_csv,
+    read_pickle,
     to_datetime,
     DataFrame,
     Index)
@@ -456,11 +457,15 @@ class NormCopulaInfill:
               datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
         try:
-            self.in_var_df = read_csv(
-                self.in_var_file,
-                sep=self.sep,
-                index_col=0,
-                engine='c')
+            try:
+                self.in_var_df = read_csv(
+                    self.in_var_file,
+                    sep=self.sep,
+                    index_col=0,
+                    engine='c')
+
+            except UnicodeDecodeError:
+                self.in_var_df = read_pickle(self.in_var_file)
         except:
             print('WARNING: Reading in_var_file with engine=\'python\'!')
             self.in_var_df = read_csv(
