@@ -343,7 +343,8 @@ class InfillStation:
                 self.out_var_df.update(sub_stn_ser, overwrite=False)
 
                 out_conf_df.update(sub_conf_df, overwrite=False)
-                out_add_info_df.update(sub_add_info_df, overwrite=False)
+                out_add_info_df.update(
+                    sub_add_info_df.astype(float32), overwrite=False)
 
             n_infilled_vals = out_conf_df.dropna().shape[0]
 
@@ -490,7 +491,8 @@ class InfillStation:
                     compare_obj.plot_all, (args_tup,))
             else:
                 self.summary_df.update(
-                    compare_obj.plot_all(args_tup), overwrite=False)
+                    compare_obj.plot_all(args_tup).astype(float32),
+                    overwrite=False)
 
         else:
             if self.verbose:

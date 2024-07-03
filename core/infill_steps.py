@@ -58,7 +58,7 @@ class InfillSteps:
                      'act_val_prob',
                      'n_recs'])
 
-        out_add_info_df.iloc[:, :] = [False, 0, 0, nan, nan]
+        out_add_info_df.iloc[:,:] = [0, 0, 0, nan, nan]
 
         pre_avail_stns = [self.curr_infill_stn]
         too_hi_corr_stns_list = []
@@ -102,7 +102,7 @@ class InfillSteps:
 
                 if np_all(curr_vals == self.var_le_trs):
                     out_conf_df.loc[infill_date] = self.var_le_trs
-                    out_add_info_df.loc[infill_date, 'infill_status'] = True
+                    out_add_info_df.loc[infill_date, 'infill_status'] = 1
                     out_add_info_df.loc[
                         infill_date, 'n_neighbors_raw'] = curr_vals.shape[0]
                     out_add_info_df.loc[
@@ -188,7 +188,7 @@ class InfillSteps:
 
                 if self.take_min_stns_flag:
                     curr_var_df = (
-                        curr_var_df.iloc[:, :self.n_min_nebs + 1])
+                        curr_var_df.iloc[:,:self.n_min_nebs + 1])
 
                 curr_var_df.dropna(axis=0, inplace=True)
 
@@ -488,9 +488,12 @@ class InfillSteps:
 
             conf_probs = self.conf_ser.values
             conf_vals = fin_val_ppf_ftn_adj(conf_probs)
+
             conf_grads = fin_val_grad_ftn(conf_vals)
-            out_conf_df.loc[infill_date] = np_round(conf_vals, self.n_round)
-            out_add_info_df.loc[infill_date, 'infill_status'] = True
+            out_conf_df.loc[infill_date] = float32(
+                np_round(conf_vals, self.n_round))
+
+            out_add_info_df.loc[infill_date, 'infill_status'] = float32(1)
 
             if self.save_step_vars_flag:
                 step_vars_dict['conf_vals'] = conf_vals
@@ -530,7 +533,7 @@ class InfillSteps:
                     fill_value=(
                         self.adj_prob_bounds[+0], self.adj_prob_bounds[-1]))
 
-                out_add_info_df.loc[infill_date, 'act_val_prob'] = (
+                out_add_info_df.loc[infill_date, 'act_val_prob'] = float32(
                     fin_val_cdf_ftn_adj(
                         self.in_var_df.loc[infill_date, self.curr_infill_stn]))
 

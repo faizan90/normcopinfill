@@ -15,6 +15,8 @@ from numpy import (
     isnan,
     where,
     abs as np_abs,
+    array,
+    float64,
     float32,
     float16)
 import matplotlib.pyplot as plt
@@ -390,7 +392,7 @@ class RankCorrStns:
 
         else:
             self.time_lags_df = Series(index=self.infill_stns, dtype=float16)
-            self.time_lags_df[:] = ''
+            self.time_lags_df[:] = float('nan')
 
         # this somehow does not show the copy-view warning
         self.rank_corr_vals_ctr_df[:] = 0.0
@@ -602,8 +604,12 @@ class RankCorrStns:
             cmap=plt.get_cmap('Blues'),
             origin='lower')
 
+        if isinstance(lags, (float32, float64)):
+            lags = array([])
+
         for s, neb in enumerate(nebs):
-            if len(lags):
+            # if not isnan(lags):
+            if lags.size:
                 corrs_ax.text(
                     s,
                     0,
@@ -783,8 +789,8 @@ class RankCorr:
             # corrs_ser[j_stn] = max_correl
             # ctrs_ser[j_stn] = max_ct
 
-            self.rank_corrs_df.loc[i_stn, j_stn] = max_correl
-            self.rank_corr_vals_ctr_df.loc[i_stn, j_stn] = max_ct
+            self.rank_corrs_df.loc[i_stn, j_stn] = float32(max_correl)
+            self.rank_corr_vals_ctr_df.loc[i_stn, j_stn] = float16(max_ct)
 
             if self.max_time_lag_corr:
                 # lag_ser[j_stn] = best_lag

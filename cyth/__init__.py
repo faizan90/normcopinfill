@@ -4,7 +4,7 @@
 '''
 # Uncomment to compile the pyx files.
 # import pyximport
-# pyximport.install(pyximport=True)
+# pyximport.install(pyximport=True, inplace=True)
 
 from .normcop_cyftns import (
     get_dist,

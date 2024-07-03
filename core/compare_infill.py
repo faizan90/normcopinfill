@@ -247,7 +247,7 @@ class CompareInfill:
                               float(n_vals))
 
         summ_df.loc[self.curr_infill_stn,
-                    self._ks_lims_lab] = round(vals_wtn_rng, 2)
+                    self._ks_lims_lab] = float32(round(vals_wtn_rng, 2))
 
         if not self.update_summary_df_only:
             plt.figure(figsize=(6, 5.5))
